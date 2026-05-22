@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="stylesheet" href="./dashboards/animeiowa.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>AnimeIowa | Reset Password</title>
+
+  <style>
+    :root{
+      --bg:#000;
+      --card: rgba(255,255,255,0.06);
+      --card-border: rgba(255,255,255,0.10);
+
+      --text: rgba(255,255,255,0.92);
+      --muted: rgba(255,255,255,0.70);
+
+      --danger:#ff6b6b;
+      --ok:#7CFC90;
+
+      --btn:#ffffff;
+      --btnText:#000000;
+
+      --inputBg: rgba(255,255,255,0.08);
+      --inputBorder: rgba(255,255,255,0.14);
+      --focus: rgba(255,255,255,0.28);
+    }
+
+    *{ box-sizing:border-box; }
+    html,body{ height:100%; }
+    body{
+      margin:0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      display:grid;
+      place-items:center;
+      padding:20px;
+    }
+
+    .wrap{ width:100%; max-width: 420px; }
+    .header{ text-align:center; margin-bottom: 16px; }
+    .title{ margin:0; font-size: 26px; font-weight: 900; }
+    .subtitle{ margin:8px 0 0; color: var(--muted); font-size: 14px; line-height: 1.4; }
+
+    .card{
+      background: var(--card);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 18px;
+      backdrop-filter: blur(10px);
+    }
+
+    label{
+      display:block;
+      font-size: 13px;
+      color: var(--muted);
+      margin: 12px 0 6px;
+    }
+
+    input{
+      width:100%;
+      padding: 14px 12px;
+      border-radius: 12px;
+      border: 1px solid var(--inputBorder);
+      background: var(--inputBg);
+      color: var(--text);
+      outline:none;
+      font-size: 16px;
+    }
+    input:focus{
+      border-color: var(--focus);
+      box-shadow: 0 0 0 3px rgba(255,255,255,0.08);
+    }
+
+    .btn{
+      width:100%;
+      margin-top: 14px;
+      padding: 14px 12px;
+      border-radius: 12px;
+      border:none;
+      background: var(--btn);
+      color: var(--btnText);
+      font-size: 16px;
+      font-weight: 900;
+      cursor:pointer;
+    }
+    .btn:disabled{ opacity:0.6; cursor:not-allowed; }
+
+    .row{
+      display:flex;
+      justify-content: space-between;
+      align-items:center;
+      gap: 10px;
+      margin-top: 12px;
+      flex-wrap: wrap;
+    }
+
+    .link{
+      color: var(--text);
+      text-decoration:none;
+      font-size: 14px;
+      opacity: 0.95;
+      border-bottom: 1px dashed rgba(255,255,255,0.35);
+      padding-bottom: 2px;
+    }
+
+    .msg{
+      margin-top: 12px;
+      font-size: 14px;
+      line-height: 1.35;
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.05);
+      display:none;
+      word-break: break-word;
+    }
+    .msg.error{ color: var(--danger); display:block; }
+    .msg.ok{ color: var(--ok); display:block; }
+
+    .tiny{
+      margin-top: 12px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.4;
+      text-align:center;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <div class="header">
+      <h1 class="title">Reset Password</h1>
+      <p id="subtitle" class="subtitle">Enter your email and we’ll send a reset link.</p>
+    </div>
+
+    <div class="card">
+      <!-- REQUEST RESET EMAIL -->
+      <form id="requestForm">
+        <label for="email">Email</label>
+        <input id="email" type="email" placeholder="you@example.com" required />
+
+        <button id="sendBtn" class="btn" type="submit">Send Reset Link</button>
+
+        <div id="message" class="msg" aria-live="polite"></div>
+
+        <div class="row">
+          <a class="link" href="index.html">Back to login</a>
+          <a class="link" href="signup.html">Create account</a>
+        </div>
+
+        <div class="tiny">
+          If you don’t see the email, check your spam folder.
+        </div>
+      </form>
+
+      <!-- SET NEW PASSWORD (shown only after user clicks email link) -->
+      <form id="newPassForm" style="display:none;">
+        <label for="newPassword">New password</label>
+        <input id="newPassword" type="password" placeholder="New password" required />
+
+        <label for="confirmPassword">Confirm new password</label>
+        <input id="confirmPassword" type="password" placeholder="Confirm password" required />
+
+        <button id="updateBtn" class="btn" type="submit">Update Password</button>
+
+        <div id="message2" class="msg" aria-live="polite"></div>
+
+        <div class="row">
+          <a class="link" href="index.html">Back to login</a>
+        </div>
+
+        <div class="tiny">
+          After updating, return to login and sign in with your new password.
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script type="module">
+    import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+
+    const SUPABASE_URL = 'https://mjnphetnuiuxgsghzdoo.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1qbnBoZXRudWl1eGdzZ2h6ZG9vIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE4OTA2OTMsImV4cCI6MjA4NzQ2NjY5M30.sB1i6dy5e7brQHRiCJ-0Kf2aIcIO1DkUR1O2RtkmRGc';
+
+    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    const requestForm = document.getElementById('requestForm');
+    const newPassForm = document.getElementById('newPassForm');
+
+    const emailEl = document.getElementById('email');
+    const sendBtn = document.getElementById('sendBtn');
+    const msgEl = document.getElementById('message');
+
+    const subtitleEl = document.getElementById('subtitle');
+
+    const newPasswordEl = document.getElementById('newPassword');
+    const confirmPasswordEl = document.getElementById('confirmPassword');
+    const updateBtn = document.getElementById('updateBtn');
+    const msg2El = document.getElementById('message2');
+
+    function setMsg(el, type, text) {
+      el.className = 'msg ' + (type || '');
+      el.textContent = text || '';
+      el.style.display = text ? 'block' : 'none';
+    }
+
+    // If Supabase sends a "code" in the URL, exchange it for a session so updateUser works.
+    async function tryEnterRecoveryMode() {
+      const url = new URL(window.location.href);
+      const code = url.searchParams.get('code');
+
+      if (!code) return false;
+
+      // Exchange code for session (PKCE flow)
+      const { error } = await supabase.auth.exchangeCodeForSession(code);
+      if (error) {
+        setMsg(msgEl, 'error', error.message || 'Invalid or expired recovery link.');
+        return false;
+      }
+
+      // Show new password form
+      requestForm.style.display = 'none';
+      newPassForm.style.display = 'block';
+      subtitleEl.textContent = 'Enter your new password.';
+      return true;
+    }
+
+    await tryEnterRecoveryMode();
+
+    // 1) Send recovery email
+    requestForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      setMsg(msgEl, '', '');
+
+      const email = (emailEl.value || '').trim();
+      if (!email) {
+        setMsg(msgEl, 'error', 'Please enter your email.');
+        return;
+      }
+
+      sendBtn.disabled = true;
+      sendBtn.textContent = 'Sending…';
+
+      try {
+        // IMPORTANT: Must be hosted (http://localhost or real domain). file:// will NOT work.
+        // Redirect back to this same page to set a new password.
+        const redirectTo = window.location.origin + '/reset.html';
+
+        const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo });
+        if (error) throw error;
+
+        setMsg(msgEl, 'ok', 'Reset link sent. Check your email.');
+      } catch (err) {
+        setMsg(msgEl, 'error', err?.message || 'Failed to send reset link.');
+      } finally {
+        sendBtn.disabled = false;
+        sendBtn.textContent = 'Send Reset Link';
+      }
+    });
+
+    // 2) Update password after recovery link
+    newPassForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      setMsg(msg2El, '', '');
+
+      const p1 = newPasswordEl.value || '';
+      const p2 = confirmPasswordEl.value || '';
+
+      if (!p1 || p1.length < 8) {
+        setMsg(msg2El, 'error', 'Password must be at least 8 characters.');
+        return;
+      }
+      if (p1 !== p2) {
+        setMsg(msg2El, 'error', 'Passwords do not match.');
+        return;
+      }
+
+      updateBtn.disabled = true;
+      updateBtn.textContent = 'Updating…';
+
+      try {
+        const { error } = await supabase.auth.updateUser({ password: p1 });
+        if (error) throw error;
+
+        setMsg(msg2El, 'ok', 'Password updated. You can now return to login.');
+        // Optional: sign out recovery session
+        await supabase.auth.signOut();
+      } catch (err) {
+        setMsg(msg2El, 'error', err?.message || 'Failed to update password.');
+      } finally {
+        updateBtn.disabled = false;
+        updateBtn.textContent = 'Update Password';
+      }
+    });
+  </script>
+</body>
+</html>

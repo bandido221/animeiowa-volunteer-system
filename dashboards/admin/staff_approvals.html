@@ -1,0 +1,962 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="stylesheet" href="../animeiowa.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>AnimeIowa | Approve Staff Hours</title>
+
+  <style>
+    :root{
+      --bg:#000;
+      --card: rgba(255,255,255,0.06);
+      --card-border: rgba(255,255,255,0.10);
+      --text: rgba(255,255,255,0.92);
+      --muted: rgba(255,255,255,0.70);
+      --danger:#ff6b6b;
+      --ok:#7CFC90;
+
+      --btn:#ffffff;
+      --btnText:#000000;
+
+      --btn2-bg: rgba(255,255,255,0.10);
+      --btn2-border: rgba(255,255,255,0.16);
+
+      --inputBg: rgba(255,255,255,0.08);
+      --inputBorder: rgba(255,255,255,0.14);
+      --focus: rgba(255,255,255,0.28);
+    }
+
+    *{ box-sizing:border-box; }
+    html,body{ height:100%; }
+    body{
+      margin:0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    .topbar{
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background: rgba(0,0,0,0.85);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid rgba(255,255,255,0.10);
+    }
+    .topbar-inner{
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 14px 16px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: 12px;
+    }
+    .brand{
+      display:flex;
+      flex-direction:column;
+      gap:2px;
+      min-width: 0;
+    }
+    .brand h1{
+      margin:0;
+      font-size: 18px;
+      letter-spacing: 0.3px;
+      font-weight: 900;
+      line-height: 1.1;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .brand .sub{
+      margin:0;
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.2;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .actions{
+      display:flex;
+      gap:10px;
+      align-items:center;
+      flex-shrink: 0;
+    }
+
+    .btn{
+      appearance:none;
+      border:none;
+      border-radius: 12px;
+      padding: 12px 14px;
+      font-weight: 900;
+      font-size: 14px;
+      cursor:pointer;
+      background: var(--btn);
+      color: var(--btnText);
+      line-height: 1;
+    }
+    .btn.secondary{
+      background: var(--btn2-bg);
+      color: var(--text);
+      border: 1px solid var(--btn2-border);
+      font-weight: 800;
+    }
+    .btn.danger{
+      background: rgba(255,107,107,0.18);
+      color: var(--danger);
+      border: 1px solid rgba(255,107,107,0.30);
+      font-weight: 900;
+    }
+    .btn:disabled{ opacity:0.6; cursor:not-allowed; }
+
+    .pill{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding: 8px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.05);
+      color: var(--muted);
+      font-size: 12px;
+      white-space: nowrap;
+      max-width: 100%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .container{
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 16px;
+    }
+
+    .card{
+      background: var(--card);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 14px;
+    }
+
+    .toolbar{
+      display:flex;
+      gap: 10px;
+      align-items:center;
+      justify-content:space-between;
+      flex-wrap: wrap;
+      margin-bottom: 12px;
+    }
+
+    .filters{
+      flex: 1;
+      min-width: 220px;
+      display:flex;
+      gap: 10px;
+      align-items:center;
+      flex-wrap: wrap;
+    }
+
+      input{
+      border-radius: 12px;
+      border: 1px solid var(--inputBorder);
+      background: var(--inputBg);
+      color: var(--text);
+      outline: none;
+      font-size: 14px;
+      padding: 12px 12px;
+    }
+
+    /* Make dropdown readable */
+    select{
+      border-radius: 12px;
+      border: 1px solid var(--inputBorder);
+      background: #ffffff;
+      color: #000000;
+      outline: none;
+      font-size: 14px;
+      padding: 12px 12px;
+    }
+
+    select option{
+      background: #ffffff;
+      color: #000000;
+    }
+    input:focus, select:focus{
+      border-color: var(--focus);
+      box-shadow: 0 0 0 3px rgba(255,255,255,0.08);
+    }
+
+    .table-wrap{
+      overflow:auto;
+      border-radius: 14px;
+      border: 1px solid rgba(255,255,255,0.10);
+    }
+
+    table{
+      width:100%;
+      border-collapse: collapse;
+      min-width: 1080px;
+      background: rgba(0,0,0,0.15);
+    }
+    th, td{
+      padding: 12px 12px;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      text-align:left;
+      font-size: 13px;
+      vertical-align: middle;
+      white-space: nowrap;
+    }
+    td.dtcell{ white-space: normal; line-height: 1.2; }
+    td.dtcell .d{ display:block; }
+    td.dtcell .t{ display:block; color: var(--muted); font-size: 12px; margin-top: 2px; }
+    th{
+      color: var(--muted);
+      font-weight: 900;
+      position: sticky;
+      top: 0;
+      background: rgba(0,0,0,0.65);
+      backdrop-filter: blur(10px);
+      z-index: 1;
+    }
+
+    .badge{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.05);
+      color: var(--muted);
+    }
+    .badge.pending{ color: rgba(255,255,255,0.85); }
+    .badge.approved{ color: var(--ok); }
+    .badge.rejected{ color: var(--danger); }
+
+    .msg{
+      margin-top: 12px;
+      font-size: 14px;
+      line-height: 1.35;
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.05);
+      display:none;
+      word-break: break-word;
+    }
+    .msg.error{ color: var(--danger); display:block; }
+    .msg.ok{ color: var(--ok); display:block; }
+
+    .mini{
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.35;
+    }
+
+    .row-actions{
+      display:flex;
+      gap: 8px;
+      align-items:center;
+      flex-wrap: wrap;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="topbar">
+    <div class="topbar-inner">
+      <div class="brand">
+        <h1>AnimeIowa</h1>
+        <p class="sub">Approve Staff Hours</p>
+      </div>
+
+      <div class="actions">
+        <span id="rolePill" class="pill" title="Role">Loading…</span>
+        <button id="backBtn" class="btn secondary" type="button">Back</button>
+        <button id="logoutBtn" class="btn secondary" type="button">Log Out</button>
+      </div>
+    </div>
+  </div>
+
+  <main class="container">
+
+    <div class="card" style="margin-bottom:16px; border-color: rgba(170,132,82,0.5); background: rgba(170,132,82,0.08);">
+      <h2 style="margin-bottom:10px;">🧪 Testing Guide — Staff Hour Approvals</h2>
+      <p style="font-size:14px; line-height:1.7; margin:0;">
+        <b>What this page is:</b> This is where you review hours that staff members have submitted. You decide if those hours count or not.<br><br>
+        <b>The table</b> — Shows all submitted shifts. By default it shows only Pending ones (waiting for your decision).<br>
+        <b>Approve</b> — Click Approve to accept the hours. The staff member will earn points for those hours.<br>
+        <b>Reject</b> — Click Reject if the hours look wrong or should not count.<br>
+        <b>Search</b> — Type a name or badge number to find a specific person's submissions.<br><br>
+        <b>How to test:</b> Make sure a staff member has submitted hours first, then find their name here and click Approve or Reject.
+      </p>
+    </div>
+
+    <div class="card">
+      <div class="toolbar">
+        <div class="filters">
+          <select id="statusFilter">
+            <option value="pending">Pending only</option>
+            <option value="">All statuses</option>
+            <option value="approved">Approved</option>
+            <option value="rejected">Rejected</option>
+          </select>
+
+          <input id="searchInput" type="text" placeholder="Search name, badge, notes…" />
+        </div>
+
+        <div class="row-actions">
+          <button id="refreshBtn" class="btn" type="button">Refresh</button>
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>User</th>
+              <th>Badge #</th>
+              <th>Department</th>
+              <th>Start</th>
+              <th>End</th>
+              <th>Total</th>
+                            <th>Points</th>
+              <th>Status</th>
+              <th>Notes</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="tbody">
+            <tr><td colspan="10" style="color:rgba(255,255,255,0.7);padding:16px;">Loading…</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div id="message" class="msg" aria-live="polite"></div>
+      <p class="mini" style="margin:10px 0 0 0;">
+        Note: Staff cannot approve their own hours. Admins can approve/reject any staff hour record.
+      </p>
+    </div>
+  </main>
+
+  <script type="module">
+    import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+
+    const SUPABASE_URL = 'https://mjnphetnuiuxgsghzdoo.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1qbnBoZXRudWl1eGdzZ2h6ZG9vIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE4OTA2OTMsImV4cCI6MjA4NzQ2NjY5M30.sB1i6dy5e7brQHRiCJ-0Kf2aIcIO1DkUR1O2RtkmRGc';
+    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    const rolePill = document.getElementById('rolePill');
+    const backBtn = document.getElementById('backBtn');
+    const logoutBtn = document.getElementById('logoutBtn');
+
+    const msgEl = document.getElementById('message');
+    const tbody = document.getElementById('tbody');
+
+    const statusFilter = document.getElementById('statusFilter');
+    const searchInput = document.getElementById('searchInput');
+    const refreshBtn = document.getElementById('refreshBtn');
+
+    let rows = [];
+    let myCoreUserId = null;
+        let departments = [];
+    let pointsPerHour = 1;
+    let bonusWindows = [];
+
+    function setMsg(type, text) {
+      msgEl.className = 'msg ' + (type || '');
+      msgEl.textContent = text || '';
+      msgEl.style.display = text ? 'block' : 'none';
+    }
+
+    function isAdminRole(role) {
+      const r = (role || '').toLowerCase().trim();
+      return r === 'admin' || r === 'super_user';
+    }
+
+    async function fetchProfileByAuthId(authId) {
+      const { data, error } = await supabase
+        .from('core_users')
+        .select('id, auth_id, role, is_active, plan')
+        .eq('auth_id', authId)
+        .single();
+      if (error) throw error;
+      return data;
+    }
+
+    function escapeHtml(s) {
+      return String(s)
+        .replaceAll('&','&amp;')
+        .replaceAll('<','&lt;')
+        .replaceAll('>','&gt;')
+        .replaceAll('"','&quot;')
+        .replaceAll("'","&#039;");
+    }
+
+     function fmt(ts) {
+      if (!ts) return '—';
+      const d = new Date(ts);
+      if (Number.isNaN(d.getTime())) return '—';
+      return d.toLocaleString();
+    }
+
+    function fmtDateTopTime(ts) {
+      if (!ts) return `<span class="d">—</span><span class="t">—</span>`;
+      const d = new Date(ts);
+      if (Number.isNaN(d.getTime())) return `<span class="d">—</span><span class="t">—</span>`;
+      const date = d.toLocaleDateString();
+      const time = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      return `<span class="d">${escapeHtml(date)}</span><span class="t">${escapeHtml(time)}</span>`;
+    }
+
+    
+    function roundUpHours(hours, step = 0.05) {
+      const n = Number(hours);
+      if (!Number.isFinite(n)) return null;
+      const rounded = Math.ceil(n / step) * step;
+      return Number(rounded.toFixed(2));
+    }
+
+    function calcTotalHoursRoundedUp(startTs, endTs) {
+      const s = new Date(startTs);
+      const e = new Date(endTs);
+      if (Number.isNaN(s.getTime()) || Number.isNaN(e.getTime())) return null;
+      const diffMs = e.getTime() - s.getTime();
+      if (diffMs <= 0) return null;
+      const hours = diffMs / (1000 * 60 * 60);
+      return roundUpHours(hours, 0.05);
+    }
+    function toDatetimeLocalValue(ts) {
+      if (!ts) return '';
+      const d = new Date(ts);
+      if (Number.isNaN(d.getTime())) return '';
+      const pad = (n) => String(n).padStart(2, '0');
+      const yyyy = d.getFullYear();
+      const mm = pad(d.getMonth() + 1);
+      const dd = pad(d.getDate());
+      const hh = pad(d.getHours());
+      const mi = pad(d.getMinutes());
+      return `${yyyy}-${mm}-${dd}T${hh}:${mi}`;
+    }
+
+    function fromDatetimeLocalValue(v) {
+      if (!v) return null;
+      const d = new Date(v);
+      if (Number.isNaN(d.getTime())) return null;
+      return d.toISOString();
+    }
+
+    function setEditing(rowId, isEditing) {
+      rows = rows.map(r => {
+        if (r.id !== rowId) return r;
+        if (!isEditing) {
+          const { _editing, _draft, ...rest } = r;
+          return rest;
+        }
+        return {
+          ...r,
+          _editing: true,
+          _draft: {
+            department_id: r.department_id || '',
+            start_time: r.start_time || null,
+            end_time: r.end_time || null,
+            notes: r.notes || ''
+          }
+        };
+      });
+      render();
+    }
+    function badgeStatus(status) {
+      const st = String(status || '').toLowerCase();
+      if (st === 'approved') return `<span class="badge approved">approved</span>`;
+      if (st === 'rejected') return `<span class="badge rejected">rejected</span>`;
+      return `<span class="badge pending">pending</span>`;
+    }
+    function matchesFilters(r) {
+      const st = (statusFilter.value || '').trim().toLowerCase();
+      const q = (searchInput.value || '').trim().toLowerCase();
+
+      if (st && String(r.status || '').toLowerCase() !== st) return false;
+      if (!q) return true;
+
+      const hay = [
+        r.user_name || '',
+        r.badge_number || '',
+        r.department_name || '',
+        r.notes || ''
+      ].join(' ').toLowerCase();
+
+      return hay.includes(q);
+    }
+
+     function render() {
+      const filtered = rows.filter(matchesFilters);
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="10" style="color:rgba(255,255,255,0.7);padding:16px;">No staff hour rows match your filters.</td></tr>`;
+        return;
+      }
+
+      const deptOptionsHtml = departments.length
+        ? departments.map(d => `<option value="${escapeHtml(d.id)}">${escapeHtml(d.name)}</option>`).join('')
+        : `<option value="">(no departments loaded)</option>`;
+
+      tbody.innerHTML = filtered.map(r => {
+     const missingEndTime = !r.end_time;
+        const approveDisabled = (r.user_id === myCoreUserId) || missingEndTime;
+        const rejectDisabled = (r.user_id === myCoreUserId) || missingEndTime;
+
+        if (r._editing) {
+          const draft = r._draft || {};
+          const startVal = toDatetimeLocalValue(draft.start_time);
+          const endVal = toDatetimeLocalValue(draft.end_time);
+          const previewTotal = calcTotalHoursRoundedUp(draft.start_time, draft.end_time);
+          const previewTxt = (previewTotal == null) ? '—' : String(previewTotal.toFixed(2));
+
+          return `
+            <tr>
+              <td>
+  ${PLAN !== 'basic' && r.profile_image_url
+    ? `<img src="${escapeHtml(r.profile_image_url)}" style="width:32px;height:32px;border-radius:50%;object-fit:cover;vertical-align:middle;margin-right:8px;" />`
+    : ''}${escapeHtml(r.user_name || '—')}
+</td>
+              <td>${escapeHtml(r.badge_number || '—')}</td>
+              <td>
+                <select data-edit-dept="${escapeHtml(r.id)}">
+                  <option value="">—</option>
+                  ${deptOptionsHtml}
+                </select>
+              </td>
+              <td>
+                <input type="datetime-local" data-edit-start="${escapeHtml(r.id)}" value="${escapeHtml(startVal)}" />
+              </td>
+              <td>
+                <input type="datetime-local" data-edit-end="${escapeHtml(r.id)}" value="${escapeHtml(endVal)}" />
+              </td>
+                         <td title="Auto recalculated (rounded up)">
+                ${escapeHtml(previewTxt)}
+              </td>
+              <td title="Points are calculated on approval">
+                ${escapeHtml(String(r.points_earned ?? '—'))}
+              </td>
+              <td>${badgeStatus(r.status)}</td>
+              <td>
+                <input type="text" data-edit-notes="${escapeHtml(r.id)}" value="${escapeHtml(draft.notes || '')}" />
+              </td>
+              <td>
+                <div class="row-actions">
+                  <button class="btn" type="button" data-save="${escapeHtml(r.id)}">Save</button>
+                  <button class="btn secondary" type="button" data-cancel="${escapeHtml(r.id)}">Cancel</button>
+                </div>
+              </td>
+            </tr>
+          `;
+        }
+
+        return `
+          <tr>
+            <td>${escapeHtml(r.user_name || '—')}</td>
+            <td>${escapeHtml(r.badge_number || '—')}</td>
+            <td>${escapeHtml(r.department_name || '—')}</td>
+            <td class="dtcell">${fmtDateTopTime(r.start_time)}</td>
+            <td class="dtcell">${fmtDateTopTime(r.end_time)}</td>
+            <td>${escapeHtml(String(r.total_hours ?? '—'))}</td>
+            <td>${escapeHtml(String(r.points_earned ?? '—'))}</td>
+            <td>${badgeStatus(r.status)}</td>
+            <td title="${escapeHtml(r.notes || '')}">${escapeHtml(r.notes || '—')}</td>
+            <td>
+              <div class="row-actions">
+                <button class="btn secondary" type="button" data-edit="${escapeHtml(r.id)}">Edit</button>
+                <button class="btn secondary" type="button" data-approve="${escapeHtml(r.id)}" ${approveDisabled ? 'disabled' : ''} title="${missingEndTime ? 'Shift has no end time — use Edit to add it first' : ''}">Approve</button>
+                <button class="btn danger" type="button" data-reject="${escapeHtml(r.id)}" ${rejectDisabled ? 'disabled' : ''} title="${missingEndTime ? 'Shift has no end time — use Edit to add it first' : ''}">Reject</button>
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join('');
+
+      // Ensure selected dept is set for edit rows
+      rows.forEach(r => {
+        if (!r._editing) return;
+        const sel = tbody.querySelector(`select[data-edit-dept="${CSS.escape(r.id)}"]`);
+        if (sel) sel.value = (r._draft?.department_id || '');
+      });
+    }
+    async function loadPointsSettings() {
+      const { data, error } = await supabase
+        .from('points_settings')
+        .select('points_per_hour')
+        .limit(1)
+        .single();
+
+      if (error) throw error;
+      pointsPerHour = Number(data?.points_per_hour ?? 1);
+    }
+
+    async function loadBonusWindows() {
+      const { data, error } = await supabase
+        .from('bonus_time_windows')
+        .select('*')
+        .eq('is_active', true);
+      if (error) throw error;
+      bonusWindows = data || [];
+    }
+
+    function calcPointsWithBonus(startTs, endTs, sourceType) {
+      const shiftStart = new Date(startTs).getTime();
+      const shiftEnd = new Date(endTs).getTime();
+      if (!shiftStart || !shiftEnd || shiftEnd <= shiftStart) return 0;
+
+      const applicable = bonusWindows.filter(w => {
+        return w.applies_to === 'both' ||
+          (sourceType === 'vol_hours' && w.applies_to === 'volunteer') ||
+          (sourceType === 'staff_hours' && w.applies_to === 'staff');
+      });
+
+      let totalPoints = 0;
+      let cursor = shiftStart;
+
+      const sorted = [...applicable].sort((a, b) =>
+        new Date(a.start_time).getTime() - new Date(b.start_time).getTime()
+      );
+
+      for (const w of sorted) {
+        const wStart = new Date(w.start_time).getTime();
+        const wEnd = new Date(w.end_time).getTime();
+
+        if (wEnd <= cursor || wStart >= shiftEnd) continue;
+
+        if (cursor < wStart) {
+          const normalHrs = (Math.min(wStart, shiftEnd) - cursor) / 3600000;
+          totalPoints += normalHrs * pointsPerHour;
+          cursor = wStart;
+        }
+
+        const bonusEnd = Math.min(wEnd, shiftEnd);
+        const bonusHrs = (bonusEnd - cursor) / 3600000;
+        totalPoints += bonusHrs * pointsPerHour * Number(w.multiplier);
+        cursor = bonusEnd;
+      }
+
+      if (cursor < shiftEnd) {
+        const remainHrs = (shiftEnd - cursor) / 3600000;
+        totalPoints += remainHrs * pointsPerHour;
+      }
+
+      return Math.round(totalPoints);
+    }
+
+    async function loadDepartments() {
+      const { data, error } = await supabase
+        .from('core_departments')
+        .select('id, name')
+        .order('name', { ascending: true })
+        .limit(500);
+
+      if (error) throw error;
+      departments = (data || []).map(d => ({ id: d.id, name: d.name }));
+    }
+    async function loadStaffHours() {
+      setMsg('', '');
+      tbody.innerHTML = `<tr><td colspan="9" style="color:rgba(255,255,255,0.7);padding:16px;">Loading…</td></tr>`;
+
+      // We pull staff_hours and join basics from core_users and core_departments.
+      // If your RLS doesn’t allow select on those joins, we’ll switch to two queries.
+     const { data, error } = await supabase
+  .from('staff_hours')
+  .select(`
+    id, user_id, department_id, start_time, end_time, total_hours, points_earned, status, notes, approved_by, created_at,
+    user:core_users!vol_hours_user_id_fkey ( first_name, last_name, nickname, badge_number, profile_image_url ),
+    dept:core_departments!staff_hours_department_id_fkey ( name )
+  `)
+  .order('created_at', { ascending: false })
+  .limit(500);
+
+      if (error) {
+        setMsg('error', error.message || 'Failed to load staff hours.');
+        tbody.innerHTML = `<tr><td colspan="9" style="color:rgba(255,255,255,0.7);padding:16px;">Failed to load.</td></tr>`;
+        return;
+      }
+rows = (data || []).map(x => {
+  const u = x.user || {};
+  const d = x.dept || {};
+        const user_name =
+          (u.nickname && u.nickname.trim()) ||
+          (([u.first_name, u.last_name].filter(Boolean).join(' ')).trim()) ||
+          '—';
+
+       return {
+  ...x,
+  user_name,
+  badge_number: u.badge_number || '—',
+  department_name: d.name || '—',
+  profile_image_url: u.profile_image_url || null
+};
+      });
+
+      render();
+    }
+
+    async function updateStatus(id, status) {
+      setMsg('', '');
+
+      const row = rows.find(r => r.id === id);
+
+      if (status === 'approved' && !row?.end_time) {
+        setMsg('error', 'Cannot approve: this shift has no end time. Use Edit to add one first.');
+        return;
+      }
+
+      const { error } = await supabase
+        .from('staff_hours')
+        .update({ status, approved_by: myCoreUserId })
+        .eq('id', id);
+
+      if (error) { setMsg('error', error.message || 'Update failed.'); return; }
+
+      // Log the action
+      try {
+        await supabase.from('hour_approval_log').insert([{
+          hour_type: 'staff_hours',
+          hour_id: id,
+          action: status === 'approved' ? 'approved' : 'rejected',
+          performed_by: myCoreUserId,
+          target_user_id: row?.user_id || null,
+          previous_status: row?.status || null,
+          new_status: status,
+          description: status === 'approved'
+            ? 'Staff hours approved'
+            : 'Staff hours rejected',
+          meta: {
+            total_hours: row?.total_hours || null,
+            start_time: row?.start_time || null,
+            end_time: row?.end_time || null
+          }
+        }]);
+      } catch (_) {}
+
+      setMsg('ok', `Updated: ${status}`);
+      await loadStaffHours();
+    }
+
+    async function updateRowEdits(id, patch) {
+      setMsg('', '');
+
+      // If start/end changed, recompute total_hours using ROUND UP rule
+      let total_hours = null;
+      if (patch.start_time && patch.end_time) {
+        const computed = calcTotalHoursRoundedUp(patch.start_time, patch.end_time);
+        if (computed == null) {
+          setMsg('error', 'Start/End time invalid (end must be after start).');
+          return false;
+        }
+        total_hours = computed;
+      }
+
+      const updatePayload = {
+        ...patch,
+        ...(total_hours != null ? { total_hours } : {})
+      };
+
+      const { error } = await supabase
+        .from('staff_hours')
+        .update(updatePayload)
+        .eq('id', id);
+
+      if (error) {
+        setMsg('error', error.message || 'Edit update failed.');
+        return false;
+      }
+
+      // Log the edit
+      try {
+        await supabase.from('hour_approval_log').insert([{
+          hour_type: 'staff_hours',
+          hour_id: id,
+          action: 'edited',
+          performed_by: myCoreUserId,
+          description: 'Staff shift details edited by admin',
+          meta: patch
+        }]);
+      } catch (_) {}
+
+      setMsg('ok', 'Saved edits.');
+      return true;
+    }
+
+    async function guardAdmin() {
+      setMsg('', '');
+
+      const { data, error } = await supabase.auth.getSession();
+      if (error) throw error;
+
+      const session = data?.session;
+      if (!session?.user?.id) {
+        window.location.href = '../index.html';
+        return;
+      }
+
+      const profile = await fetchProfileByAuthId(session.user.id);
+
+      if (!profile?.is_active) {
+        await supabase.auth.signOut();
+        window.location.href = '../index.html';
+        return;
+      }
+
+      if (!isAdminRole(profile.role)) {
+        window.location.href = '../index.html';
+        return;
+      }
+
+   myCoreUserId = profile.id;
+localStorage.setItem('core_user_profile', JSON.stringify(profile));
+rolePill.textContent = profile.role === 'super_user' ? 'Role: Super User' : 'Role: Admin';
+PLAN = (profile.plan || 'basic').toLowerCase();
+ }
+
+    // Events
+
+
+    logoutBtn.addEventListener('click', async () => {
+      logoutBtn.disabled = true;
+      try {
+        await supabase.auth.signOut();
+      } finally {
+        localStorage.removeItem('core_user_profile');
+        window.location.href = '../index.html';
+      }
+    });
+
+ backBtn.addEventListener('click', () => {
+  window.location.href = '../admin.html';
+});
+
+    refreshBtn.addEventListener('click', loadStaffHours);
+    statusFilter.addEventListener('change', render);
+    searchInput.addEventListener('input', render);
+
+      tbody.addEventListener('click', async (e) => {
+      const editBtn = e.target.closest('button[data-edit]');
+      const saveBtn = e.target.closest('button[data-save]');
+      const cancelBtn = e.target.closest('button[data-cancel]');
+      const approveBtn = e.target.closest('button[data-approve]');
+      const rejectBtn = e.target.closest('button[data-reject]');
+
+      if (editBtn) {
+        const id = editBtn.getAttribute('data-edit');
+        setEditing(id, true);
+        return;
+      }
+
+      if (cancelBtn) {
+        const id = cancelBtn.getAttribute('data-cancel');
+        setEditing(id, false);
+        return;
+      }
+
+      if (saveBtn) {
+        const id = saveBtn.getAttribute('data-save');
+
+        const deptEl = tbody.querySelector(`select[data-edit-dept="${CSS.escape(id)}"]`);
+        const startEl = tbody.querySelector(`input[data-edit-start="${CSS.escape(id)}"]`);
+        const endEl = tbody.querySelector(`input[data-edit-end="${CSS.escape(id)}"]`);
+        const notesEl = tbody.querySelector(`input[data-edit-notes="${CSS.escape(id)}"]`);
+
+        const department_id = deptEl?.value || null;
+        const start_time = fromDatetimeLocalValue(startEl?.value || '');
+        const end_time = fromDatetimeLocalValue(endEl?.value || '');
+        const notes = (notesEl?.value ?? '').trim();
+
+        if (!start_time || !end_time) {
+          setMsg('error', 'Start and End time are required.');
+          return;
+        }
+
+        saveBtn.disabled = true;
+        try {
+          const ok = await updateRowEdits(id, { department_id, start_time, end_time, notes });
+          if (ok) {
+            setEditing(id, false);
+            await loadStaffHours();
+          }
+        } finally {
+          saveBtn.disabled = false;
+        }
+        return;
+      }
+
+      if (approveBtn) {
+        const id = approveBtn.getAttribute('data-approve');
+        approveBtn.disabled = true;
+        try {
+          await updateStatus(id, 'approved');
+        } finally {
+          approveBtn.disabled = false;
+        }
+        return;
+      }
+
+      if (rejectBtn) {
+        const id = rejectBtn.getAttribute('data-reject');
+        rejectBtn.disabled = true;
+        try {
+          await updateStatus(id, 'rejected');
+        } finally {
+          rejectBtn.disabled = false;
+        }
+        return;
+      }
+    });
+
+    tbody.addEventListener('input', (e) => {
+      const deptSel = e.target.closest('select[data-edit-dept]');
+      const startInp = e.target.closest('input[data-edit-start]');
+      const endInp = e.target.closest('input[data-edit-end]');
+      const notesInp = e.target.closest('input[data-edit-notes]');
+
+      const id =
+        (deptSel && deptSel.getAttribute('data-edit-dept')) ||
+        (startInp && startInp.getAttribute('data-edit-start')) ||
+        (endInp && endInp.getAttribute('data-edit-end')) ||
+        (notesInp && notesInp.getAttribute('data-edit-notes'));
+
+      if (!id) return;
+
+      rows = rows.map(r => {
+        if (r.id !== id) return r;
+        if (!r._editing) return r;
+
+        const draft = { ...(r._draft || {}) };
+
+        if (deptSel) draft.department_id = deptSel.value || '';
+        if (startInp) draft.start_time = fromDatetimeLocalValue(startInp.value) || null;
+        if (endInp) draft.end_time = fromDatetimeLocalValue(endInp.value) || null;
+        if (notesInp) draft.notes = notesInp.value ?? '';
+
+        return { ...r, _draft: draft };
+      });
+
+      // live preview update
+      render();
+    });
+
+    // Start
+    (async () => {
+      try {
+        await guardAdmin();
+        await loadPointsSettings();
+        await loadBonusWindows();
+        await loadDepartments();
+        await loadStaffHours();
+      } catch (e) {
+        setMsg('error', e?.message || 'Failed to load Approvals page.');
+      }
+    })();
+  </script>
+</body>
+</html>

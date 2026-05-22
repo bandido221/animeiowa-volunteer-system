@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="en" style="overflow-x:hidden;">
+  <head>
+  <link rel="stylesheet" href="animeiowa.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1" />
+  <title>Volunteer Dashboard | AnimeIowa</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500&family=Domine&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+    body {
+      font-family: 'Domine', serif;
+      background: #000;
+      color: #f0e6d2;
+      margin: 0;
+      padding: 12px;
+      text-align: center;
+      overflow-x: hidden;
+      width: 100%;
+    }
+    h1, h2 { font-family: 'Cinzel', serif; margin: 0 0 12px; font-size: clamp(18px, 5vw, 32px); }
+    .wrap { max-width: 920px; margin: 0 auto; width: 100%; }
+    .card {
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 14px;
+      padding: 14px;
+      margin: 10px 0;
+      text-align: left;
+      width: 100%;
+    }
+    .row { display: flex; gap: 8px; flex-wrap: wrap; }
+    .btn {
+      display: inline-block;
+      padding: 10px 14px;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.18);
+      background: rgba(170,132,82,0.20);
+      color: #f0e6d2;
+      text-decoration: none;
+      cursor: pointer;
+      font-family: 'Cinzel', serif;
+      letter-spacing: 0.5px;
+      font-size: 14px;
+      white-space: nowrap;
+    }
+    .btn:hover { background: rgba(170,132,82,0.30); }
+    .btn.secondary { background: rgba(255,255,255,0.08); }
+    .muted { opacity: 0.85; }
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 8px;
+      margin-bottom: 14px;
+      flex-wrap: wrap;
+    }
+    .pill {
+      display: inline-block;
+      padding: 6px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.18);
+      background: rgba(255,255,255,0.06);
+      font-size: 13px;
+      max-width: 100%;
+      word-break: break-all;
+    }
+    input { width: 100%; box-sizing: border-box; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th, td { padding: 8px 6px; }
+    thead tr { text-align: left; border-bottom: 1px solid rgba(255,255,255,0.14); }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="topbar">
+      <div>
+        <h1>Volunteer Dashboard</h1>
+        <div class="muted" id="welcomeLine">Loading…</div>
+      </div>
+      <div class="row">
+        <a class="btn secondary" id="staffBtn" href="staff.html" style="display:none;">Staff Dashboard</a>
+        <a class="btn secondary" id="adminBtn" href="admin.html" style="display:none;">Admin Dashboard</a>
+        <button class="btn" id="logoutBtn" type="button">Logout</button>
+      </div>
+    </div>
+
+    <div id="approvedContent">
+      <div class="card" style="margin-bottom:14px; border-color: rgba(170,132,82,0.5); background: rgba(170,132,82,0.08);">
+        <h2 style="margin-bottom:10px;">🧪 Testing Guide — Volunteer Dashboard</h2>
+        <p style="font-size:14px; line-height:1.7; margin:0;">
+          <b>What this page is:</b> This is your personal dashboard as a volunteer. From here you can log your hours and track your points.<br><br>
+          <b>Start Time</b> — Click this when you begin your shift. The clock starts running.<br>
+          <b>End Time</b> — Click this when your shift is over. Your hours will be saved and sent to an admin for approval.<br>
+          <b>Notes</b> — Optionally describe what you worked on before clicking End Time.<br>
+          <b>My Points</b> — Shows your total points earned from approved hours.<br>
+          <b>My Submitted Hours</b> — Shows every individual shift you have submitted.<br><br>
+          <b>How to test:</b> Click Start Time, wait a moment, then click End Time. Add a note if you like. Then check My Submitted Hours to see it appear as Pending.
+        </p>
+      </div>
+
+     <div class="card">
+  <h2>My Profile</h2>
+  <div id="profileBox">Loading…</div>
+  <div style="margin-top:12px; display:flex; flex-wrap:wrap; gap:8px;">
+    <a id="editProfileBtn" href="profile_edit.html" class="btn secondary" style="display:none;">Edit My Profile</a>
+    <button id="resetPwBtn" class="btn secondary" type="button">Reset Password</button>
+  </div>
+  <div id="resetPwMsg" style="margin-top:10px; font-size:13px; display:none;"></div>
+</div>
+
+      <div class="card">
+        <h2>Volunteer Time Clock</h2>
+        <p class="muted">Click Start once, then End when you're done. Notes are saved on End.</p>
+        <div class="row" style="margin-top:12px; align-items:center;">
+          <button class="btn" id="startShiftBtn" type="button">Start Time</button>
+          <button class="btn" id="endShiftBtn" type="button" style="display:none;">End Time</button>
+          <span class="pill" id="shiftPill" style="display:none;" title="Current shift">Shift: —</span>
+        </div>
+        <div style="margin-top:12px;">
+          <label class="muted" style="display:block; margin-bottom:6px;">Notes (optional)</label>
+          <input id="notes" type="text" placeholder="What did you help with today?" />
+        </div>
+        <div class="muted" id="submitStatus" style="margin-top:10px;"></div>
+      </div>
+
+      <div class="card">
+        <h2>My Points</h2>
+        <p class="muted">Points are calculated when hours are approved.</p>
+        <div class="row" style="margin-top:10px;">
+          <button class="btn secondary" id="refreshPointsBtn" type="button">Refresh</button>
+          <div class="muted" id="pointsSummary" style="align-self:center;"></div>
+        </div>
+        <div style="margin-top:12px; overflow:auto;">
+          <table>
+            <thead>
+              <tr><th>Total Points</th></tr>
+            </thead>
+            <tbody id="pointsTbody">
+              <tr><td class="muted" style="padding:12px 8px;">Loading…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>My Submitted Hours</h2>
+        <p class="muted">Every shift you have submitted appears here, one row per shift.</p>
+        <div class="row" style="margin-top:10px;">
+          <button class="btn secondary" id="refreshHoursBtn" type="button">Refresh</button>
+          <div class="muted" id="hoursSummary" style="align-self:center;"></div>
+        </div>
+        <div style="margin-top:12px; overflow-x:auto; -webkit-overflow-scrolling:touch;">
+          <table>
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Start</th>
+                <th>End</th>
+                <th>Hours</th>
+                <th>Bonus</th>
+                <th>Points</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="hoursTbody">
+              <tr><td colspan="7" class="muted" style="padding:12px 8px;">Loading…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div id="pendingCard" class="card" style="display:none;">
+      <h2>Application Pending Review</h2>
+      <p class="muted">Thank you for registering with AnimeIowa. Your volunteer account is currently under review.</p>
+      <p class="muted">You will receive an email once your badge number and role have been approved.</p>
+      <p class="muted">If you have any questions, please visit the Volunteer Desk during event hours.</p>
+    </div>
+  </div>
+
+  <script type="module">
+    import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+
+    const SUPABASE_URL = 'https://mjnphetnuiuxgsghzdoo.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1qbnBoZXRudWl1eGdzZ2h6ZG9vIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE4OTA2OTMsImV4cCI6MjA4NzQ2NjY5M30.sB1i6dy5e7brQHRiCJ-0Kf2aIcIO1DkUR1O2RtkmRGc';
+    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    const welcomeLine   = document.getElementById('welcomeLine');
+    const profileBox    = document.getElementById('profileBox');
+    const logoutBtn     = document.getElementById('logoutBtn');
+    const adminBtn      = document.getElementById('adminBtn');
+    const staffBtn      = document.getElementById('staffBtn');
+    const startShiftBtn = document.getElementById('startShiftBtn');
+    const endShiftBtn   = document.getElementById('endShiftBtn');
+    const shiftPill     = document.getElementById('shiftPill');
+    const notesEl       = document.getElementById('notes');
+    const submitStatus  = document.getElementById('submitStatus');
+    const refreshHoursBtn  = document.getElementById('refreshHoursBtn');
+    const hoursSummary     = document.getElementById('hoursSummary');
+    const hoursTbody       = document.getElementById('hoursTbody');
+    const refreshPointsBtn = document.getElementById('refreshPointsBtn');
+    const pointsSummary    = document.getElementById('pointsSummary');
+    const pointsTbody      = document.getElementById('pointsTbody');
+
+    let CURRENT_CORE_USER = null;
+    let ACTIVE_SHIFT_ID   = null;
+    let bonusWindows      = [];
+    let pointsPerHour     = 1;
+
+    function goLogin() {
+      localStorage.removeItem('core_user_profile');
+      window.location.href = '../index.html';
+    }
+
+    function setStatus(text) { submitStatus.textContent = text || ''; }
+
+    function fmtLocal(dtStr) {
+      if (!dtStr) return '—';
+      return new Date(dtStr).toLocaleString();
+    }
+
+    function fmtDate(dtStr) {
+      if (!dtStr) return '—';
+      return new Date(dtStr).toLocaleDateString();
+    }
+
+    function fmtTime(dtStr) {
+      if (!dtStr) return '—';
+      return new Date(dtStr).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    }
+
+    function roundUpToStep(n, step) {
+      const x = Number(n);
+      if (!Number.isFinite(x) || x <= 0) return 0;
+      return Number((Math.ceil(x / step) * step).toFixed(2));
+    }
+
+    function setClockUiActive(startTimeStr) {
+      startShiftBtn.disabled = true;
+      endShiftBtn.style.display = 'inline-block';
+      shiftPill.style.display = 'inline-block';
+      shiftPill.textContent = `Shift started: ${fmtLocal(startTimeStr)}`;
+    }
+
+    function setClockUiIdle() {
+      startShiftBtn.disabled = false;
+      endShiftBtn.style.display = 'none';
+      shiftPill.style.display = 'none';
+      shiftPill.textContent = 'Shift: —';
+      ACTIVE_SHIFT_ID = null;
+    }
+
+    async function loadBonusWindows() {
+      const { data, error } = await supabase.from('bonus_time_windows').select('*').eq('is_active', true);
+      if (error) return;
+      bonusWindows = data || [];
+    }
+
+    async function loadPointsSettings() {
+      const { data, error } = await supabase.from('points_settings').select('points_per_hour').limit(1).single();
+      if (error) return;
+      pointsPerHour = Number(data?.points_per_hour ?? 1);
+    }
+
+    function getBonusLabel(startTs, endTs) {
+      if (!startTs || !endTs) return null;
+      const s = new Date(startTs).getTime();
+      const e = new Date(endTs).getTime();
+      for (const w of bonusWindows) {
+        const ws = new Date(w.start_time).getTime();
+        const we = new Date(w.end_time).getTime();
+        if ((w.applies_to === 'both' || w.applies_to === 'volunteer') && ws < e && we > s)
+          return `${w.label} ${w.multiplier}x`;
+      }
+      return null;
+    }
+
+    function calcEstimatedPoints(startTs, endTs) {
+      if (!startTs || !endTs) return 0;
+      const s = new Date(startTs).getTime();
+      const e = new Date(endTs).getTime();
+      if (e <= s) return 0;
+      const applicable = bonusWindows.filter(w => w.applies_to === 'both' || w.applies_to === 'volunteer');
+      let total = 0, cursor = s;
+      const sorted = [...applicable].sort((a, b) => new Date(a.start_time) - new Date(b.start_time));
+      for (const w of sorted) {
+        const ws = new Date(w.start_time).getTime();
+        const we = new Date(w.end_time).getTime();
+        if (we <= cursor || ws >= e) continue;
+        if (cursor < ws) { total += ((Math.min(ws, e) - cursor) / 3600000) * pointsPerHour; cursor = ws; }
+        const bonusEnd = Math.min(we, e);
+        total += ((bonusEnd - cursor) / 3600000) * pointsPerHour * Number(w.multiplier);
+        cursor = bonusEnd;
+      }
+      if (cursor < e) total += ((e - cursor) / 3600000) * pointsPerHour;
+      return Math.round(total);
+    }
+
+    async function loadCoreUser(authId) {
+      const { data, error } = await supabase.from('core_users').select('*').eq('auth_id', authId).maybeSingle();
+      if (error) throw error;
+      return data;
+    }
+
+    async function loadActiveShift() {
+      if (!CURRENT_CORE_USER?.id) return;
+      const { data, error } = await supabase
+        .from('vol_hours')
+        .select('id, start_time')
+        .eq('user_id', CURRENT_CORE_USER.id)
+        .is('end_time', null)
+        .eq('status', 'pending')
+        .order('start_time', { ascending: false })
+        .limit(1);
+      if (error) throw error;
+      const row = data?.[0] || null;
+      if (!row) { setClockUiIdle(); return; }
+      ACTIVE_SHIFT_ID = row.id;
+      setClockUiActive(row.start_time);
+    }
+
+    async function startShift() {
+      if (!CURRENT_CORE_USER?.id) return;
+      setStatus('Starting…');
+      const nowIso = new Date().toISOString();
+      const { data, error } = await supabase
+        .from('vol_hours')
+        .insert([{ user_id: CURRENT_CORE_USER.id, department_id: CURRENT_CORE_USER.department_id ?? null, start_time: nowIso, status: 'pending' }])
+        .select('id, start_time')
+        .single();
+      if (error) throw error;
+      ACTIVE_SHIFT_ID = data.id;
+      setClockUiActive(data.start_time);
+      setStatus('Shift started.');
+      await loadMyHours();
+    }
+
+    async function endShift() {
+      if (!CURRENT_CORE_USER?.id || !ACTIVE_SHIFT_ID) return;
+      setStatus('Ending…');
+      const { data: startRow, error: startErr } = await supabase
+        .from('vol_hours')
+        .select('id, start_time')
+        .eq('id', ACTIVE_SHIFT_ID)
+        .eq('user_id', CURRENT_CORE_USER.id)
+        .maybeSingle();
+      if (startErr) throw startErr;
+      if (!startRow) throw new Error('Shift not found or already closed.');
+      const endIso = new Date().toISOString();
+      const totalHours = Math.max(0, (new Date(endIso) - new Date(startRow.start_time)) / 3600000);
+      const { data: updatedRows, error } = await supabase
+        .from('vol_hours')
+        .update({ end_time: endIso, total_hours: totalHours, notes: (notesEl.value || '').trim() || null })
+        .eq('id', ACTIVE_SHIFT_ID)
+        .eq('user_id', CURRENT_CORE_USER.id)
+        .select('id');
+      if (error) throw error;
+      if (!updatedRows || updatedRows.length === 0) throw new Error('Update failed — no rows affected (check RLS).');
+      setStatus(`Shift ended. Total: ${totalHours.toFixed(2)} hours`);
+      notesEl.value = '';
+      setClockUiIdle();
+      await loadMyHours();
+    }
+
+    async function loadMyHours() {
+      if (!CURRENT_CORE_USER?.id) return;
+      hoursTbody.innerHTML = `<tr><td colspan="7" class="muted" style="padding:12px 8px;">Loading…</td></tr>`;
+
+      const { data, error } = await supabase
+        .from('vol_hours')
+        .select('start_time, end_time, total_hours, points_earned, status')
+        .eq('user_id', CURRENT_CORE_USER.id)
+        .order('start_time', { ascending: false });
+
+      if (error) throw error;
+
+      const rows = data || [];
+      if (rows.length === 0) {
+        hoursSummary.textContent = 'No submissions yet.';
+        hoursTbody.innerHTML = `<tr><td colspan="7" class="muted" style="padding:12px 8px;">No submissions yet.</td></tr>`;
+        return;
+      }
+
+      hoursSummary.textContent = `Showing ${rows.length} shift(s).`;
+
+      hoursTbody.innerHTML = rows.map(r => {
+        const status = String(r.status || '').toLowerCase();
+        const hrs = roundUpToStep(Number(r.total_hours || 0), 0.25);
+        const hrsDisplay = hrs > 0 ? hrs.toFixed(2) : '—';
+        const bonusLabel = getBonusLabel(r.start_time, r.end_time);
+        const pointsDisplay = status === 'pending'
+          ? `<span style="color:rgba(255,255,255,0.6);font-size:12px;">~${calcEstimatedPoints(r.start_time, r.end_time)} est.</span>`
+          : (r.points_earned == null ? '—' : Math.round(Number(r.points_earned)));
+        const statusColor = status === 'approved' ? '#7CFC90' : status === 'rejected' ? '#ff6b6b' : 'inherit';
+        return `
+          <tr style="border-bottom:1px solid rgba(255,255,255,0.08);">
+            <td>${fmtDate(r.start_time)}</td>
+            <td>${fmtTime(r.start_time)}</td>
+            <td>${fmtTime(r.end_time)}</td>
+            <td>${hrsDisplay}</td>
+            <td>${bonusLabel ? `<span style="color:#FFD700;font-size:12px;">⭐ ${bonusLabel}</span>` : '—'}</td>
+            <td>${pointsDisplay}</td>
+            <td style="color:${statusColor};">${status}</td>
+          </tr>`;
+      }).join('');
+    }
+
+    async function loadMyPoints() {
+      if (!CURRENT_CORE_USER?.id) return;
+      pointsTbody.innerHTML = `<tr><td class="muted" style="padding:12px 8px;">Loading…</td></tr>`;
+      const { data, error } = await supabase.from('user_points_ledger').select('points').eq('user_id', CURRENT_CORE_USER.id);
+      if (error) throw error;
+      const totalPts = Math.round((data || []).reduce((sum, r) => sum + Number(r.points || 0), 0));
+      pointsSummary.textContent = `Balance: ${totalPts} points`;
+      pointsTbody.innerHTML = `<tr style="border-bottom:1px solid rgba(255,255,255,0.08);"><td style="padding:10px 8px;">${totalPts}</td></tr>`;
+    }
+
+    function displayName(p) {
+      const nick = (p?.nickname || '').trim();
+      const full = ([p?.first_name, p?.last_name].filter(Boolean).join(' ')).trim();
+      return nick || full || p?.email || 'Volunteer';
+    }
+
+    async function guard() {
+      const { data: sessData, error: sessErr } = await supabase.auth.getSession();
+      if (sessErr) throw sessErr;
+      const session = sessData?.session;
+      if (!session?.user?.id) return goLogin();
+      const coreUser = await loadCoreUser(session.user.id);
+      if (!coreUser || !coreUser.is_active) return goLogin();
+      const role = (coreUser.role || '').toLowerCase().trim();
+      if (!['volunteer','volunteer_staff','admin','super_user'].includes(role)) return goLogin();
+
+      localStorage.setItem('core_user_profile', JSON.stringify(coreUser));
+      CURRENT_CORE_USER = coreUser;
+      welcomeLine.textContent = `Welcome, ${displayName(coreUser)}`;
+
+   // Fetch department name
+let deptName = '';
+if (coreUser.department_id) {
+  const { data: deptData } = await supabase
+    .from('core_departments').select('name').eq('id', coreUser.department_id).maybeSingle();
+  deptName = deptData?.name || '';
+}
+
+const PLAN = (coreUser.plan || 'basic').toLowerCase();
+
+const photoHtml = PLAN === 'basic' ? '' :
+  coreUser.profile_image_url
+    ? `<img src="${coreUser.profile_image_url}" alt="Profile photo" style="width:72px;height:72px;border-radius:50%;object-fit:cover;border:2px solid rgba(255,255,255,0.18);margin-bottom:10px;display:block;" />`
+    : `<div style="width:72px;height:72px;border-radius:50%;background:rgba(255,255,255,0.08);border:2px solid rgba(255,255,255,0.14);display:flex;align-items:center;justify-content:center;margin-bottom:10px;font-size:28px;">&#128100;</div>`;
+
+profileBox.innerHTML = `
+  ${photoHtml}
+  <div style="font-size:16px;font-weight:bold;margin-bottom:6px;">${displayName(coreUser)}</div>
+  <div class="pill" style="margin-bottom:8px;">Role: <b>${coreUser.role}</b></div>
+  <div class="muted" style="margin-top:4px;font-size:13px;"><b>Badge #:</b> ${coreUser.badge_number || '--'}</div>
+  ${deptName ? `<div class="muted" style="margin-top:4px;font-size:13px;"><b>Department:</b> ${deptName}</div>` : ''}
+`;
+
+if (PLAN !== 'basic') {
+  document.getElementById('editProfileBtn').style.display = 'inline-block';
+}
+
+if (role === 'admin' || role === 'super_user') adminBtn.style.display = 'inline-block';
+if (['volunteer_staff','admin','super_user'].includes(role)) staffBtn.style.display = 'inline-block';
+      document.getElementById('approvedContent').style.display = 'block';
+      document.getElementById('pendingCard').style.display = 'none';
+
+      await loadPointsSettings();
+      await loadBonusWindows();
+      await loadActiveShift();
+      await loadMyHours();
+      await loadMyPoints();
+    }
+
+    startShiftBtn.addEventListener('click', async () => {
+      try { if (ACTIVE_SHIFT_ID) return; await startShift(); }
+      catch (e) { console.error(e); setStatus(e?.message || 'Failed to start shift.'); }
+    });
+    endShiftBtn.addEventListener('click', async () => {
+      try { if (!ACTIVE_SHIFT_ID) return; await endShift(); }
+      catch (e) { console.error(e); setStatus(e?.message || 'Failed to end shift.'); }
+    });
+    refreshHoursBtn.addEventListener('click', async () => { try { await loadMyHours(); } catch(e) { console.error(e); } });
+    refreshPointsBtn.addEventListener('click', async () => { try { await loadMyPoints(); } catch(e) { console.error(e); } });
+    logoutBtn.addEventListener('click', async () => {
+      localStorage.removeItem('core_user_profile');
+      await supabase.auth.signOut();
+      goLogin();
+    });
+
+    document.getElementById('resetPwBtn').addEventListener('click', async () => {
+      const btn = document.getElementById('resetPwBtn');
+      const msg = document.getElementById('resetPwMsg');
+      btn.disabled = true;
+      btn.textContent = 'Sending...';
+      try {
+        const { data: s } = await supabase.auth.getSession();
+        const email = s?.session?.user?.email;
+        if (!email) throw new Error('Could not find your email.');
+        const { error } = await supabase.auth.resetPasswordForEmail(email);
+        if (error) throw error;
+        msg.style.display = 'block';
+        msg.style.color = '#7CFC90';
+        msg.textContent = 'Reset link sent! Check your email.';
+      } catch (e) {
+        msg.style.display = 'block';
+        msg.style.color = '#ff6b6b';
+        msg.textContent = e?.message || 'Failed to send reset email.';
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Reset Password';
+      }
+    });
+
+    guard().catch(e => { console.error(e); goLogin(); });
+  </script>
+</body>
+</html>

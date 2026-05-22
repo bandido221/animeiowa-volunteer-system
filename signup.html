@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="stylesheet" href="./dashboards/animeiowa.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>AnimeIowa | Create Account</title>
+
+  <style>
+    :root{
+      --bg:#000;
+      --card: rgba(255,255,255,0.06);
+      --card-border: rgba(255,255,255,0.10);
+
+      --text: rgba(255,255,255,0.92);
+      --muted: rgba(255,255,255,0.70);
+
+      --danger:#ff6b6b;
+      --ok:#7CFC90;
+
+      --btn:#ffffff;
+      --btnText:#000000;
+
+      --inputBg: rgba(255,255,255,0.08);
+      --inputBorder: rgba(255,255,255,0.14);
+      --focus: rgba(255,255,255,0.28);
+    }
+
+    *{ box-sizing:border-box; }
+   html,body{ min-height:100%; }
+body{
+  margin:0;
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  padding: 20px 16px 40px;
+}
+
+    .wrap{ width:100%; max-width: 460px; }
+    .header{ text-align:center; margin-bottom: 16px; }
+    .title{ margin:0; font-size: 28px; font-weight: 900; }
+    .subtitle{ margin:8px 0 0; color: var(--muted); font-size: 14px; }
+
+    .card{
+      background: var(--card);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 18px;
+      backdrop-filter: blur(10px);
+    }
+
+    label{
+      display:block;
+      font-size: 13px;
+      color: var(--muted);
+      margin: 12px 0 6px;
+    }
+
+    input{
+      width:100%;
+      padding: 14px 12px;
+      border-radius: 12px;
+      border: 1px solid var(--inputBorder);
+      background: var(--inputBg);
+      color: var(--text);
+      outline:none;
+      font-size: 16px;
+    }
+    input:focus{
+      border-color: var(--focus);
+      box-shadow: 0 0 0 3px rgba(255,255,255,0.08);
+    }
+
+    .grid{
+      display:grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+    }
+    @media(min-width:520px){
+      .grid{ grid-template-columns: 1fr 1fr; }
+    }
+
+    .btn{
+      width:100%;
+      margin-top: 14px;
+      padding: 14px 12px;
+      border-radius: 12px;
+      border:none;
+      background: var(--btn);
+      color: var(--btnText);
+      font-size: 16px;
+      font-weight: 900;
+      cursor:pointer;
+    }
+    .btn:disabled{ opacity:0.6; cursor:not-allowed; }
+
+    .row{
+      display:flex;
+      justify-content: space-between;
+      align-items:center;
+      gap: 10px;
+      margin-top: 12px;
+      flex-wrap: wrap;
+    }
+
+    .link{
+      color: var(--text);
+      text-decoration:none;
+      font-size: 14px;
+      opacity: 0.95;
+      border-bottom: 1px dashed rgba(255,255,255,0.35);
+      padding-bottom: 2px;
+    }
+
+    .msg{
+      margin-top: 12px;
+      font-size: 14px;
+      line-height: 1.35;
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.05);
+      display:none;
+      word-break: break-word;
+    }
+    .msg.error{ color: var(--danger); display:block; }
+    .msg.ok{ color: var(--ok); display:block; }
+
+    .tiny{
+      margin-top: 14px;
+      text-align:center;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.4;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <div class="header">
+      <h1 class="title">AnimeIowa</h1>
+      <p class="subtitle">Create Account</p>
+    </div>
+
+    <div class="card">
+      <form id="signupForm" autocomplete="on">
+        <div class="grid">
+          <div>
+            <label for="firstName">First name</label>
+            <input id="firstName" type="text" placeholder="First name" required />
+          </div>
+          <div>
+            <label for="lastName">Last name</label>
+            <input id="lastName" type="text" placeholder="Last name" required />
+          </div>
+        </div>
+
+        <div class="grid">
+          <div>
+            <label for="nickname">Nickname (optional)</label>
+            <input id="nickname" type="text" placeholder="Nickname" />
+          </div>
+          <div>
+            <label for="badgeNumber">Badge # (optional)</label>
+            <input id="badgeNumber" type="text" placeholder="Badge number" />
+          </div>
+        </div>
+
+       <label for="email">Email</label>
+<input id="email" type="email" placeholder="you@example.com" required />
+
+<label for="emailConfirm">Confirm Email</label>
+<input id="emailConfirm" type="email" placeholder="Type your email again" required />
+
+        <label for="password">Password</label>
+        <input id="password" type="password" placeholder="Create a password" required />
+
+        <button id="createBtn" class="btn" type="submit">Create Account</button>
+
+        <div id="message" class="msg" aria-live="polite"></div>
+
+        <div class="row">
+          <a class="link" href="index.html">Back to login</a>
+          <a class="link" href="reset.html">Forgot password?</a>
+        </div>
+      </form>
+
+      <div class="tiny">
+        After you create an account, an admin may need to activate it before you can use the system.
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+
+    const SUPABASE_URL = 'https://mjnphetnuiuxgsghzdoo.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1qbnBoZXRudWl1eGdzZ2h6ZG9vIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE4OTA2OTMsImV4cCI6MjA4NzQ2NjY5M30.sB1i6dy5e7brQHRiCJ-0Kf2aIcIO1DkUR1O2RtkmRGc';
+
+    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    const form = document.getElementById('signupForm');
+    const createBtn = document.getElementById('createBtn');
+    const msgEl = document.getElementById('message');
+
+    const firstNameEl = document.getElementById('firstName');
+    const lastNameEl = document.getElementById('lastName');
+    const nicknameEl = document.getElementById('nickname');
+    const badgeNumberEl = document.getElementById('badgeNumber');
+    const emailEl = document.getElementById('email');
+const emailConfirmEl = document.getElementById('emailConfirm');
+const passwordEl = document.getElementById('password');
+
+    function setMsg(type, text) {
+      msgEl.className = 'msg ' + (type || '');
+      msgEl.textContent = text || '';
+      msgEl.style.display = text ? 'block' : 'none';
+    }
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      setMsg('', '');
+
+      const first_name = (firstNameEl.value || '').trim();
+      const last_name = (lastNameEl.value || '').trim();
+      const nickname = (nicknameEl.value || '').trim();
+      const badge_number = (badgeNumberEl.value || '').trim();
+     const email = (emailEl.value || '').trim();
+const emailConfirm = (emailConfirmEl.value || '').trim();
+const password = passwordEl.value || '';
+
+if (!first_name || !last_name || !email || !emailConfirm || !password) {
+  setMsg('error', 'Please fill out all fields.');
+  return;
+}
+
+if (email !== emailConfirm) {
+  setMsg('error', 'Your email addresses do not match. Please check and try again.');
+  return;
+}
+
+      createBtn.disabled = true;
+      createBtn.textContent = 'Creating…';
+
+      try {
+        // 1) Create Supabase Auth user
+        const { data, error } = await supabase.auth.signUp({ email, password });
+        if (error) throw error;
+
+        const authId = data?.user?.id;
+
+        // 2) Create core_users profile row (best effort)
+        // Default role = volunteer, is_active = false (admin activates later)
+        if (authId) {
+          const { error: profileErr } = await supabase
+            .from('core_users')
+            .insert([{
+              auth_id: authId,
+              first_name,
+              last_name,
+              nickname: nickname || null,
+              badge_number: badge_number || null,
+              role: 'volunteer',
+              is_active: false
+            }]);
+
+          // If RLS blocks this insert, user still exists in Auth — admin can create profile row manually.
+          if (profileErr) {
+            setMsg(
+              'ok',
+              'Account created. If you cannot log in later, an admin may need to finish activating your profile.'
+            );
+            return;
+          }
+        }
+
+        setMsg('ok', 'Account created! Redirecting to login…');
+setTimeout(() => { window.location.href = 'index.html'; }, 2000);
+      } catch (err) {
+        setMsg('error', err?.message || 'Signup failed.');
+      } finally {
+        createBtn.disabled = false;
+        createBtn.textContent = 'Create Account';
+      }
+    });
+  </script>
+</body>
+</html>

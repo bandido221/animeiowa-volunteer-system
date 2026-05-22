@@ -1,0 +1,358 @@
+/* ============================================================
+   AnimeIowa — Shared Stylesheet
+   Mobile-first. All pages link to this file.
+   ============================================================ */
+
+/* --- Variables --- */
+:root {
+  --bg:           #000000;
+  --card:         rgba(255,255,255,0.06);
+  --card-border:  rgba(255,255,255,0.10);
+  --gold:         rgba(170,132,82,1);
+  --gold-bg:      rgba(170,132,82,0.20);
+  --gold-hover:   rgba(170,132,82,0.35);
+  --text:         rgba(255,255,255,0.92);
+  --muted:        rgba(255,255,255,0.70);
+  --danger:       #ff6b6b;
+  --ok:           #7CFC90;
+  --btn:          #ffffff;
+  --btn-text:     #000000;
+  --btn2-bg:      rgba(255,255,255,0.10);
+  --btn2-border:  rgba(255,255,255,0.16);
+  --input-bg:     rgba(255,255,255,0.08);
+  --input-border: rgba(255,255,255,0.14);
+  --focus:        rgba(255,255,255,0.28);
+}
+
+/* --- Reset --- */
+*, *::before, *::after { box-sizing: border-box; }
+html, body { height: 100%; margin: 0; }
+
+/* --- Base --- */
+body {
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 16px;
+  line-height: 1.5;
+  -webkit-text-size-adjust: 100%;
+}
+
+h1, h2, h3 { margin: 0 0 10px; line-height: 1.2; }
+p { margin: 0 0 10px; }
+
+/* --- Layout --- */
+.container {
+  width: 100%;
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 16px;
+}
+
+.wrap {
+  width: 100%;
+  max-width: 920px;
+  margin: 0 auto;
+  padding: 16px;
+}
+
+.wrap-sm {
+  width: 100%;
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 16px;
+}
+
+/* --- Topbar --- */
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: rgba(0,0,0,0.90);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(255,255,255,0.10);
+}
+
+.topbar-inner {
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.brand h1 {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.brand .sub {
+  margin: 0;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.topbar-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+/* --- Cards --- */
+.card {
+  background: var(--card);
+  border: 1px solid var(--card-border);
+  border-radius: 16px;
+  padding: 16px;
+  margin-bottom: 14px;
+}
+
+.card h2 {
+  font-size: 16px;
+  font-weight: 900;
+  margin: 0 0 8px;
+}
+
+.card p {
+  color: var(--muted);
+  font-size: 14px;
+  margin: 0 0 10px;
+}
+
+/* Testing guide card */
+.card-guide {
+  border-color: rgba(170,132,82,0.5);
+  background: rgba(170,132,82,0.08);
+}
+
+/* --- Buttons --- */
+.btn {
+  display: inline-block;
+  padding: 13px 18px;
+  border-radius: 12px;
+  border: none;
+  background: var(--btn);
+  color: var(--btn-text);
+  font-size: 15px;
+  font-weight: 800;
+  cursor: pointer;
+  line-height: 1;
+  text-decoration: none;
+  white-space: nowrap;
+  position: relative;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.btn:active { opacity: 0.85; }
+.btn:disabled { opacity: 0.55; cursor: not-allowed; }
+
+.btn-secondary {
+  background: var(--btn2-bg);
+  color: var(--text);
+  border: 1px solid var(--btn2-border);
+}
+
+.btn-gold {
+  background: var(--gold-bg);
+  color: var(--text);
+  border: 1px solid rgba(170,132,82,0.35);
+}
+
+.btn-gold:hover { background: var(--gold-hover); }
+
+.btn-full { width: 100%; text-align: center; }
+
+.btn-row {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+/* --- Inputs --- */
+input, select, textarea {
+  width: 100%;
+  padding: 13px 12px;
+  border-radius: 12px;
+  border: 1px solid var(--input-border);
+  background: var(--input-bg);
+  color: var(--text);
+  font-size: 16px; /* prevents iOS zoom on focus */
+  outline: none;
+  margin-bottom: 10px;
+-webkit-appearance: none;
+  appearance: none;
+}
+
+select {
+  background-color: #ffffff;
+  color: #000000;
+}
+
+input:focus, select:focus, textarea:focus {
+  border-color: var(--focus);
+  box-shadow: 0 0 0 3px rgba(255,255,255,0.08);
+}
+
+label {
+  display: block;
+  font-size: 13px;
+  color: var(--muted);
+  margin-bottom: 6px;
+}
+
+/* --- Messages --- */
+.msg {
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.12);
+  background: rgba(255,255,255,0.05);
+  font-size: 14px;
+  line-height: 1.5;
+  display: none;
+  word-break: break-word;
+  margin-top: 12px;
+}
+
+.msg.error { color: var(--danger); display: block; }
+.msg.ok    { color: var(--ok);     display: block; }
+
+/* --- Pills & Badges --- */
+.pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,0.15);
+  background: rgba(255,255,255,0.06);
+  color: var(--muted);
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  border: 1px solid rgba(255,255,255,0.12);
+  background: rgba(255,255,255,0.05);
+  color: var(--muted);
+}
+
+.badge.ok       { color: var(--ok); }
+.badge.error    { color: var(--danger); }
+.badge.pending  { color: rgba(255,255,255,0.85); }
+.badge.approved { color: var(--ok); }
+.badge.rejected { color: var(--danger); }
+
+/* --- Tables (mobile scrollable) --- */
+.table-wrap {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,0.10);
+  margin-top: 12px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  background: rgba(0,0,0,0.15);
+  min-width: 480px; /* forces scroll on small screens */
+}
+
+th, td {
+  padding: 12px 10px;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  text-align: left;
+  font-size: 14px;
+  vertical-align: middle;
+}
+
+th {
+  color: var(--muted);
+  font-weight: 900;
+  font-size: 13px;
+  background: rgba(0,0,0,0.50);
+  white-space: nowrap;
+}
+
+/* --- Grid (2-col on tablet+) --- */
+.grid-2 {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 14px;
+}
+
+@media (min-width: 640px) {
+  .grid-2 { grid-template-columns: 1fr 1fr; }
+}
+
+/* --- Utility --- */
+.muted   { color: var(--muted); }
+.danger  { color: var(--danger); }
+.ok      { color: var(--ok); }
+.center  { text-align: center; }
+.small   { font-size: 13px; }
+.tiny    { font-size: 12px; color: var(--muted); }
+.mt-8    { margin-top: 8px; }
+.mt-12   { margin-top: 12px; }
+.mt-16   { margin-top: 16px; }
+.mb-12   { margin-bottom: 12px; }
+
+/* --- Red notification dot --- */
+.notif-dot {
+  display: none;
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  width: 12px;
+  height: 12px;
+  background: #ff4444;
+  border-radius: 50%;
+  border: 2px solid #000;
+}
+
+/* --- Overlay / Modal --- */
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.75);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  z-index: 999;
+  overflow-y: auto;
+}
+
+.modal {
+  width: 100%;
+  max-width: 520px;
+  background: rgba(20,20,20,0.98);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 16px;
+  padding: 20px;
+}
+
+/* --- Mobile-specific overrides --- */
+@media (max-width: 480px) {
+  .topbar-inner { padding: 10px 12px; }
+  .container, .wrap { padding: 12px; }
+  .card { padding: 14px; border-radius: 14px; }
+  .btn  { padding: 13px 14px; font-size: 15px; }
+  .btn-row { gap: 8px; }
+  h1 { font-size: 22px; }
+  h2 { font-size: 17px; }
+  table { font-size: 13px; }
+  th, td { padding: 10px 8px; }
+}

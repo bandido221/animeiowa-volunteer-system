@@ -1,0 +1,1728 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<link rel="stylesheet" href="../animeiowa.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>AnimeIowa | User Manager</title>
+
+  <style>
+    :root{
+      --bg:#000;
+      --card: rgba(255,255,255,0.06);
+      --card-border: rgba(255,255,255,0.10);
+      --text: rgba(255,255,255,0.92);
+      --muted: rgba(255,255,255,0.70);
+      --danger:#ff6b6b;
+      --ok:#7CFC90;
+
+      --btn:#ffffff;
+      --btnText:#000000;
+
+      --btn2-bg: rgba(255,255,255,0.10);
+      --btn2-border: rgba(255,255,255,0.16);
+
+      --inputBg: rgba(255,255,255,0.08);
+      --inputBorder: rgba(255,255,255,0.14);
+      --focus: rgba(255,255,255,0.28);
+    }
+
+    *{ box-sizing:border-box; }
+    html,body{ height:100%; }
+    body{
+      margin:0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    .topbar{
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background: rgba(0,0,0,0.85);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid rgba(255,255,255,0.10);
+    }
+    .topbar-inner{
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 14px 16px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: 12px;
+    }
+    .brand{
+      display:flex;
+      flex-direction:column;
+      gap:2px;
+      min-width: 0;
+    }
+    .brand h1{
+      margin:0;
+      font-size: 18px;
+      letter-spacing: 0.3px;
+      font-weight: 900;
+      line-height: 1.1;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .brand .sub{
+      margin:0;
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.2;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .actions{
+      display:flex;
+      gap:10px;
+      align-items:center;
+      flex-shrink: 0;
+    }
+
+    .btn{
+      appearance:none;
+      border:none;
+      border-radius: 12px;
+      padding: 12px 14px;
+      font-weight: 900;
+      font-size: 14px;
+      cursor:pointer;
+      background: var(--btn);
+      color: var(--btnText);
+      line-height: 1;
+    }
+    .btn.secondary{
+      background: var(--btn2-bg);
+      color: var(--text);
+      border: 1px solid var(--btn2-border);
+      font-weight: 800;
+    }
+    .btn:disabled{ opacity:0.6; cursor:not-allowed; }
+
+    .pill{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding: 8px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.05);
+      color: var(--muted);
+      font-size: 12px;
+      white-space: nowrap;
+      max-width: 100%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .container{
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 16px;
+    }
+
+    .card{
+      background: var(--card);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 14px;
+    }
+
+    .toolbar{
+      display:flex;
+      gap: 10px;
+      align-items:center;
+      justify-content:space-between;
+      flex-wrap: wrap;
+      margin-bottom: 12px;
+    }
+
+    .search{
+      flex: 1;
+      min-width: 220px;
+      display:flex;
+      gap: 10px;
+      align-items:center;
+      flex-wrap: wrap;
+    }
+
+    input{
+      border-radius: 12px;
+      border: 1px solid var(--inputBorder);
+      background: var(--inputBg);
+      color: var(--text);
+      outline: none;
+      font-size: 14px;
+      padding: 12px 12px;
+    }
+
+    select{
+      border-radius: 12px;
+      border: 1px solid var(--inputBorder);
+      background: #ffffff;
+      color: #000000;
+      outline: none;
+      font-size: 14px;
+      padding: 12px 12px;
+    }
+    input:focus, select:focus{
+      border-color: var(--focus);
+      box-shadow: 0 0 0 3px rgba(255,255,255,0.08);
+    }
+
+    .table-wrap{
+      overflow:auto;
+      border-radius: 14px;
+      border: 1px solid rgba(255,255,255,0.10);
+    }
+
+    table{
+      width:100%;
+      border-collapse: collapse;
+      min-width: 860px;
+      background: rgba(0,0,0,0.15);
+    }
+    th, td{
+      padding: 12px 12px;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      text-align:left;
+      font-size: 13px;
+      vertical-align: middle;
+      white-space: nowrap;
+    }
+    th{
+      color: var(--muted);
+      font-weight: 900;
+      position: sticky;
+      top: 0;
+      background: rgba(0,0,0,0.65);
+      backdrop-filter: blur(10px);
+      z-index: 1;
+    }
+
+    .badge{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.05);
+      color: var(--muted);
+    }
+    .badge.ok{ color: var(--ok); }
+    .badge.bad{ color: var(--danger); }
+
+    .row-actions{
+      display:flex;
+      gap: 8px;
+      align-items:center;
+    }
+
+    .msg{
+      margin-top: 12px;
+      font-size: 14px;
+      line-height: 1.35;
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.05);
+      display:none;
+      word-break: break-word;
+    }
+    .msg.error{ color: var(--danger); display:block; }
+    .msg.ok{ color: var(--ok); display:block; }
+
+    /* Modal */
+ .overlay{
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.70);
+  display:none;
+  align-items: flex-start;
+  justify-content:center;
+  padding: 16px;
+  z-index: 999;
+  overflow-y: auto;
+}
+.modal{
+  width: 100%;
+  max-width: 520px;
+  background: rgba(20,20,20,0.95);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 16px;
+  padding: 14px;
+  margin: auto;
+}
+    .modal h2{
+      margin: 0 0 6px 0;
+      font-size: 16px;
+      font-weight: 950;
+    }
+    .modal p{
+      margin: 0 0 12px 0;
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.35;
+      word-break: break-word;
+    }
+    .grid{
+      display:grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+    }
+    @media(min-width:520px){
+      .grid{ grid-template-columns: 1fr 1fr; }
+    }
+    label{
+      display:block;
+      font-size: 12px;
+      color: var(--muted);
+      margin: 10px 0 6px;
+    }
+    .modal-actions{
+      display:flex;
+      gap: 10px;
+      justify-content:flex-end;
+      margin-top: 12px;
+      flex-wrap: wrap;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="topbar">
+    <div class="topbar-inner">
+      <div class="brand">
+        <h1>AnimeIowa</h1>
+        <p class="sub">User Manager</p>
+      </div>
+
+      <div class="actions">
+        <span id="rolePill" class="pill" title="Role">Loading…</span>
+        <button id="backBtn" class="btn secondary" type="button">Back</button>
+        <button id="logoutBtn" class="btn secondary" type="button">Log Out</button>
+      </div>
+    </div>
+  </div>
+
+  <main class="container">
+
+    <div class="card" style="margin-bottom:16px; border-color: rgba(170,132,82,0.5); background: rgba(170,132,82,0.08);">
+      <h2 style="margin-bottom:10px;">🧪 Testing Guide — User Manager</h2>
+      <p style="font-size:14px; line-height:1.7; margin:0;">
+        <b>What this page is:</b> This is where you manage everyone who has signed up. You can find any user, turn their account on or off, and set what they are allowed to do.<br><br>
+        <b>The top table</b> — Shows all users. Use the search box to find someone by name or badge number. Use the dropdowns to filter by role or status.<br>
+        <b>Edit button</b> — Click Edit on any row to change that person's name, role, badge number, department, or active status.<br>
+        <b>Active / Inactive</b> — New sign-ups start as Inactive. You must set them to Active before they can log in.<br>
+        <b>The bottom table (New Sign-ups)</b> — Shows people who created an account but have not been set up yet. Click Add to complete their profile.<br><br>
+        <b>How to test:</b> Find a test user in the list, click Edit, change their role or status, and click Save.
+      </p>
+    </div>
+
+    <div class="card">
+      <div class="toolbar">
+        <div class="search">
+          <input id="searchInput" type="text" placeholder="Search name, nickname, badge…" />
+          <select id="roleFilter">
+            <option value="">All roles</option>
+            <option value="volunteer">volunteer</option>
+            <option value="staff">staff</option>
+            <option value="volunteer_staff">volunteer_staff</option>
+            <option value="admin">admin</option>
+            <option value="super_user">super_user</option>
+          </select>
+          <select id="activeFilter">
+            <option value="">All statuses</option>
+            <option value="active">Active only</option>
+            <option value="inactive">Inactive only</option>
+          </select>
+        </div>
+
+        <div class="row-actions">
+          <button id="refreshBtn" class="btn" type="button">Refresh</button>
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+                   <tr>
+              <th>Photo</th>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Nickname</th>
+              <th>Badge #</th>
+              <th>Role</th>
+              <th>Departments</th>
+              <th>Status</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="tbody">
+            <tr><td colspan="8" style="color:rgba(255,255,255,0.7);padding:16px;">Loading…</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div id="message" class="msg" aria-live="polite"></div>
+    </div>
+
+    <div class="card" style="margin-top:16px;">
+      <div class="toolbar">
+        <div class="search">
+          <div style="display:flex;flex-direction:column;gap:2px;">
+        <div style="font-weight:900;">New Sign-Ups Waiting for Setup</div>
+<div style="color:var(--muted);font-size:12px;">
+  These people have created an account but are not active yet. Click Add to complete their profile and give them access.
+</div>
+          </div>
+        </div>
+
+        <div class="row-actions">
+          <button id="refreshUnlinkedBtn" class="btn" type="button">Refresh</button>
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Email</th>
+              <th>Confirmed</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="unlinkedTbody">
+            <tr><td colspan="3" style="color:rgba(255,255,255,0.7);padding:16px;">Loading…</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div id="unlinkedMsg" class="msg" aria-live="polite"></div>
+    </div>
+  </main>
+
+  <!-- Edit Modal -->
+  <div id="overlay" class="overlay">
+    <div class="modal">
+      <h2>Edit User</h2>
+      <p id="editSubtitle">—</p>
+
+      <!-- Profile Image (Edit) -->
+      <div style="margin:10px 0 12px 0;">
+        <div id="editImgWrap" style="display:none; align-items:center; gap:12px; flex-wrap:wrap;">
+          <img
+            id="editProfileImg"
+            alt="Profile"
+            style="width:96px;height:96px;border-radius:16px;object-fit:cover;border:1px solid rgba(255,255,255,0.12);background:rgba(255,255,255,0.05);"
+          />
+          <div style="display:flex;flex-direction:column;gap:10px;">
+            <button id="editReplaceImgBtn" class="btn secondary" type="button">Replace Photo</button>
+            <button id="editRemoveImgBtn" class="btn secondary" type="button">Remove Photo</button>
+          </div>
+        </div>
+
+        <div id="editImgBtns" style="display:flex; gap:10px; flex-wrap:wrap;">
+          <button id="editTakePhotoBtn" class="btn secondary" type="button">Take Photo</button>
+          <button id="editUploadPhotoBtn" class="btn secondary" type="button">Upload Image</button>
+        </div>
+
+        <input id="editCameraInput" type="file" accept="image/*" capture="environment" style="display:none;" />
+        <input id="editFileInput" type="file" accept="image/*" style="display:none;" />
+
+        <p style="margin:10px 0 0 0;color:var(--muted);font-size:12px;line-height:1.35;">
+          Image will be resized before upload.
+        </p>
+      </div>
+
+      <div class="grid">
+        <div>
+          <label for="editRole">Role</label>
+          <select id="editRole">
+            <option value="volunteer">volunteer</option>
+            <option value="staff">staff</option>
+            <option value="volunteer_staff">volunteer_staff</option>
+            <option value="admin">admin</option>
+            <option value="super_user">super_user</option>
+          </select>
+        </div>
+
+    <div>
+  <label>Account Status</label>
+  <button type="button" id="editActiveBtn" onclick="toggleActive()"
+    style="width:100%; padding:13px; border-radius:12px; border:none; font-size:15px; font-weight:900; cursor:pointer;">
+  </button>
+</div>
+
+        <div>
+          <label for="editNickname">Nickname</label>
+          <input id="editNickname" type="text" placeholder="Nickname" />
+        </div>
+
+        <div>
+          <label for="editBadge">Badge #</label>
+          <input id="editBadge" type="text" placeholder="Badge number" />
+        </div>
+
+        <div>
+          <label for="editPlan">Plan</label>
+          <select id="editPlan">
+            <option value="basic">Basic</option>
+            <option value="standard">Standard</option>
+            <option value="full">Full</option>
+          </select>
+        </div>
+      </div>
+
+      <label for="deptSelect">Departments</label>
+      <div class="grid" style="grid-template-columns: 1fr; gap:10px;">
+        <div id="deptList" style="display:flex;flex-wrap:wrap;gap:8px;"></div>
+
+        <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+          <select id="deptSelect" style="min-width:240px;">
+            <option value="">Loading departments…</option>
+          </select>
+          <button id="addDeptBtn" class="btn secondary" type="button">Add Department</button>
+        </div>
+
+        <p style="margin:0;color:var(--muted);font-size:12px;line-height:1.35;">
+          Add one or more departments for this user. You can remove departments from the list above.
+        </p>
+      </div>
+
+      <div id="editMsg" class="msg" aria-live="polite"></div>
+
+      <div class="modal-actions">
+        <button id="cancelBtn" class="btn secondary" type="button">Cancel</button>
+        <button id="saveBtn" class="btn" type="button">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add Auth User Modal -->
+  <div id="addOverlay" class="overlay">
+    <div class="modal">
+      <h2>Add to Core Users</h2>
+      <p id="addSubtitle">—</p>
+
+      <div class="grid">
+        <div>
+          <label for="addFirstName">First name</label>
+          <input id="addFirstName" type="text" placeholder="First name" />
+        </div>
+
+        <!-- Profile Image (Add) -->
+        <div style="grid-column: 1 / -1;">
+          <label>Profile photo (optional)</label>
+
+          <div id="addImgWrap" style="display:none; align-items:center; gap:12px; flex-wrap:wrap;">
+            <img
+              id="addProfileImg"
+              alt="Profile"
+              style="width:96px;height:96px;border-radius:16px;object-fit:cover;border:1px solid rgba(255,255,255,0.12);background:rgba(255,255,255,0.05);"
+            />
+            <div style="display:flex;flex-direction:column;gap:10px;">
+              <button id="addReplaceImgBtn" class="btn secondary" type="button">Replace Photo</button>
+              <button id="addRemoveImgBtn" class="btn secondary" type="button">Remove Photo</button>
+            </div>
+          </div>
+
+          <div id="addImgBtns" style="display:flex; gap:10px; flex-wrap:wrap;">
+            <button id="addTakePhotoBtn" class="btn secondary" type="button">Take Photo</button>
+            <button id="addUploadPhotoBtn" class="btn secondary" type="button">Upload Image</button>
+          </div>
+
+          <input id="addCameraInput" type="file" accept="image/*" capture="environment" style="display:none;" />
+          <input id="addFileInput" type="file" accept="image/*" style="display:none;" />
+        </div>
+
+        <div>
+          <label for="addLastName">Last name</label>
+          <input id="addLastName" type="text" placeholder="Last name" />
+        </div>
+
+        <div>
+          <label for="addRole">Role</label>
+          <select id="addRole">
+            <option value="volunteer">volunteer</option>
+            <option value="staff">staff</option>
+            <option value="volunteer_staff">volunteer_staff</option>
+            <option value="admin">admin</option>
+            <option value="super_user">super_user</option>
+          </select>
+        </div>
+
+        <div>
+          <label for="addActive">Active</label>
+          <select id="addActive">
+            <option value="true">true</option>
+            <option value="false">false</option>
+          </select>
+        </div>
+
+        <div>
+          <label for="addNickname">Nickname (optional)</label>
+          <input id="addNickname" type="text" placeholder="Nickname" />
+        </div>
+
+        <div>
+          <label for="addBadge">Badge # (optional)</label>
+          <input id="addBadge" type="text" placeholder="Badge number" />
+        </div>
+      </div>
+
+      <label for="addDeptSelect">Departments (optional)</label>
+      <div class="grid" style="grid-template-columns: 1fr; gap:10px;">
+        <div id="addDeptList" style="display:flex;flex-wrap:wrap;gap:8px;"></div>
+
+        <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+          <select id="addDeptSelect" style="min-width:240px;">
+            <option value="">Loading departments…</option>
+          </select>
+          <button id="addDeptAddBtn" class="btn secondary" type="button">Add Department</button>
+        </div>
+      </div>
+
+      <div id="addMsg" class="msg" aria-live="polite"></div>
+
+      <div class="modal-actions">
+        <button id="addCancelBtn" class="btn secondary" type="button">Cancel</button>
+        <button id="addSaveBtn" class="btn" type="button">Create</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+
+    const SUPABASE_URL = 'https://mjnphetnuiuxgsghzdoo.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1qbnBoZXRudWl1eGdzZ2h6ZG9vIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE4OTA2OTMsImV4cCI6MjA4NzQ2NjY5M30.sB1i6dy5e7brQHRiCJ-0Kf2aIcIO1DkUR1O2RtkmRGc';
+
+    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    const rolePill = document.getElementById('rolePill');
+    const backBtn = document.getElementById('backBtn');
+    const logoutBtn = document.getElementById('logoutBtn');
+
+    const msgEl = document.getElementById('message');
+    const tbody = document.getElementById('tbody');
+
+    const searchInput = document.getElementById('searchInput');
+    const roleFilter = document.getElementById('roleFilter');
+    const activeFilter = document.getElementById('activeFilter');
+    const refreshBtn = document.getElementById('refreshBtn');
+
+    const overlay = document.getElementById('overlay');
+    const editSubtitle = document.getElementById('editSubtitle');
+    const editRole = document.getElementById('editRole');
+    const editActive = document.getElementById('editActive');
+    const editNickname = document.getElementById('editNickname');
+    const editBadge = document.getElementById('editBadge');
+    const editMsg = document.getElementById('editMsg');
+    const cancelBtn = document.getElementById('cancelBtn');
+    const saveBtn = document.getElementById('saveBtn');
+
+    // Departments UI
+    const deptSelect = document.getElementById('deptSelect');
+    const deptList = document.getElementById('deptList');
+    const addDeptBtn = document.getElementById('addDeptBtn');
+
+    // Unlinked Auth Users card (2nd card)
+    const unlinkedTbody = document.getElementById('unlinkedTbody');
+    const unlinkedMsgEl = document.getElementById('unlinkedMsg');
+    const refreshUnlinkedBtn = document.getElementById('refreshUnlinkedBtn');
+
+    // Add Auth User modal
+    const addOverlay = document.getElementById('addOverlay');
+    const addSubtitle = document.getElementById('addSubtitle');
+    const addFirstName = document.getElementById('addFirstName');
+    const addLastName = document.getElementById('addLastName');
+    const addRole = document.getElementById('addRole');
+    const addActive = document.getElementById('addActive');
+    const addNickname = document.getElementById('addNickname');
+    const addBadge = document.getElementById('addBadge');
+    const addMsg = document.getElementById('addMsg');
+    const addCancelBtn = document.getElementById('addCancelBtn');
+    const addSaveBtn = document.getElementById('addSaveBtn');
+
+    // Add modal departments UI
+    const addDeptSelect = document.getElementById('addDeptSelect');
+    const addDeptList = document.getElementById('addDeptList');
+    const addDeptAddBtn = document.getElementById('addDeptAddBtn');
+
+    // ===== Profile image (Edit modal) =====
+    const editImgWrap = document.getElementById('editImgWrap');
+    const editImgBtns = document.getElementById('editImgBtns');
+    const editProfileImg = document.getElementById('editProfileImg');
+    const editTakePhotoBtn = document.getElementById('editTakePhotoBtn');
+    const editUploadPhotoBtn = document.getElementById('editUploadPhotoBtn');
+    const editReplaceImgBtn = document.getElementById('editReplaceImgBtn');
+    const editRemoveImgBtn = document.getElementById('editRemoveImgBtn');
+    const editCameraInput = document.getElementById('editCameraInput');
+    const editFileInput = document.getElementById('editFileInput');
+
+    // ===== Profile image (Add modal) =====
+    const addImgWrap = document.getElementById('addImgWrap');
+    const addImgBtns = document.getElementById('addImgBtns');
+    const addProfileImg = document.getElementById('addProfileImg');
+    const addTakePhotoBtn = document.getElementById('addTakePhotoBtn');
+    const addUploadPhotoBtn = document.getElementById('addUploadPhotoBtn');
+    const addReplaceImgBtn = document.getElementById('addReplaceImgBtn');
+    const addRemoveImgBtn = document.getElementById('addRemoveImgBtn');
+    const addCameraInput = document.getElementById('addCameraInput');
+    const addFileInput = document.getElementById('addFileInput');
+
+    const PROFILE_BUCKET = 'core-user-profile';
+
+    // Plan control
+    let PLAN = 'basic'; // set from logged-in user's profile
+    let myCoreUserId = null;
+
+    function applyPlanUi() {
+      // Hide photo column header and cells if basic
+      const photoHeader = document.querySelector('th:first-child');
+      if (PLAN === 'basic') {
+        if (photoHeader) photoHeader.style.display = 'none';
+        document.getElementById('editImgWrap').style.display = 'none';
+        document.getElementById('editImgBtns').style.display = 'none';
+        document.querySelector('#editImgBtns + p')?.style && (document.querySelector('#editImgBtns + p').style.display = 'none');
+        document.getElementById('addImgWrap').style.display = 'none';
+        document.getElementById('addImgBtns').style.display = 'none';
+      }
+    }
+
+    // local state
+    let pendingAddImageFile = null;
+
+    let allUsers = [];
+    let editingUser = null;
+    let userDeptCodesMap = new Map();
+    let allDepartments = [];
+    let selectedDeptIds = new Set();
+
+    // Second card state
+    let unlinkedAuthUsers = [];
+    let addingAuthUser = null;
+    let addSelectedDeptIds = new Set();
+
+    function setMsg(type, text) {
+      msgEl.className = 'msg ' + (type || '');
+      msgEl.textContent = text || '';
+      msgEl.style.display = text ? 'block' : 'none';
+    }
+
+    function setEditMsg(type, text) {
+      editMsg.className = 'msg ' + (type || '');
+      editMsg.textContent = text || '';
+      editMsg.style.display = text ? 'block' : 'none';
+    }
+
+    function setUnlinkedMsg(type, text) {
+      unlinkedMsgEl.className = 'msg ' + (type || '');
+      unlinkedMsgEl.textContent = text || '';
+      unlinkedMsgEl.style.display = text ? 'block' : 'none';
+    }
+
+    function setAddMsg(type, text) {
+      addMsg.className = 'msg ' + (type || '');
+      addMsg.textContent = text || '';
+      addMsg.style.display = text ? 'block' : 'none';
+    }
+let editActiveValue = false;
+
+window.toggleActive = function() {
+  editActiveValue = !editActiveValue;
+  updateActiveBtnUi();
+}
+
+function updateActiveBtnUi() {
+  const btn = document.getElementById('editActiveBtn');
+  if (editActiveValue) {
+    btn.textContent = '✅ Active';
+    btn.style.background = '#1a7a3a';
+    btn.style.color = '#ffffff';
+  } else {
+    btn.textContent = '🔴 Inactive';
+    btn.style.background = '#7a1a1a';
+    btn.style.color = '#ffffff';
+  }
+}
+    function setEditImageUi(url) {
+      const has = !!(url && String(url).trim());
+      if (has) {
+        editImgWrap.style.display = 'flex';
+        editImgBtns.style.display = 'none';
+        editProfileImg.src = url;
+      } else {
+        editImgWrap.style.display = 'none';
+        editImgBtns.style.display = 'flex';
+        editProfileImg.src = '';
+      }
+    }
+
+    function setAddImageUi(fileOrNull) {
+      const has = !!fileOrNull;
+      if (has) {
+        addImgWrap.style.display = 'flex';
+        addImgBtns.style.display = 'none';
+        addProfileImg.src = URL.createObjectURL(fileOrNull);
+      } else {
+        addImgWrap.style.display = 'none';
+        addImgBtns.style.display = 'flex';
+        addProfileImg.src = '';
+      }
+    }
+
+    async function fileToResizedJpegBlob(file, maxSize = 512, quality = 0.85) {
+      const img = await new Promise((resolve, reject) => {
+        const i = new Image();
+        i.onload = () => resolve(i);
+        i.onerror = reject;
+        i.src = URL.createObjectURL(file);
+      });
+
+      const w = img.naturalWidth || img.width;
+      const h = img.naturalHeight || img.height;
+
+      let targetW = w;
+      let targetH = h;
+
+      if (w > h && w > maxSize) {
+        targetW = maxSize;
+        targetH = Math.round((h / w) * maxSize);
+      } else if (h >= w && h > maxSize) {
+        targetH = maxSize;
+        targetW = Math.round((w / h) * maxSize);
+      }
+
+      const canvas = document.createElement('canvas');
+      canvas.width = targetW;
+      canvas.height = targetH;
+
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, targetW, targetH);
+
+      const blob = await new Promise((resolve) => {
+        canvas.toBlob((b) => resolve(b), 'image/jpeg', quality);
+      });
+
+      return blob;
+    }
+
+    async function uploadProfileImageForUser(coreUserId, blob) {
+      const path = `core_users/${coreUserId}.jpg`;
+
+      const { error: upErr } = await supabase
+        .storage
+        .from(PROFILE_BUCKET)
+        .upload(path, blob, { upsert: true, contentType: 'image/jpeg' });
+
+      if (upErr) throw upErr;
+
+      const { data } = supabase
+        .storage
+        .from(PROFILE_BUCKET)
+        .getPublicUrl(path);
+
+      const publicUrl = data?.publicUrl || null;
+      if (!publicUrl) throw new Error('Failed to get public URL.');
+
+      return publicUrl;
+    }
+
+    function isAdminRole(role) {
+      const r = (role || '').toLowerCase().trim();
+      return r === 'admin' || r === 'super_user';
+    }
+
+    async function fetchProfileByAuthId(authId) {
+      const { data, error } = await supabase
+        .from('core_users')
+        .select('id, auth_id, role, is_active, first_name, last_name, nickname, badge_number, profile_image_url, plan, email')
+        .eq('auth_id', authId)
+        .single();
+      if (error) throw error;
+      return data;
+    }
+
+    function displayName(u) {
+      const first = (u?.first_name || '').trim();
+      const last = (u?.last_name || '').trim();
+      const full = (first + ' ' + last).trim();
+      return full || '—';
+    }
+
+    function safe(v) {
+      return (v === null || v === undefined || v === '') ? '—' : String(v);
+    }
+
+    function escapeHtml(s) {
+      return String(s)
+        .replaceAll('&','&amp;')
+        .replaceAll('<','&lt;')
+        .replaceAll('>','&gt;')
+        .replaceAll('"','&quot;')
+        .replaceAll("'","&#039;");
+    }
+
+    function matchesFilters(u) {
+      const q = (searchInput.value || '').trim().toLowerCase();
+      const rf = (roleFilter.value || '').trim().toLowerCase();
+      const af = (activeFilter.value || '').trim();
+
+      if (rf && (String(u.role || '').toLowerCase() !== rf)) return false;
+
+      if (af === 'active' && !u.is_active) return false;
+      if (af === 'inactive' && u.is_active) return false;
+
+      if (!q) return true;
+
+      const hay = [
+        displayName(u),
+        u.nickname || '',
+        u.badge_number || '',
+        u.role || '',
+        u.auth_id || ''
+      ].join(' ').toLowerCase();
+
+      return hay.includes(q);
+    }
+
+    function render() {
+      const rows = allUsers.filter(matchesFilters);
+
+      if (rows.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="${PLAN === 'basic' ? 8 : 9}" style="color:rgba(255,255,255,0.7);padding:16px;">No users match your filters.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = rows.map(u => {
+        const statusBadge = u.is_active
+          ? `<span class="badge ok">Active</span>`
+          : `<span class="badge bad">Inactive</span>`;
+
+             const photoCell = (u.profile_image_url && String(u.profile_image_url).trim())
+          ? `<img
+               src="${escapeHtml(u.profile_image_url)}"
+               alt="Photo"
+               style="width:38px;height:38px;border-radius:10px;object-fit:cover;border:1px solid rgba(255,255,255,0.12);background:rgba(255,255,255,0.05);"
+             />`
+          : `<span style="color:rgba(255,255,255,0.55);">N/A</span>`;
+
+        return `
+          <tr>
+            ${PLAN === 'basic' ? '' : `<td>${photoCell}</td>`}
+            <td>${escapeHtml(safe(displayName(u)))}</td>
+            <td style="font-size:12px; color:var(--muted);">${escapeHtml(safe(u.email))}</td>
+            <td>${escapeHtml(safe(u.nickname))}</td>
+            <td>${escapeHtml(safe(u.badge_number))}</td>
+            <td>${escapeHtml(safe(u.role))}</td>
+            <td>${renderDeptCellForUser(u.id)}</td>
+            <td>${statusBadge}</td>
+            <td>
+              <button class="btn secondary" type="button" data-edit="${escapeHtml(u.id)}">Edit</button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    async function loadUsers() {
+      setMsg('', '');
+      tbody.innerHTML = `<tr><td colspan="8" style="color:rgba(255,255,255,0.7);padding:16px;">Loading…</td></tr>`;
+
+      const { data, error } = await supabase
+        .from('core_users')
+        .select('id, auth_id, first_name, last_name, nickname, badge_number, role, is_active, created_at, profile_image_url, plan, email')
+        .order('created_at', { ascending: false })
+        .limit(500);
+
+      if (error) {
+        setMsg('error', error.message || 'Failed to load users.');
+        tbody.innerHTML = `<tr><td colspan="8" style="color:rgba(255,255,255,0.7);padding:16px;">Failed to load.</td></tr>`;
+        return;
+      }
+
+      allUsers = data || [];
+
+      try {
+        const ids = allUsers.map(u => u.id).filter(Boolean);
+        await loadUserDeptCodesForList(ids);
+      } catch (e) {
+        console.warn('Department list load failed:', e);
+      }
+
+      render();
+    }
+
+    // ===== Second card: ai_users not yet in core_users =====
+    async function loadUnlinkedAuthUsers() {
+      setUnlinkedMsg('', '');
+      unlinkedTbody.innerHTML = `<tr><td colspan="3" style="color:rgba(255,255,255,0.7);padding:16px;">Loading…</td></tr>`;
+
+      const { data: ai, error: aiErr } = await supabase
+        .from('ai_users')
+        .select('auth_id, email, email_confirmed_at, created_at')
+        .order('created_at', { ascending: false })
+        .limit(1000);
+
+      if (aiErr) {
+        setUnlinkedMsg('error', aiErr.message || 'Failed to load ai_users.');
+        unlinkedTbody.innerHTML = `<tr><td colspan="3" style="color:rgba(255,255,255,0.7);padding:16px;">Failed to load.</td></tr>`;
+        return;
+      }
+
+      const { data: core, error: coreErr } = await supabase
+        .from('core_users')
+        .select('auth_id')
+        .limit(5000);
+
+      if (coreErr) {
+        setUnlinkedMsg('error', coreErr.message || 'Failed to load core_users.');
+        unlinkedTbody.innerHTML = `<tr><td colspan="3" style="color:rgba(255,255,255,0.7);padding:16px;">Failed to load.</td></tr>`;
+        return;
+      }
+
+      const coreAuthSet = new Set((core || []).map(x => x.auth_id).filter(Boolean));
+
+      unlinkedAuthUsers = (ai || [])
+        .filter(u => u.auth_id && !coreAuthSet.has(u.auth_id));
+
+      renderUnlinked();
+    }
+
+    function renderUnlinked() {
+      if (!unlinkedAuthUsers || unlinkedAuthUsers.length === 0) {
+        unlinkedTbody.innerHTML = `<tr><td colspan="3" style="color:rgba(255,255,255,0.7);padding:16px;">No unlinked users.</td></tr>`;
+        return;
+      }
+
+      unlinkedTbody.innerHTML = unlinkedAuthUsers.map(u => {
+        const confirmed = u.email_confirmed_at ? new Date(u.email_confirmed_at).toLocaleString() : '—';
+        return `
+          <tr>
+            <td>${escapeHtml(safe(u.email))}</td>
+            <td>${escapeHtml(confirmed)}</td>
+            <td>
+              <button class="btn secondary" type="button" data-add-auth="${escapeHtml(u.auth_id)}">Add</button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    async function loadAllDepartments() {
+      if (allDepartments.length > 0) return;
+
+      const { data, error } = await supabase
+        .from('core_departments')
+        .select('id, name, code, is_active')
+        .order('code', { ascending: true });
+
+      if (error) throw error;
+
+      allDepartments = (data || []);
+      renderDepartmentOptions();
+    }
+
+    async function loadUserDeptCodesForList(userIds) {
+      userDeptCodesMap = new Map();
+
+      if (!userIds || userIds.length === 0) return;
+
+      const { data, error } = await supabase
+        .from('core_user_departments')
+        .select('user_id, core_departments(code)')
+        .in('user_id', userIds);
+
+      if (error) throw error;
+
+      (data || []).forEach(row => {
+        const uid = row.user_id;
+        const code = row.core_departments?.code;
+        if (!uid || !code) return;
+
+        if (!userDeptCodesMap.has(uid)) userDeptCodesMap.set(uid, []);
+        userDeptCodesMap.get(uid).push(code);
+      });
+
+      for (const [uid, codes] of userDeptCodesMap.entries()) {
+        const uniqueSorted = Array.from(new Set(codes)).sort((a,b) => a.localeCompare(b));
+        userDeptCodesMap.set(uid, uniqueSorted);
+      }
+    }
+
+    function renderDeptCellForUser(userId) {
+      const codes = userDeptCodesMap.get(userId) || [];
+      if (codes.length === 0) return '—';
+      return codes.map(c => `<span class="badge">${escapeHtml(c)}</span>`).join(' ');
+    }
+
+    function renderDepartmentOptions() {
+      if (!deptSelect) return;
+
+      const active = allDepartments.filter(d => d.is_active !== false);
+
+      if (active.length === 0) {
+        deptSelect.innerHTML = `<option value="">No active departments</option>`;
+        return;
+      }
+
+      deptSelect.innerHTML =
+        `<option value="">Select department…</option>` +
+        active.map(d => {
+          const label = `${d.code} — ${d.name}`;
+          return `<option value="${escapeHtml(d.id)}">${escapeHtml(label)}</option>`;
+        }).join('');
+    }
+
+    async function loadUserDepartments(userCoreUserId) {
+      selectedDeptIds = new Set();
+      renderDeptChips();
+
+      const { data, error } = await supabase
+        .from('core_user_departments')
+        .select('department_id, core_departments(id, name, code)')
+        .eq('user_id', userCoreUserId);
+
+      if (error) throw error;
+
+      (data || []).forEach(row => {
+        if (row.department_id) selectedDeptIds.add(row.department_id);
+      });
+
+      renderDeptChips();
+    }
+
+    function renderDeptChips() {
+      if (!deptList) return;
+
+      const ids = Array.from(selectedDeptIds);
+
+      if (ids.length === 0) {
+        deptList.innerHTML = `<span class="badge">No departments</span>`;
+        return;
+      }
+
+      deptList.innerHTML = ids.map(id => {
+        const d = allDepartments.find(x => x.id === id);
+        const label = d ? `${d.code}` : 'Unknown';
+        const title = d ? `${d.code} — ${d.name}` : id;
+
+        return `
+          <button
+            type="button"
+            class="badge"
+            style="cursor:pointer;"
+            title="Remove: ${escapeHtml(title)}"
+            data-dept-remove="${escapeHtml(id)}"
+          >
+            ${escapeHtml(label)} ✕
+          </button>
+        `;
+      }).join('');
+    }
+
+    function renderAddDeptChips() {
+      if (!addDeptList) return;
+
+      const ids = Array.from(addSelectedDeptIds);
+
+      if (ids.length === 0) {
+        addDeptList.innerHTML = `<span class="badge">No departments</span>`;
+        return;
+      }
+
+      addDeptList.innerHTML = ids.map(id => {
+        const d = allDepartments.find(x => x.id === id);
+        const label = d ? `${d.code}` : 'Unknown';
+        const title = d ? `${d.code} — ${d.name}` : id;
+
+        return `
+          <button
+            type="button"
+            class="badge"
+            style="cursor:pointer;"
+            title="Remove: ${escapeHtml(title)}"
+            data-add-dept-remove="${escapeHtml(id)}"
+          >
+            ${escapeHtml(label)} ✕
+          </button>
+        `;
+      }).join('');
+    }
+
+    function addModalAddSelectedDepartment() {
+      const id = (addDeptSelect?.value || '').trim();
+      if (!id) return;
+
+      addSelectedDeptIds.add(id);
+      addDeptSelect.value = '';
+      renderAddDeptChips();
+    }
+
+    function openAddModalByAuthId(authId) {
+      const u = unlinkedAuthUsers.find(x => x.auth_id === authId);
+      if (!u) return;
+
+      addingAuthUser = u;
+      setAddMsg('', '');
+
+      addSubtitle.textContent = `${u.email || '—'}`;
+      addFirstName.value = '';
+      addLastName.value = '';
+      addRole.value = 'volunteer';
+      addActive.value = 'true';
+      addNickname.value = '';
+      addBadge.value = '';
+
+      addSelectedDeptIds = new Set();
+      renderAddDeptChips();
+
+      pendingAddImageFile = null;
+      setAddImageUi(null);
+
+      (async () => {
+        try {
+          await loadAllDepartments();
+
+          const active = allDepartments.filter(d => d.is_active !== false);
+          addDeptSelect.innerHTML =
+            `<option value="">Select department…</option>` +
+            active.map(d => {
+              const label = `${d.code} — ${d.name}`;
+              return `<option value="${escapeHtml(d.id)}">${escapeHtml(label)}</option>`;
+            }).join('');
+        } catch (e) {
+          setAddMsg('error', e?.message || 'Failed to load departments.');
+        }
+      })();
+
+      addOverlay.style.display = 'flex';
+    }
+
+    function closeAddModal() {
+      addOverlay.style.display = 'none';
+      addingAuthUser = null;
+      pendingAddImageFile = null;
+      setAddImageUi(null);
+    }
+
+    function addSelectedDepartment() {
+      const id = (deptSelect?.value || '').trim();
+      if (!id) return;
+
+      selectedDeptIds.add(id);
+      deptSelect.value = '';
+      renderDeptChips();
+    }
+
+    async function openEdit(userId) {
+      const u = allUsers.find(x => x.id === userId);
+      if (!u) return;
+
+      editingUser = u;
+      setEditMsg('', '');
+
+      editSubtitle.textContent = `${displayName(u)} • ${u.auth_id || '—'}`;
+      editRole.value = (u.role || 'volunteer');
+      editActiveValue = !!u.is_active;
+updateActiveBtnUi();
+      editNickname.value = u.nickname || '';
+      editBadge.value = u.badge_number || '';
+      document.getElementById('editPlan').value = u.plan || 'basic';
+
+      if (PLAN === 'basic') {
+        document.getElementById('editImgWrap').style.display = 'none';
+        document.getElementById('editImgBtns').style.display = 'none';
+      } else {
+        setEditImageUi(editingUser.profile_image_url);
+      }
+
+      overlay.style.display = 'flex';
+
+      try {
+        await loadAllDepartments();
+        await loadUserDepartments(editingUser.id);
+      } catch (e) {
+        setEditMsg('error', e?.message || 'Failed to load departments.');
+      }
+    }
+
+    function closeEdit() {
+      overlay.style.display = 'none';
+      editingUser = null;
+    }
+
+    async function saveEdit() {
+      if (!editingUser) return;
+
+      setEditMsg('', '');
+      saveBtn.disabled = true;
+      saveBtn.textContent = 'Saving…';
+
+      const newRole = (editRole.value || '').trim();
+      const newActive = editActiveValue;
+      const newNick = (editNickname.value || '').trim();
+      const newBadge = (editBadge.value || '').trim();
+
+      try {
+        const newPlan = (document.getElementById('editPlan').value || 'basic').trim();
+
+        const { error } = await supabase
+          .from('core_users')
+          .update({
+            role: newRole,
+            is_active: newActive,
+            nickname: newNick || null,
+            badge_number: newBadge || null,
+            plan: newPlan
+          })
+          .eq('id', editingUser.id);
+
+        if (error) throw error;
+
+        // Send activation email if user was just activated (Full plan only)
+        const { data: planRow } = await supabase
+          .from('core_users')
+          .select('plan')
+          .eq('id', editingUser.id)
+          .single()
+        const activePlan = (planRow?.plan || 'basic').toLowerCase()
+
+        if (activePlan === 'full' && newActive === true && editingUser.is_active === false) {
+          try {
+            const { data: userData } = await supabase
+              .from('core_users')
+              .select('email, first_name, last_name, nickname')
+              .eq('id', editingUser.id)
+              .single()
+
+            if (userData?.email) {
+              const nick = (userData.nickname || '').trim()
+              const full = ([userData.first_name, userData.last_name].filter(Boolean).join(' ')).trim()
+              const name = nick || full || 'there'
+
+              const html = `
+                <div style="font-family:Arial,sans-serif;max-width:480px;margin:0 auto;padding:24px;">
+                  <h2 style="margin:0 0 4px;">Your Account is Now Active!</h2>
+                  <p style="color:#555;margin:0 0 20px;">Hi ${name}, your AnimeIowa account has been reviewed and activated. You can now log in and start tracking your hours.</p>
+                  <div style="background:#f5f5f5;border-radius:8px;padding:16px;margin-bottom:20px;">
+                    <p style="margin:0;font-size:14px;color:#333;"><b>What's next?</b></p>
+                    <p style="margin:8px 0 0;font-size:13px;color:#555;">Log in to your account to start clocking in your shifts. Your points will be tracked automatically once your hours are approved.</p>
+                  </div>
+                  <p style="font-size:13px;color:#888;">If you have any questions, contact your event organizer.</p>
+                  <p style="font-size:12px;color:#aaa;margin-top:24px;">AnimeIowa Volunteer & Staff Hours System</p>
+                </div>
+              `
+
+              await supabase.functions.invoke('send-email', {
+                body: {
+                  to: [userData.email],
+                  subject: 'Your AnimeIowa account is now active!',
+                  html
+                }
+              })
+            }
+          } catch (_) { /* email failure is non-fatal */ }
+        }
+
+        // Sync departments (replace-all strategy for simplicity)
+        {
+          const desired = Array.from(selectedDeptIds);
+
+          const { error: delErr } = await supabase
+            .from('core_user_departments')
+            .delete()
+            .eq('user_id', editingUser.id);
+
+          if (delErr) throw delErr;
+
+          if (desired.length > 0) {
+            const rows = desired.map(deptId => ({
+              user_id: editingUser.id,
+              department_id: deptId
+            }));
+
+            const { error: insErr } = await supabase
+              .from('core_user_departments')
+              .insert(rows);
+
+            if (insErr) throw insErr;
+          }
+        }
+
+        // Log all changes
+        try {
+          const changes = [];
+
+          if (newRole !== editingUser.role)
+            changes.push(`Role changed from ${editingUser.role} to ${newRole}`);
+
+          if (newActive !== editingUser.is_active)
+            changes.push(newActive ? 'Account activated' : 'Account deactivated');
+
+          if (newBadge !== (editingUser.badge_number || ''))
+            changes.push(`Badge number set to ${newBadge || 'none'}`);
+
+          if (newNick !== (editingUser.nickname || ''))
+            changes.push(`Nickname updated`);
+
+          if (newPlan !== (editingUser.plan || 'basic'))
+            changes.push(`Plan changed to ${newPlan}`);
+
+          for (const desc of changes) {
+            const action =
+              desc.startsWith('Account activated')   ? 'account_activated'   :
+              desc.startsWith('Account deactivated') ? 'account_deactivated' :
+              desc.startsWith('Role')                ? 'role_changed'        :
+              desc.startsWith('Badge')               ? 'badge_assigned'      :
+              desc.startsWith('Plan')                ? 'plan_changed'        :
+              'profile_updated';
+
+            await supabase.from('hour_approval_log').insert([{
+              hour_type: 'user',
+              hour_id: editingUser.id,
+              action,
+              performed_by: myCoreUserId,
+              target_user_id: editingUser.id,
+              previous_status: editingUser.is_active ? 'active' : 'inactive',
+              new_status: newActive ? 'active' : 'inactive',
+              description: desc,
+              meta: {
+                user_name: `${editingUser.first_name} ${editingUser.last_name}`,
+                new_role: newRole,
+                new_plan: newPlan,
+                new_badge: newBadge || null
+              }
+            }]);
+          }
+        } catch (_) {}
+
+        // Update local copy
+        editingUser.role = newRole;
+        editingUser.is_active = newActive;
+        editingUser.nickname = newNick || null;
+        editingUser.badge_number = newBadge || null;
+
+        setEditMsg('ok', 'Saved.');
+        render();
+
+        setTimeout(() => closeEdit(), 250);
+      } catch (e) {
+        setEditMsg('error', e?.message || 'Save failed.');
+      } finally {
+        saveBtn.disabled = false;
+        saveBtn.textContent = 'Save';
+      }
+    }
+
+    async function createCoreUserFromAddModal() {
+      if (!addingAuthUser?.auth_id) return;
+
+      const fn = (addFirstName.value || '').trim();
+      const ln = (addLastName.value || '').trim();
+
+      if (!fn || !ln) {
+        setAddMsg('error', 'First name and last name are required.');
+        return;
+      }
+
+      addSaveBtn.disabled = true;
+      addSaveBtn.textContent = 'Creating…';
+      setAddMsg('', '');
+
+      const newRole = (addRole.value || 'volunteer').trim();
+      const newActive = (addActive.value === 'true');
+      const newNick = (addNickname.value || '').trim();
+      const newBadge = (addBadge.value || '').trim();
+
+      try {
+        const { data: created, error: insErr } = await supabase
+          .from('core_users')
+          .insert([{
+            auth_id: addingAuthUser.auth_id,
+            first_name: fn,
+            last_name: ln,
+            nickname: newNick || null,
+            badge_number: newBadge || null,
+            role: newRole,
+            is_active: newActive
+          }])
+          .select('id')
+          .single();
+
+        if (insErr) throw insErr;
+
+        const coreUserId = created?.id;
+
+        // If a photo was selected, upload it and store the URL
+        if (coreUserId && pendingAddImageFile) {
+          const blob = await fileToResizedJpegBlob(pendingAddImageFile, 512, 0.85);
+          const url = await uploadProfileImageForUser(coreUserId, blob);
+
+          const { error: imgErr } = await supabase
+            .from('core_users')
+            .update({ profile_image_url: url })
+            .eq('id', coreUserId);
+
+          if (imgErr) throw imgErr;
+        }
+
+        const desired = Array.from(addSelectedDeptIds);
+        if (coreUserId && desired.length > 0) {
+          const rows = desired.map(deptId => ({
+            user_id: coreUserId,
+            department_id: deptId
+          }));
+
+          const { error: deptErr } = await supabase
+            .from('core_user_departments')
+            .insert(rows);
+
+          if (deptErr) throw deptErr;
+        }
+
+        pendingAddImageFile = null;
+        setAddImageUi(null);
+
+        setAddMsg('ok', 'Added to core_users.');
+        closeAddModal();
+
+        await loadUsers();
+        await loadUnlinkedAuthUsers();
+      } catch (e) {
+        setAddMsg('error', e?.message || 'Create failed.');
+      } finally {
+        addSaveBtn.disabled = false;
+        addSaveBtn.textContent = 'Create';
+      }
+    }
+
+    async function guardAdmin() {
+      setMsg('', '');
+
+      const { data, error } = await supabase.auth.getSession();
+      if (error) throw error;
+
+      const session = data?.session;
+      if (!session?.user?.id) {
+        window.location.href = '../index.html';
+        return;
+      }
+
+      const profile = await fetchProfileByAuthId(session.user.id);
+
+      if (!profile?.is_active) {
+        await supabase.auth.signOut();
+        window.location.href = '../index.html';
+        return;
+      }
+
+      if (!isAdminRole(profile.role)) {
+        window.location.href = '../index.html';
+        return;
+      }
+
+      localStorage.setItem('core_user_profile', JSON.stringify(profile));
+      rolePill.textContent = profile.role === 'super_user' ? 'Role: Super User' : 'Role: Admin';
+      PLAN = (profile.plan || 'basic').toLowerCase();
+      myCoreUserId = profile.id;
+      applyPlanUi();
+    }
+
+    // Events
+    backBtn.addEventListener('click', () => {
+      window.location.href = '../admin.html';
+    });
+
+    logoutBtn.addEventListener('click', async () => {
+      logoutBtn.disabled = true;
+      try {
+        await supabase.auth.signOut();
+      } finally {
+        localStorage.removeItem('core_user_profile');
+        window.location.href = '../index.html';
+      }
+    });
+
+    refreshBtn.addEventListener('click', loadUsers);
+    searchInput.addEventListener('input', render);
+    roleFilter.addEventListener('change', render);
+    activeFilter.addEventListener('change', render);
+
+    tbody.addEventListener('click', async (e) => {
+      const btn = e.target.closest('button[data-edit]');
+      if (!btn) return;
+      await openEdit(btn.getAttribute('data-edit'));
+    });
+
+    cancelBtn.addEventListener('click', closeEdit);
+    overlay.addEventListener('click', (e) => {
+      if (e.target === overlay) closeEdit();
+    });
+    saveBtn.addEventListener('click', saveEdit);
+
+    addDeptBtn?.addEventListener('click', addSelectedDepartment);
+    deptList?.addEventListener('click', (e) => {
+      const btn = e.target.closest('button[data-dept-remove]');
+      if (!btn) return;
+      const id = btn.getAttribute('data-dept-remove');
+      if (!id) return;
+      selectedDeptIds.delete(id);
+      renderDeptChips();
+    });
+
+    // Second card events
+    refreshUnlinkedBtn.addEventListener('click', loadUnlinkedAuthUsers);
+
+    unlinkedTbody.addEventListener('click', (e) => {
+      const btn = e.target.closest('button[data-add-auth]');
+      if (!btn) return;
+      openAddModalByAuthId(btn.getAttribute('data-add-auth'));
+    });
+
+    addCancelBtn.addEventListener('click', closeAddModal);
+    addOverlay.addEventListener('click', (e) => {
+      if (e.target === addOverlay) closeAddModal();
+    });
+    addSaveBtn.addEventListener('click', createCoreUserFromAddModal);
+
+    addDeptAddBtn?.addEventListener('click', addModalAddSelectedDepartment);
+    addDeptList?.addEventListener('click', (e) => {
+      const btn = e.target.closest('button[data-add-dept-remove]');
+      if (!btn) return;
+      const id = btn.getAttribute('data-add-dept-remove');
+      if (!id) return;
+      addSelectedDeptIds.delete(id);
+      renderAddDeptChips();
+    });
+
+    // ===== Edit modal image events =====
+    editTakePhotoBtn?.addEventListener('click', () => editCameraInput?.click());
+    editUploadPhotoBtn?.addEventListener('click', () => editFileInput?.click());
+    editReplaceImgBtn?.addEventListener('click', () => editFileInput?.click());
+
+    editCameraInput?.addEventListener('change', async () => {
+      const file = editCameraInput.files?.[0];
+      if (!file || !editingUser?.id) return;
+
+      try {
+        setEditMsg('', '');
+        const blob = await fileToResizedJpegBlob(file, 512, 0.85);
+        const url = await uploadProfileImageForUser(editingUser.id, blob);
+
+        const { error } = await supabase
+          .from('core_users')
+          .update({ profile_image_url: url })
+          .eq('id', editingUser.id);
+
+        if (error) throw error;
+
+        editingUser.profile_image_url = url;
+        setEditImageUi(url);
+        setEditMsg('ok', 'Photo updated.');
+      } catch (e) {
+        setEditMsg('error', e?.message || 'Photo upload failed.');
+      } finally {
+        editCameraInput.value = '';
+      }
+    });
+
+    editFileInput?.addEventListener('change', async () => {
+      const file = editFileInput.files?.[0];
+      if (!file || !editingUser?.id) return;
+
+      try {
+        setEditMsg('', '');
+        const blob = await fileToResizedJpegBlob(file, 512, 0.85);
+        const url = await uploadProfileImageForUser(editingUser.id, blob);
+
+        const { error } = await supabase
+          .from('core_users')
+          .update({ profile_image_url: url })
+          .eq('id', editingUser.id);
+
+        if (error) throw error;
+
+        editingUser.profile_image_url = url;
+        setEditImageUi(url);
+        setEditMsg('ok', 'Photo updated.');
+      } catch (e) {
+        setEditMsg('error', e?.message || 'Photo upload failed.');
+      } finally {
+        editFileInput.value = '';
+      }
+    });
+
+    editRemoveImgBtn?.addEventListener('click', async () => {
+      if (!editingUser?.id) return;
+      try {
+        setEditMsg('', '');
+
+        const { error } = await supabase
+          .from('core_users')
+          .update({ profile_image_url: null })
+          .eq('id', editingUser.id);
+
+        if (error) throw error;
+
+        editingUser.profile_image_url = null;
+        setEditImageUi(null);
+        setEditMsg('ok', 'Photo removed.');
+      } catch (e) {
+        setEditMsg('error', e?.message || 'Remove failed.');
+      }
+    });
+
+    // ===== Add modal image events =====
+    addTakePhotoBtn?.addEventListener('click', () => addCameraInput?.click());
+    addUploadPhotoBtn?.addEventListener('click', () => addFileInput?.click());
+    addReplaceImgBtn?.addEventListener('click', () => addFileInput?.click());
+
+    addCameraInput?.addEventListener('change', () => {
+      const file = addCameraInput.files?.[0] || null;
+      pendingAddImageFile = file;
+      setAddImageUi(file);
+      addCameraInput.value = '';
+    });
+
+    addFileInput?.addEventListener('change', () => {
+      const file = addFileInput.files?.[0] || null;
+      pendingAddImageFile = file;
+      setAddImageUi(file);
+      addFileInput.value = '';
+    });
+
+    addRemoveImgBtn?.addEventListener('click', () => {
+      pendingAddImageFile = null;
+      if (PLAN === 'basic') {
+        document.getElementById('addImgWrap').style.display = 'none';
+        document.getElementById('addImgBtns').style.display = 'none';
+      } else {
+        setAddImageUi(null);
+      }
+    });
+
+    // Start
+    (async () => {
+      try {
+        await guardAdmin();
+        await loadUsers();
+        await loadUnlinkedAuthUsers();
+      } catch (e) {
+        setMsg('error', e?.message || 'Failed to load User Manager.');
+      }
+    })();
+  </script>
+</body>
+</html>

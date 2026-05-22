@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="en" style="overflow-x:hidden;">
+<head>
+  <link rel="stylesheet" href="animeiowa.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1" />
+  <title>AnimeIowa | Admin Dashboard</title>
+
+  <style>
+    :root{
+      --bg:#000;
+      --card: rgba(255,255,255,0.06);
+      --card-border: rgba(255,255,255,0.10);
+      --text: rgba(255,255,255,0.92);
+      --muted: rgba(255,255,255,0.70);
+      --danger: #ff6b6b;
+      --ok: #7CFC90;
+
+      --btn: #ffffff;
+      --btnText: #000000;
+
+      --btn2-bg: rgba(255,255,255,0.10);
+      --btn2-border: rgba(255,255,255,0.16);
+
+      --inputBg: rgba(255,255,255,0.08);
+      --inputBorder: rgba(255,255,255,0.14);
+      --focus: rgba(255,255,255,0.28);
+    }
+
+    *{ box-sizing:border-box; }
+    html,body{ height:100%; }
+    body{
+      margin:0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    .topbar{
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background: rgba(0,0,0,0.85);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid rgba(255,255,255,0.10);
+    }
+
+    .topbar-inner{
+      max-width: 980px;
+      margin: 0 auto;
+      padding: 10px 12px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: 8px;
+      flex-wrap: wrap;
+      overflow-x: hidden;
+    }
+
+    .brand{
+      display:flex;
+      flex-direction:column;
+      gap:2px;
+      min-width: 0;
+    }
+
+    .brand h1{
+      margin:0;
+      font-size: 18px;
+      letter-spacing: 0.3px;
+      font-weight: 900;
+      line-height: 1.1;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .brand .sub{
+      margin:0;
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.2;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .actions{
+      display:flex;
+      gap:6px;
+      align-items:center;
+      flex-wrap: wrap;
+      flex-shrink: 1;
+      min-width: 0;
+    }
+
+    .btn{
+      appearance:none;
+      border:none;
+      border-radius: 12px;
+      padding: 12px 14px;
+      font-weight: 900;
+      font-size: 14px;
+      cursor:pointer;
+      background: var(--btn);
+      color: var(--btnText);
+      line-height: 1;
+    }
+
+    .btn.secondary{
+      background: var(--btn2-bg);
+      color: var(--text);
+      border: 1px solid var(--btn2-border);
+      font-weight: 800;
+    }
+
+    .btn:disabled{
+      opacity:0.6;
+      cursor:not-allowed;
+    }
+
+    .container{
+      max-width: 980px;
+      margin: 0 auto;
+      padding: 16px;
+    }
+
+    .welcome{
+      margin: 10px 0 14px;
+      background: var(--card);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 14px;
+    }
+
+    .welcome .name{
+      font-size: 16px;
+      font-weight: 900;
+      margin: 0 0 6px 0;
+    }
+    .welcome .meta{
+      margin:0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.35;
+    }
+
+    .grid{
+      display:grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+    }
+
+    @media (min-width: 720px){
+      .grid{
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    .card{
+      background: var(--card);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 16px;
+    }
+
+    .card h2{
+      margin:0 0 6px 0;
+      font-size: 16px;
+      font-weight: 950;
+      letter-spacing: 0.2px;
+    }
+
+    .card p{
+      margin:0 0 12px 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.4;
+    }
+
+    .stack{
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
+
+    .msg{
+      margin-top: 12px;
+      font-size: 14px;
+      line-height: 1.35;
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.05);
+      display: none;
+      word-break: break-word;
+    }
+    .msg.error{ color: var(--danger); display:block; }
+    .msg.ok{ color: var(--ok); display:block; }
+
+    .footer{
+      margin: 18px 0 40px;
+      color: var(--muted);
+      font-size: 12px;
+      text-align:center;
+    }
+
+    .pill{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding: 8px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.05);
+      color: var(--muted);
+      font-size: 12px;
+      white-space: nowrap;
+      max-width: 100%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    @media (max-width: 480px) {
+      .btn { padding: 8px 10px; font-size: 12px; }
+      .pill { font-size: 11px; padding: 6px 8px; }
+      .brand h1 { font-size: 15px; }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="topbar">
+    <div class="topbar-inner">
+      <div class="brand">
+        <h1>AnimeIowa</h1>
+        <p class="sub">Admin Dashboard</p>
+      </div>
+
+         <div class="actions">
+        <span id="rolePill" class="pill" title="Role">Loading…</span>
+        <button class="btn secondary" type="button" onclick="window.location.href='volunteer.html'">My Hours</button>
+        <button id="logoutBtn" class="btn secondary" type="button">Log Out</button>
+      </div>
+    </div>
+  </div>
+
+  <main class="container">
+
+    <section class="card" style="margin: 10px 0 14px; border-color: rgba(170,132,82,0.5); background: rgba(170,132,82,0.08);">
+      <h2 style="margin-bottom:10px;">🧪 Testing Guide — Admin Dashboard</h2>
+      <p style="font-size:14px; line-height:1.7; color: var(--text);">
+        <b>What this page is:</b> This is the main control panel. Only admins can see it. From here you can manage everything in the system.<br><br>
+        <b>Manage Users</b> — Activate new accounts, deactivate old ones, and assign roles (volunteer, staff, or admin).<br>
+        <b>Departments</b> — Create and manage the departments that volunteers and staff belong to.<br>
+        <b>Review Hours</b> — Approve or reject hours submitted by volunteers and staff. Hours only count once approved.<br>
+        <b>Reports</b> — See a summary of all hours and export them.<br><br>
+        <b>How to test:</b> Click each button to open that section. You can come back to this page anytime using the browser's back button.
+      </p>
+    </section>
+
+    <section class="welcome">
+      <p id="welcomeName" class="name">Loading…</p>
+      <p id="welcomeMeta" class="meta">Checking your session and permissions.</p>
+      <div id="message" class="msg" aria-live="polite"></div>
+    </section>
+
+    <div class="card" style="margin-bottom:14px;">
+      <h2>My Profile</h2>
+      <div id="adminProfileBox">Loading...</div>
+      <div style="margin-top:12px; display:flex; flex-wrap:wrap; gap:8px;">
+        <a id="adminEditProfileBtn" href="profile_edit.html" class="btn secondary" style="display:none;">Edit My Profile</a>
+        <button id="resetPwBtn" class="btn secondary" type="button">Reset Password</button>
+      </div>
+      <div id="resetPwMsg" style="margin-top:10px; font-size:13px; display:none;"></div>
+    </div>
+
+    <section class="grid">
+      <div class="card">
+        <h2>Manage Users</h2>
+        <p>Search users, activate/deactivate, and assign roles.</p>
+        <div class="stack">
+          <button class="btn" type="button" onclick="window.location.href='admin/user_manager.html'" style="position:relative;">
+            Open User Manager
+            <span id="userDot" style="display:none; position:absolute; top:-5px; right:-5px; width:12px; height:12px; background:#ff4444; border-radius:50%; border:2px solid #000;"></span>
+          </button>
+        </div>
+      </div>
+<div class="card" id="activityLogCard" style="display:none;">
+  <h2>Activity Log</h2>
+  <p class="muted">Full audit trail of every action taken in the system.</p>
+  <button class="btn" type="button" onclick="window.location.href='admin/activity_log.html'">
+    Open Activity Log
+  </button>
+</div>
+      <div class="card" id="departmentsCard">
+        <h2>Departments</h2>
+        <p>Create departments and manage department codes.</p>
+        <div class="stack">
+          <button class="btn" type="button" onclick="window.location.href='admin/departments.html'">
+  Manage Departments
+</button>
+        </div>
+      </div>
+
+        <div class="card">
+        <h2>Review Hours</h2>
+        <p>Review and approve both Staff and Volunteer hour submissions.</p>
+        <div class="stack" id="reviewHoursStack">
+          <!-- Basic: one combined button -->
+          <button id="reviewAllBtn" class="btn" type="button" onclick="window.location.href='admin/staff_approvals.html'" style="position:relative; display:none;">
+            Review Staff Hours
+            <span id="allDot" style="display:none; position:absolute; top:-5px; right:-5px; width:12px; height:12px; background:#ff4444; border-radius:50%; border:2px solid #000;"></span>
+          </button>
+          <button id="reviewAllVolBtn" class="btn" type="button" onclick="window.location.href='admin/volunteer_approvals.html'" style="position:relative; display:none;">
+            Review Volunteer Hours
+            <span id="allVolDot" style="display:none; position:absolute; top:-5px; right:-5px; width:12px; height:12px; background:#ff4444; border-radius:50%; border:2px solid #000;"></span>
+          </button>
+          <!-- Standard/Full: two separate buttons -->
+          <button id="staffBtn" class="btn" type="button" onclick="window.location.href='admin/staff_approvals.html'" style="position:relative; display:none;">
+            Review Staff Hours
+            <span id="staffDot" style="display:none; position:absolute; top:-5px; right:-5px; width:12px; height:12px; background:#ff4444; border-radius:50%; border:2px solid #000;"></span>
+          </button>
+          <button id="volunteerBtn" class="btn" type="button" onclick="window.location.href='admin/volunteer_approvals.html'" style="position:relative; display:none;">
+            Review Volunteer Hours
+            <span id="volunteerDot" style="display:none; position:absolute; top:-5px; right:-5px; width:12px; height:12px; background:#ff4444; border-radius:50%; border:2px solid #000;"></span>
+          </button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Reports & Export</h2>
+        <p>Export hours by department, date ranges, and user totals.</p>
+        <div class="stack">
+          <button class="btn" type="button" onclick="window.location.href='admin/reports.html'">
+  Open Reports
+</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Points Settings</h2>
+        <p>Set how many points a volunteer or staff member earns per hour worked.</p>
+        <div class="stack">
+          <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+            <label style="color:var(--muted); font-size:13px; white-space:nowrap;">Points per hour:</label>
+            <input id="pointsPerHourInput" type="number" min="0.1" step="0.1"
+              style="width:100px; padding:10px 12px; border-radius:12px; border:1px solid var(--inputBorder); background:var(--inputBg); color:var(--text); font-size:15px; font-weight:900;"
+              placeholder="1" />
+            <button id="savePointsBtn" class="btn" type="button">Save</button>
+          </div>
+          <div id="pointsMsg" class="msg" aria-live="polite"></div>
+        </div>
+      </div>
+    <div class="card" style="grid-column: 1 / -1;">
+        <h2>⏰ Bonus Time Windows</h2>
+        <p>Set date/time ranges where volunteers or staff earn bonus points. Any shift overlapping these times will be split — normal points before, bonus points after the window starts.</p>
+
+        <!-- Add new window form -->
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-bottom:12px;">
+          <div>
+            <label style="font-size:12px; color:var(--muted); display:block; margin-bottom:4px;">Label</label>
+            <input id="bonusLabel" type="text" placeholder="e.g. Setup Day" style="width:100%; padding:10px 12px; border-radius:12px; border:1px solid var(--inputBorder); background:var(--inputBg); color:var(--text); font-size:14px;" />
+          </div>
+          <div>
+            <label style="font-size:12px; color:var(--muted); display:block; margin-bottom:4px;">Applies To</label>
+            <select id="bonusAppliesTo" style="width:100%; padding:10px 12px; border-radius:12px; border:1px solid var(--inputBorder); background:#fff; color:#000; font-size:14px;">
+              <option value="both">Both Volunteers & Staff</option>
+              <option value="volunteer">Volunteers Only</option>
+              <option value="staff">Staff Only</option>
+            </select>
+          </div>
+          <div>
+            <label style="font-size:12px; color:var(--muted); display:block; margin-bottom:4px;">Start Date & Time</label>
+            <input id="bonusStart" type="datetime-local" style="width:100%; padding:10px 12px; border-radius:12px; border:1px solid var(--inputBorder); background:var(--inputBg); color:var(--text); font-size:14px;" />
+          </div>
+          <div>
+            <label style="font-size:12px; color:var(--muted); display:block; margin-bottom:4px;">End Date & Time</label>
+            <input id="bonusEnd" type="datetime-local" style="width:100%; padding:10px 12px; border-radius:12px; border:1px solid var(--inputBorder); background:var(--inputBg); color:var(--text); font-size:14px;" />
+          </div>
+          <div>
+            <label style="font-size:12px; color:var(--muted); display:block; margin-bottom:4px;">Multiplier</label>
+            <select id="bonusMultiplier" style="width:100%; padding:10px 12px; border-radius:12px; border:1px solid var(--inputBorder); background:#fff; color:#000; font-size:14px;">
+              <option value="2">2x Double Points</option>
+              <option value="3">3x Triple Points</option>
+              <option value="1.5">1.5x Time and a Half</option>
+            </select>
+          </div>
+          <div style="display:flex; align-items:flex-end;">
+            <button id="addBonusBtn" class="btn" type="button" style="width:100%;">Add Bonus Period</button>
+          </div>
+        </div>
+
+        <div id="bonusMsg" class="msg" aria-live="polite"></div>
+
+        <!-- Existing windows list -->
+        <div style="margin-top:16px;">
+          <div style="font-size:14px; font-weight:900; margin-bottom:8px;">Bonus Schedule</div>
+          <div id="bonusWindowsList" style="display:flex; flex-direction:column; gap:8px;">
+            <div style="color:var(--muted); font-size:13px;">Loading…</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="footer">
+      Admin access required. If you should not be here, you will be redirected.
+    </div>
+  </main>
+
+  <script type="module">
+    import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+
+    const SUPABASE_URL = 'https://mjnphetnuiuxgsghzdoo.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1qbnBoZXRudWl1eGdzZ2h6ZG9vIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE4OTA2OTMsImV4cCI6MjA4NzQ2NjY5M30.sB1i6dy5e7brQHRiCJ-0Kf2aIcIO1DkUR1O2RtkmRGc';
+
+    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    const logoutBtn = document.getElementById('logoutBtn');
+    const msgEl = document.getElementById('message');
+    const welcomeNameEl = document.getElementById('welcomeName');
+    const welcomeMetaEl = document.getElementById('welcomeMeta');
+    const rolePill = document.getElementById('rolePill');
+
+    function setMsg(type, text) {
+      msgEl.className = 'msg ' + (type || '');
+      msgEl.textContent = text || '';
+      msgEl.style.display = text ? 'block' : 'none';
+    }
+
+    function isAdminRole(role) {
+      const r = (role || '').toLowerCase().trim();
+      return r === 'admin' || r === 'super_user';
+    }
+
+    async function fetchProfileByAuthId(authId) {
+      const { data, error } = await supabase
+        .from('core_users')
+        .select('id, auth_id, role, is_active, first_name, last_name, nickname, badge_number, plan, profile_image_url')
+        .eq('auth_id', authId)
+        .single();
+
+      if (error) throw error;
+      return data;
+    }
+
+    function displayName(p) {
+      const nick = (p?.nickname || '').trim();
+      const first = (p?.first_name || '').trim();
+      const last = (p?.last_name || '').trim();
+
+      if (nick) return nick;
+      const full = (first + ' ' + last).trim();
+      return full || 'Admin';
+    }
+
+    async function guardAndLoad() {
+      setMsg('', '');
+
+      const { data, error } = await supabase.auth.getSession();
+      if (error) throw error;
+
+      const session = data?.session;
+      if (!session?.user?.id) {
+        window.location.href = '../index.html';
+        return;
+      }
+
+      const authId = session.user.id;
+
+      let profile = null;
+      try {
+        profile = await fetchProfileByAuthId(authId);
+      } catch (e) {
+        await supabase.auth.signOut();
+        window.location.href = '../index.html';
+        return;
+      }
+
+      if (!profile?.is_active) {
+        await supabase.auth.signOut();
+        window.location.href = '../index.html';
+        return;
+      }
+
+      if (!isAdminRole(profile.role)) {
+        window.location.href = '../index.html';
+        return;
+      }
+
+      localStorage.setItem('core_user_profile', JSON.stringify(profile));
+
+      const PLAN = (profile.plan || 'basic').toLowerCase();
+
+      rolePill.textContent = profile.role === 'super_user' ? 'Role: Super User' : 'Role: Admin';
+      welcomeNameEl.textContent = `Welcome, ${displayName(profile)}`;
+      welcomeMetaEl.textContent = 'Use the cards below to manage users, departments, approvals, and reports.';
+
+      // Admin profile card
+      const photoHtml = PLAN === 'basic' ? '' :
+        profile.profile_image_url
+          ? `<img src="${profile.profile_image_url}" alt="Profile photo" style="width:72px;height:72px;border-radius:50%;object-fit:cover;border:2px solid rgba(255,255,255,0.18);margin-bottom:10px;display:block;" />`
+          : `<div style="width:72px;height:72px;border-radius:50%;background:rgba(255,255,255,0.08);border:2px solid rgba(255,255,255,0.14);display:flex;align-items:center;justify-content:center;margin-bottom:10px;font-size:28px;">&#128100;</div>`;
+
+      document.getElementById('adminProfileBox').innerHTML = `
+        ${photoHtml}
+        <div style="font-size:16px;font-weight:bold;margin-bottom:6px;">${displayName(profile)}</div>
+        <div style="display:inline-flex;align-items:center;padding:6px 10px;border-radius:999px;border:1px solid rgba(255,255,255,0.12);background:rgba(255,255,255,0.05);color:rgba(255,255,255,0.70);font-size:12px;margin-bottom:8px;">Role: <b style="margin-left:4px;">${profile.role}</b></div>
+        <div style="color:rgba(255,255,255,0.70);font-size:13px;margin-top:4px;"><b>Badge #:</b> ${profile.badge_number || '--'}</div>
+      `;
+
+      if (PLAN !== 'basic') {
+        document.getElementById('adminEditProfileBtn').style.display = 'inline-block';
+      }
+
+      // Apply plan UI
+      if (PLAN === 'basic') {
+        document.getElementById('departmentsCard').style.display = 'none';
+        document.getElementById('reviewAllBtn').style.display = 'block';
+        document.getElementById('reviewAllVolBtn').style.display = 'block';
+      } else {
+        document.getElementById('departmentsCard').style.display = 'block';
+        document.getElementById('staffBtn').style.display = 'block';
+        document.getElementById('volunteerBtn').style.display = 'block';
+      }
+      if (PLAN === 'full') {
+        document.getElementById('activityLogCard').style.display = 'block';
+      }
+
+      // Check for pending staff hours
+      const { count } = await supabase
+        .from('staff_hours')
+        .select('id', { count: 'exact', head: true })
+        .eq('status', 'pending');
+      if (count > 0) {
+        document.getElementById('staffDot').style.display = 'block';
+        document.getElementById('allDot').style.display = 'block';
+      }
+
+      // Check for pending volunteer hours
+      const { count: volCount } = await supabase
+        .from('vol_hours')
+        .select('id', { count: 'exact', head: true })
+        .eq('status', 'pending');
+      if (volCount > 0) {
+        document.getElementById('volunteerDot').style.display = 'block';
+        document.getElementById('allDot').style.display = 'block';
+        document.getElementById('allVolDot').style.display = 'block';
+      }
+
+      // Check for inactive users waiting to be activated
+      const { count: inactiveCount } = await supabase
+        .from('core_users')
+        .select('id', { count: 'exact', head: true })
+        .eq('is_active', false);
+      if (inactiveCount > 0) document.getElementById('userDot').style.display = 'block';
+    }
+
+    async function loadPointsSettings() {
+      const { data, error } = await supabase
+        .from('points_settings')
+        .select('points_per_hour')
+        .limit(1)
+        .single();
+
+      if (error) throw error;
+      document.getElementById('pointsPerHourInput').value = data?.points_per_hour ?? 1;
+    }
+
+    document.getElementById('savePointsBtn').addEventListener('click', async () => {
+      const input = document.getElementById('pointsPerHourInput');
+      const pointsMsgEl = document.getElementById('pointsMsg');
+      const val = parseFloat(input.value);
+
+      if (!val || val <= 0) {
+        pointsMsgEl.className = 'msg error';
+        pointsMsgEl.textContent = 'Please enter a valid number greater than 0.';
+        pointsMsgEl.style.display = 'block';
+        return;
+      }
+
+      const { error } = await supabase
+        .from('points_settings')
+        .update({ points_per_hour: val })
+        .neq('id', '00000000-0000-0000-0000-000000000000'); // update all rows
+
+      if (error) {
+        pointsMsgEl.className = 'msg error';
+        pointsMsgEl.textContent = error.message || 'Save failed.';
+        pointsMsgEl.style.display = 'block';
+        return;
+      }
+
+      pointsMsgEl.className = 'msg ok';
+      pointsMsgEl.textContent = `Saved! Now awarding ${val} point(s) per hour.`;
+      pointsMsgEl.style.display = 'block';
+      setTimeout(() => { pointsMsgEl.style.display = 'none'; }, 3000);
+    });
+
+    async function loadBonusWindows() {
+      const list = document.getElementById('bonusWindowsList');
+      const { data, error } = await supabase
+        .from('bonus_time_windows')
+        .select('*')
+        .order('start_time', { ascending: true });
+
+      if (error) {
+        list.innerHTML = `<div style="color:var(--danger); font-size:13px;">${error.message}</div>`;
+        return;
+      }
+
+      if (!data || data.length === 0) {
+        list.innerHTML = `<div style="color:var(--muted); font-size:13px;">No bonus windows set yet.</div>`;
+        return;
+      }
+
+      list.innerHTML = data.map(w => {
+        const start = new Date(w.start_time).toLocaleString();
+        const end = new Date(w.end_time).toLocaleString();
+        const applies = w.applies_to === 'both' ? 'Volunteers & Staff' : w.applies_to === 'volunteer' ? 'Volunteers only' : 'Staff only';
+        return `
+          <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px; padding:10px 14px; border-radius:12px; border:1px solid rgba(255,255,255,0.10); background:rgba(255,255,255,0.04);">
+            <div>
+              <div style="font-weight:900; font-size:14px;">${w.label} — ${w.multiplier}x</div>
+              <div style="font-size:12px; color:var(--muted); margin-top:2px;">${start} → ${end}</div>
+              <div style="font-size:12px; color:var(--muted);">${applies}</div>
+            </div>
+            <button class="btn secondary" type="button" data-delete-bonus="${w.id}" style="font-size:12px; padding:8px 12px; color:var(--danger);">Remove</button>
+          </div>
+        `;
+      }).join('');
+    }
+
+    document.getElementById('bonusWindowsList').addEventListener('click', async (e) => {
+      const btn = e.target.closest('button[data-delete-bonus]');
+      if (!btn) return;
+      const id = btn.getAttribute('data-delete-bonus');
+      btn.disabled = true;
+      btn.textContent = 'Removing…';
+      const { error } = await supabase.from('bonus_time_windows').delete().eq('id', id);
+      if (error) {
+        const bonusMsgEl = document.getElementById('bonusMsg');
+        bonusMsgEl.className = 'msg error';
+        bonusMsgEl.textContent = error.message;
+        bonusMsgEl.style.display = 'block';
+        return;
+      }
+      await loadBonusWindows();
+    });
+
+    document.getElementById('addBonusBtn').addEventListener('click', async () => {
+      const bonusMsgEl = document.getElementById('bonusMsg');
+      const label = document.getElementById('bonusLabel').value.trim();
+      const start = document.getElementById('bonusStart').value;
+      const end = document.getElementById('bonusEnd').value;
+      const multiplier = parseFloat(document.getElementById('bonusMultiplier').value);
+      const applies_to = document.getElementById('bonusAppliesTo').value;
+
+      if (!label || !start || !end) {
+        bonusMsgEl.className = 'msg error';
+        bonusMsgEl.textContent = 'Please fill in all fields.';
+        bonusMsgEl.style.display = 'block';
+        return;
+      }
+
+      if (new Date(end) <= new Date(start)) {
+        bonusMsgEl.className = 'msg error';
+        bonusMsgEl.textContent = 'End time must be after start time.';
+        bonusMsgEl.style.display = 'block';
+        return;
+      }
+
+      const { error } = await supabase.from('bonus_time_windows').insert([{
+        label,
+        start_time: new Date(start).toISOString(),
+        end_time: new Date(end).toISOString(),
+        multiplier,
+        applies_to,
+        is_active: true
+      }]);
+
+      if (error) {
+        bonusMsgEl.className = 'msg error';
+        bonusMsgEl.textContent = error.message || 'Failed to add window.';
+        bonusMsgEl.style.display = 'block';
+        return;
+      }
+
+      bonusMsgEl.className = 'msg ok';
+      bonusMsgEl.textContent = 'Bonus window added!';
+      bonusMsgEl.style.display = 'block';
+      setTimeout(() => { bonusMsgEl.style.display = 'none'; }, 3000);
+
+      document.getElementById('bonusLabel').value = '';
+      document.getElementById('bonusStart').value = '';
+      document.getElementById('bonusEnd').value = '';
+      await loadBonusWindows();
+    });
+
+    logoutBtn.addEventListener('click', async () => {
+      logoutBtn.disabled = true;
+      try {
+        await supabase.auth.signOut();
+      } finally {
+        localStorage.removeItem('core_user_profile');
+        window.location.href = '../index.html';
+      }
+    });
+
+    document.getElementById('resetPwBtn').addEventListener('click', async () => {
+      const btn = document.getElementById('resetPwBtn');
+      const msg = document.getElementById('resetPwMsg');
+      btn.disabled = true;
+      btn.textContent = 'Sending...';
+      try {
+        const { data: s } = await supabase.auth.getSession();
+        const email = s?.session?.user?.email;
+        if (!email) throw new Error('Could not find your email.');
+        const { error } = await supabase.auth.resetPasswordForEmail(email);
+        if (error) throw error;
+        msg.style.display = 'block';
+        msg.style.color = '#7CFC90';
+        msg.textContent = 'Reset link sent! Check your email.';
+      } catch (e) {
+        msg.style.display = 'block';
+        msg.style.color = '#ff6b6b';
+        msg.textContent = e?.message || 'Failed to send reset email.';
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Reset Password';
+      }
+    });
+
+    // Run guard
+    (async () => {
+      try {
+        await guardAndLoad();
+        await loadPointsSettings();
+        await loadBonusWindows();
+      } catch (e) {
+        setMsg('error', e?.message || 'Failed to load admin dashboard.');
+      }
+    })();
+  </script>
+</body>
+</html>

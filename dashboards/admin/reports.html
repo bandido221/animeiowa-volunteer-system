@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="stylesheet" href="../animeiowa.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1" />
+  <title>AnimeIowa | Reports</title>
+
+  <style>
+    :root{
+      --bg:#000;
+      --card: rgba(255,255,255,0.06);
+      --card-border: rgba(255,255,255,0.10);
+      --text: rgba(255,255,255,0.92);
+      --muted: rgba(255,255,255,0.70);
+      --danger: #ff6b6b;
+      --ok: #7CFC90;
+      --btn: #ffffff;
+      --btnText: #000000;
+      --btn2-bg: rgba(255,255,255,0.10);
+      --btn2-border: rgba(255,255,255,0.16);
+      --inputBg: rgba(255,255,255,0.08);
+      --inputBorder: rgba(255,255,255,0.14);
+      --focus: rgba(255,255,255,0.28);
+    }
+
+    *{ box-sizing:border-box; }
+    html,body{ height:100%; }
+    body{
+      margin:0;
+      font-family: system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    /* -- Topbar -- */
+    .topbar{
+      position:sticky; top:0; z-index:10;
+      background: rgba(0,0,0,0.85);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid rgba(255,255,255,0.10);
+    }
+    .topbar-inner{
+      max-width:980px; margin:0 auto;
+      padding:10px 12px;
+      display:flex; align-items:center; justify-content:space-between;
+      gap:8px; flex-wrap:wrap; overflow-x:hidden;
+    }
+    .brand{ display:flex; flex-direction:column; gap:2px; min-width:0; }
+    .brand h1{ margin:0; font-size:18px; font-weight:900; line-height:1.1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .brand .sub{ margin:0; font-size:12px; color:var(--muted); white-space:nowrap; }
+    .actions{ display:flex; gap:6px; align-items:center; flex-wrap:wrap; flex-shrink:1; min-width:0; }
+
+    /* -- Buttons -- */
+    .btn{
+      appearance:none; border:none; border-radius:12px;
+      padding:12px 14px; font-weight:900; font-size:14px;
+      cursor:pointer; background:var(--btn); color:var(--btnText); line-height:1;
+      white-space:nowrap;
+    }
+    .btn.secondary{
+      background:var(--btn2-bg); color:var(--text);
+      border:1px solid var(--btn2-border); font-weight:800;
+    }
+    .btn:disabled{ opacity:0.55; cursor:not-allowed; }
+
+    /* -- Layout -- */
+    .container{ max-width:980px; margin:0 auto; padding:16px; }
+
+    /* -- Cards -- */
+    .card{
+      background:var(--card); border:1px solid var(--card-border);
+      border-radius:16px; padding:16px; margin-bottom:14px;
+    }
+    .card h2{ margin:0 0 6px; font-size:16px; font-weight:950; }
+    .card p{ margin:0 0 12px; color:var(--muted); font-size:13px; line-height:1.4; }
+
+    /* -- Pill -- */
+    .pill{
+      display:inline-flex; align-items:center; gap:8px;
+      padding:8px 10px; border-radius:999px;
+      border:1px solid rgba(255,255,255,0.12);
+      background:rgba(255,255,255,0.05);
+      color:var(--muted); font-size:12px; white-space:nowrap;
+    }
+
+    /* -- Messages -- */
+    .msg{
+      margin-top:12px; font-size:14px; line-height:1.35;
+      padding:10px 12px; border-radius:12px;
+      border:1px solid rgba(255,255,255,0.12);
+      background:rgba(255,255,255,0.05);
+      display:none; word-break:break-word;
+    }
+    .msg.error{ color:var(--danger); display:block; }
+    .msg.ok{ color:var(--ok); display:block; }
+
+    /* -- Inputs & selects -- */
+    .field label{ display:block; font-size:12px; color:var(--muted); margin-bottom:5px; }
+    .field input, .field select{
+      width:100%; padding:10px 12px; border-radius:12px;
+      border:1px solid var(--inputBorder); background:var(--inputBg);
+      color:var(--text); font-size:14px; outline:none;
+      -webkit-appearance:none; appearance:none;
+    }
+    .field select{ background:#fff; color:#000; }
+    .field input:focus,.field select:focus{
+      border-color:var(--focus);
+      box-shadow:0 0 0 3px rgba(255,255,255,0.08);
+    }
+
+    /* -- Filters grid -- */
+    .filters-grid{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:10px;
+    }
+    @media(min-width:600px){ .filters-grid{ grid-template-columns:repeat(3,1fr); } }
+    @media(min-width:860px){ .filters-grid{ grid-template-columns:repeat(6,1fr); } }
+
+    /* -- Button bar -- */
+    .bar{ display:flex; gap:8px; flex-wrap:wrap; margin-top:14px; align-items:center; }
+
+    /* -- KPI strip -- */
+    .kpi-strip{ display:flex; gap:10px; flex-wrap:wrap; margin-bottom:14px; }
+    .kpi-box{
+      flex:1; min-width:110px;
+      background:rgba(255,255,255,0.05);
+      border:1px solid rgba(255,255,255,0.10);
+      border-radius:14px; padding:12px 14px;
+    }
+    .kpi-label{ color:var(--muted); font-size:11px; margin-bottom:4px; }
+    .kpi-value{ font-size:20px; font-weight:950; letter-spacing:0.2px; }
+
+    /* -- Table -- */
+    .table-wrap{
+      overflow-x:auto; -webkit-overflow-scrolling:touch;
+      border-radius:14px; border:1px solid rgba(255,255,255,0.10);
+      margin-top:12px;
+    }
+    table{ width:100%; border-collapse:collapse; min-width:860px; background:rgba(0,0,0,0.15); }
+    th,td{ padding:11px 10px; border-bottom:1px solid rgba(255,255,255,0.08); text-align:left; font-size:13px; vertical-align:middle; }
+    th{ color:var(--muted); font-weight:900; font-size:12px; position:sticky; top:0; background:rgba(0,0,0,0.65); backdrop-filter:blur(10px); white-space:nowrap; z-index:1; }
+
+    /* role colors */
+    .role-vol   { color:#7fc8ff; }
+    .role-staff { color:#b8a0ff; }
+    .role-admin { color:#FFD700; }
+
+    /* status colors */
+    .s-approved { color:var(--ok); }
+    .s-rejected { color:var(--danger); }
+    .s-pending  { color:rgba(255,255,255,0.75); }
+
+    .footer{ margin:18px 0 40px; color:var(--muted); font-size:12px; text-align:center; }
+
+    @media(max-width:480px){
+      .btn{ padding:8px 10px; font-size:12px; }
+      .pill{ font-size:11px; padding:6px 8px; }
+      .brand h1{ font-size:15px; }
+      .kpi-value{ font-size:17px; }
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Topbar -->
+  <div class="topbar">
+    <div class="topbar-inner">
+      <div class="brand">
+        <h1>AnimeIowa</h1>
+        <p class="sub">Reports</p>
+      </div>
+      <div class="actions">
+        <span id="rolePill" class="pill">Loading...</span>
+        <button id="backBtn" class="btn secondary" type="button">Back</button>
+        <button id="logoutBtn" class="btn secondary" type="button">Log Out</button>
+      </div>
+    </div>
+  </div>
+
+  <main class="container">
+
+    <!-- Testing Guide -->
+    <section class="card" style="margin-top:10px; border-color:rgba(170,132,82,0.5); background:rgba(170,132,82,0.08);">
+      <h2 style="margin-bottom:10px;">🧪 Testing Guide -- Reports</h2>
+      <p style="font-size:14px; line-height:1.7; color:var(--text); margin:0;">
+        <b>What this page is:</b> A full view of every shift logged in the system -- one row per shift.<br><br>
+        <b>Type</b> -- Filter to All, Staff only, or Volunteer only.<br>
+        <b>Status</b> -- Pending, Approved, Rejected, or All.<br>
+        <b>Date Range</b> -- Narrow to a specific period.<br>
+        <b>Department</b> -- Show one department only if needed.<br>
+        <b>Search</b> -- Filter by name or badge number.<br>
+        <b>Export CSV</b> -- Download as a spreadsheet (Standard & Full plans).<br>
+        <b>Export PDF</b> -- Printable PDF summary (Standard & Full plans).<br><br>
+        <b>How to test:</b> Click Run Report with no filters to see everything.
+      </p>
+    </section>
+
+    <!-- Report Templates (Standard + Full only) -->
+    <div id="templatesCard" class="card" style="display:none; margin-top:10px;">
+      <h2>Quick Report Templates</h2>
+      <p>Pick a template to auto-fill the filters and run the report instantly.</p>
+      <div class="field" style="max-width:360px;">
+        <label for="templateSelect">Select a template</label>
+        <select id="templateSelect">
+          <option value="">-- Choose a template --</option>
+        </select>
+      </div>
+      <div class="bar">
+        <button id="applyTemplateBtn" class="btn secondary" type="button" disabled>Apply Template</button>
+      </div>
+      <div id="templateMsg" class="msg"></div>
+    </div>
+
+    <!-- KPI strip -->
+    <div class="kpi-strip">
+      <div class="kpi-box"><div class="kpi-label">Total Hours</div><div id="kpiHours" class="kpi-value">&mdash;</div></div>
+      <div class="kpi-box"><div class="kpi-label">Total Points</div><div id="kpiPoints" class="kpi-value">&mdash;</div></div>
+      <div class="kpi-box"><div class="kpi-label">Unique Users</div><div id="kpiUsers" class="kpi-value">&mdash;</div></div>
+      <div class="kpi-box"><div class="kpi-label">Shifts</div><div id="kpiRows" class="kpi-value">&mdash;</div></div>
+    </div>
+
+    <!-- Filters + table -->
+    <section class="card">
+      <h2>Filters</h2>
+      <p>Run a report to see all shifts. Export is available on Standard and Full plans.</p>
+
+      <div class="filters-grid">
+        <div class="field">
+          <label for="reportType">Type</label>
+          <select id="reportType">
+            <option value="all">All</option>
+            <option value="staff">Staff</option>
+            <option value="vol">Volunteer</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="status">Status</label>
+          <select id="status">
+            <option value="">All</option>
+            <option value="pending">Pending</option>
+            <option value="approved">Approved</option>
+            <option value="rejected">Rejected</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="dept">Department</label>
+          <select id="dept"><option value="">All departments</option></select>
+        </div>
+        <div class="field">
+          <label for="search">Name or Badge #</label>
+          <input id="search" type="text" placeholder="e.g. Ben or 1234" />
+        </div>
+        <div class="field">
+          <label for="startDate">Start date</label>
+          <input id="startDate" type="date" />
+        </div>
+        <div class="field">
+          <label for="endDate">End date</label>
+          <input id="endDate" type="date" />
+        </div>
+      </div>
+
+      <div class="bar">
+        <button id="runBtn" class="btn" type="button">Run Report</button>
+        <button id="csvBtn" class="btn secondary" type="button" disabled style="display:none;">Export CSV</button>
+        <button id="pdfBtn" class="btn secondary" type="button" disabled style="display:none;">Export PDF</button>
+      </div>
+
+      <div id="message" class="msg" aria-live="polite"></div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Full Name</th>
+              <th>Badge #</th>
+              <th>Type</th>
+              <th>Department</th>
+              <th>Date</th>
+              <th>Clock In</th>
+              <th>Clock Out</th>
+              <th>Hours</th>
+              <th>Points</th>
+              <th>Status</th>
+              <th>Notes</th>
+            </tr>
+          </thead>
+          <tbody id="tbody">
+            <tr><td colspan="11" style="color:var(--muted); padding:16px;">Run a report to see results.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p style="margin:10px 0 0; font-size:12px; color:var(--muted);">
+        Hours rounded up to nearest 0.25 &nbsp;&middot;&nbsp; Each row = one shift entry
+      </p>
+    </section>
+
+    <div class="footer">Admin access required.</div>
+  </main>
+
+  <script type="module">
+    import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+
+    const SUPABASE_URL     = 'https://mjnphetnuiuxgsghzdoo.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1qbnBoZXRudWl1eGdzZ2h6ZG9vIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE4OTA2OTMsImV4cCI6MjA4NzQ2NjY5M30.sB1i6dy5e7brQHRiCJ-0Kf2aIcIO1DkUR1O2RtkmRGc';
+    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    const rolePill    = document.getElementById('rolePill');
+    const backBtn     = document.getElementById('backBtn');
+    const logoutBtn   = document.getElementById('logoutBtn');
+    const msgEl       = document.getElementById('message');
+    const tbody       = document.getElementById('tbody');
+    const reportType  = document.getElementById('reportType');
+    const statusEl    = document.getElementById('status');
+    const deptEl      = document.getElementById('dept');
+    const searchEl    = document.getElementById('search');
+    const startDateEl = document.getElementById('startDate');
+    const endDateEl   = document.getElementById('endDate');
+    const runBtn      = document.getElementById('runBtn');
+    const csvBtn      = document.getElementById('csvBtn');
+    const pdfBtn      = document.getElementById('pdfBtn');
+    const kpiHours    = document.getElementById('kpiHours');
+    const kpiPoints   = document.getElementById('kpiPoints');
+    const kpiUsers    = document.getElementById('kpiUsers');
+    const kpiRows     = document.getElementById('kpiRows');
+
+    let rows = [];
+    let PLAN = 'basic';
+
+    // -- Helpers ----------------------------------------------
+    function setMsg(type, text) {
+      msgEl.className = 'msg ' + (type || '');
+      msgEl.textContent = text || '';
+      msgEl.style.display = text ? 'block' : 'none';
+    }
+
+    function esc(s) {
+      return String(s ?? '')
+        .replaceAll('&','&amp;').replaceAll('<','&lt;')
+        .replaceAll('>','&gt;').replaceAll('"','&quot;');
+    }
+
+    function safe(v) { return (v === null || v === undefined || v === '') ? '--' : String(v); }
+
+    function roundUp25(h) {
+      const n = Number(h || 0);
+      if (n <= 0) return 0;
+      return Math.ceil(n * 4) / 4;
+    }
+
+    function fmtDate(iso) {
+      if (!iso) return '--';
+      return new Date(iso).toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' });
+    }
+
+    function fmtTime(iso) {
+      if (!iso) return '--';
+      return new Date(iso).toLocaleTimeString('en-US', { hour:'numeric', minute:'2-digit', hour12:true });
+    }
+
+    function roleInfo(role, source) {
+      const r = (role || '').toLowerCase();
+      if (r === 'admin' || r === 'super_user')       return { label:'Admin',     cls:'role-admin' };
+      if (r === 'staff' || r === 'volunteer_staff')  return { label:'Staff',     cls:'role-staff' };
+      if (source === 'staff_hours')                  return { label:'Staff',     cls:'role-staff' };
+      return                                                { label:'Volunteer', cls:'role-vol'   };
+    }
+
+    function statusCls(s) {
+      if (s === 'approved') return 's-approved';
+      if (s === 'rejected') return 's-rejected';
+      return 's-pending';
+    }
+
+    // -- Auth guard -------------------------------------------
+    async function guardAdmin() {
+      const { data, error } = await supabase.auth.getSession();
+      if (error) throw error;
+      const session = data?.session;
+      if (!session?.user?.id) { window.location.href = '../index.html'; return; }
+
+      const { data: p, error: pe } = await supabase
+        .from('core_users')
+        .select('id, auth_id, role, is_active, plan')
+        .eq('auth_id', session.user.id)
+        .single();
+      if (pe) throw pe;
+
+      const role = (p?.role || '').toLowerCase().trim();
+      if (!p?.is_active || (role !== 'admin' && role !== 'super_user')) {
+        await supabase.auth.signOut();
+        window.location.href = '../index.html';
+        return;
+      }
+
+      PLAN = (p.plan || 'basic').toLowerCase();
+      localStorage.setItem('core_user_profile', JSON.stringify(p));
+      rolePill.textContent = role === 'super_user' ? 'Role: Super User' : 'Role: Admin';
+
+      if (PLAN !== 'basic') {
+        csvBtn.style.display = 'inline-block';
+        pdfBtn.style.display = 'inline-block';
+        document.getElementById('templatesCard').style.display = 'block';
+      }
+    }
+
+    // -- Departments dropdown ----------------------------------
+    async function loadDepts() {
+      const { data, error } = await supabase
+        .from('core_departments').select('id,name,code,is_active')
+        .order('name', { ascending:true }).limit(500);
+      if (error) return;
+      const active = (data || []).filter(d => d.is_active);
+      deptEl.innerHTML = `<option value="">All departments<\/option>` +
+        active.map(d => `<option value="${esc(d.id)}">${esc(d.name)} (${esc(d.code)})<\/option>`).join('');
+    }
+
+    // -- Render ------------------------------------------------
+    function render() {
+      if (!rows.length) {
+        tbody.innerHTML = `<tr><td colspan="11" style="color:var(--muted);padding:16px;">No results.<\/td><\/tr>`;
+        csvBtn.disabled = true;
+        pdfBtn.disabled = true;
+        kpiHours.textContent = kpiPoints.textContent = kpiUsers.textContent = kpiRows.textContent = '--';
+        return;
+      }
+
+      tbody.innerHTML = rows.map(r => {
+        const ri = roleInfo(r.user_role, r._source);
+        return `<tr>
+          <td>${esc(safe(r.user_name))}<\/td>
+          <td>${esc(safe(r.badge_number))}<\/td>
+          <td class="${ri.cls}">${ri.label}<\/td>
+          <td>${esc(safe(r.department_name))}<\/td>
+          <td style="white-space:nowrap;">${fmtDate(r.start_time)}<\/td>
+          <td style="white-space:nowrap;">${fmtTime(r.start_time)}<\/td>
+          <td style="white-space:nowrap;">${fmtTime(r.end_time)}<\/td>
+          <td><b>${r.hours_rounded > 0 ? r.hours_rounded.toFixed(2) : '--'}<\/b><\/td>
+          <td>${r.points_earned != null ? Math.round(Number(r.points_earned)) : '--'}<\/td>
+          <td class="${statusCls(r.status)}">${esc(safe(r.status))}<\/td>
+          <td style="color:var(--muted);font-size:12px;">${esc(safe(r.notes))}<\/td>
+        <\/tr>`;
+      }).join('');
+
+      const totalH = rows.reduce((a, r) => a + r.hours_rounded, 0);
+      const totalP = rows.reduce((a, r) => a + (r.points_earned != null ? Number(r.points_earned) : 0), 0);
+      const uUsers = new Set(rows.map(r => r.user_id)).size;
+
+      kpiHours.textContent  = totalH.toFixed(2);
+      kpiPoints.textContent = Math.round(totalP).toLocaleString();
+      kpiUsers.textContent  = String(uUsers);
+      kpiRows.textContent   = String(rows.length);
+
+      if (PLAN !== 'basic') {
+        csvBtn.disabled = false;
+        pdfBtn.disabled = false;
+      }
+    }
+
+    // -- Run Report --------------------------------------------
+    async function runReport() {
+      setMsg('', '');
+      tbody.innerHTML = `<tr><td colspan="11" style="color:var(--muted);padding:16px;">Loading...<\/td><\/tr>`;
+      csvBtn.disabled = true;
+      pdfBtn.disabled = true;
+      runBtn.disabled = true;
+      runBtn.textContent = 'Loading...';
+
+      const type      = reportType.value;
+      const status    = (statusEl.value || '').trim();
+      const deptId    = (deptEl.value || '').trim();
+      const q         = (searchEl.value || '').trim().toLowerCase();
+      const startDate = startDateEl.value ? startDateEl.value + 'T00:00:00' : null;
+      const endDate   = endDateEl.value   ? endDateEl.value   + 'T23:59:59' : null;
+
+      const tables = type === 'all' ? ['vol_hours','staff_hours']
+                   : type === 'staff' ? ['staff_hours'] : ['vol_hours'];
+
+      let allData = [];
+
+      for (const table of tables) {
+        let query = supabase
+          .from(table)
+          .select(`
+            id, user_id, department_id, total_hours, points_earned, status, start_time, end_time, notes,
+            core_users:core_users!${table}_user_id_fkey ( first_name, last_name, nickname, badge_number, role ),
+            core_departments:core_departments ( name )
+          `)
+          .order('start_time', { ascending:false })
+          .limit(5000);
+
+        if (status)    query = query.eq('status', status);
+        if (deptId)    query = query.eq('department_id', deptId);
+        if (startDate) query = query.gte('start_time', startDate);
+        if (endDate)   query = query.lte('end_time', endDate);
+
+        const { data, error } = await query;
+        if (error) {
+          setMsg('error', error.message || 'Report failed.');
+          rows = [];
+          render();
+          runBtn.disabled = false;
+          runBtn.textContent = 'Run Report';
+          return;
+        }
+        (data || []).forEach(x => { x._source = table; allData.push(x); });
+      }
+
+      let built = allData.map(x => {
+        const u = x.core_users || {};
+        const d = x.core_departments || {};
+        const nick = (u.nickname || '').trim();
+        const full = ([u.first_name, u.last_name].filter(Boolean).join(' ')).trim();
+        return {
+          _source:         x._source,
+          user_id:         x.user_id,
+          user_name:       nick || full || '--',
+          user_role:       u.role || '',
+          badge_number:    u.badge_number || '--',
+          department_name: d.name || '--',
+          start_time:      x.start_time,
+          end_time:        x.end_time,
+          hours_rounded:   roundUp25(x.total_hours),
+          points_earned:   x.points_earned,
+          status:          (x.status || '').toLowerCase(),
+          notes:           x.notes || '',
+        };
+      });
+
+      if (q) built = built.filter(r => (r.user_name + ' ' + r.badge_number).toLowerCase().includes(q));
+      built.sort((a, b) => new Date(b.start_time) - new Date(a.start_time));
+
+      rows = built;
+      render();
+      runBtn.disabled = false;
+      runBtn.textContent = 'Run Report';
+      setMsg('ok', `Report loaded -- ${rows.length} shift(s).`);
+      setTimeout(() => setMsg('', ''), 3000);
+    }
+
+    // -- CSV Export --------------------------------------------
+    function toCSV(v) {
+      const s = String(v ?? '');
+      return /[",\n]/.test(s) ? `"${s.replaceAll('"','""')}"` : s;
+    }
+
+    function exportCsv() {
+      if (!rows.length) return;
+      const h = ['full_name','badge_number','type','department','date','clock_in','clock_out','hours','points','status','notes'];
+      const lines = [
+        h.join(','),
+        ...rows.map(r => [
+          r.user_name,
+          r.badge_number,
+          roleInfo(r.user_role, r._source).label,
+          r.department_name,
+          r.start_time ? new Date(r.start_time).toLocaleDateString('en-US') : '',
+          fmtTime(r.start_time),
+          fmtTime(r.end_time),
+          r.hours_rounded > 0 ? r.hours_rounded.toFixed(2) : '',
+          r.points_earned != null ? Math.round(Number(r.points_earned)) : '',
+          r.status,
+          r.notes,
+        ].map(toCSV).join(','))
+      ];
+      const blob = new Blob([lines.join('\n')], { type:'text/csv;charset=utf-8;' });
+      const url  = URL.createObjectURL(blob);
+      const a    = Object.assign(document.createElement('a'), { href:url, download:`animeiowa_report_${reportType.value}_${new Date().toISOString().slice(0,10)}.csv` });
+      document.body.appendChild(a); a.click(); a.remove();
+      URL.revokeObjectURL(url);
+    }
+
+    // -- PDF Export --------------------------------------------
+    function exportPdf() {
+      if (!rows.length) return;
+      const totalH  = rows.reduce((a, r) => a + r.hours_rounded, 0);
+      const totalP  = Math.round(rows.reduce((a, r) => a + (r.points_earned != null ? Number(r.points_earned) : 0), 0));
+      const uUsers  = new Set(rows.map(r => r.user_id)).size;
+      const genOn   = new Date().toLocaleString('en-US');
+      const typeLabel   = reportType.options[reportType.selectedIndex].text;
+      const statusLabel = statusEl.options[statusEl.selectedIndex].text;
+
+      const tRows = rows.map(r => {
+        const ri = roleInfo(r.user_role, r._source);
+        return `<tr>
+          <td>${esc(safe(r.user_name))}<\/td>
+          <td>${esc(safe(r.badge_number))}<\/td>
+          <td>${ri.label}<\/td>
+          <td>${esc(safe(r.department_name))}<\/td>
+          <td>${fmtDate(r.start_time)}<\/td>
+          <td>${fmtTime(r.start_time)}<\/td>
+          <td>${fmtTime(r.end_time)}<\/td>
+          <td>${r.hours_rounded > 0 ? r.hours_rounded.toFixed(2) : '--'}<\/td>
+          <td>${r.points_earned != null ? Math.round(Number(r.points_earned)) : '--'}<\/td>
+          <td>${esc(safe(r.status))}<\/td>
+        <\/tr>`;
+      }).join('');
+
+      const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"\/>
+<title>AnimeIowa Report<\/title>
+<style>
+  body{font-family:Arial,sans-serif;margin:24px;color:#111;font-size:12px;}
+  h1{font-size:18px;margin:0 0 4px;}
+  .meta{color:#555;font-size:11px;margin-bottom:14px;}
+  .kpis{display:flex;gap:14px;margin-bottom:14px;flex-wrap:wrap;}
+  .kpi{background:#f4f4f4;border-radius:8px;padding:8px 14px;}
+  .kpi .l{font-size:10px;color:#777;}
+  .kpi .v{font-size:16px;font-weight:bold;}
+  table{width:100%;border-collapse:collapse;}
+  th{background:#1a1a1a;color:#fff;padding:7px 8px;text-align:left;font-size:11px;}
+  td{padding:6px 8px;border-bottom:1px solid #e5e5e5;font-size:11px;}
+  tr:nth-child(even) td{background:#f9f9f9;}
+  @media print{body{margin:10px;}}
+<\/style>
+<\/head><body>
+<h1>AnimeIowa -- Hours Report<\/h1>
+<div class="meta">Generated: ${genOn} &nbsp;&middot;&nbsp; Type: ${esc(typeLabel)} &nbsp;&middot;&nbsp; Status: ${esc(statusLabel)}<\/div>
+<div class="kpis">
+  <div class="kpi"><div class="l">Total Hours<\/div><div class="v">${totalH.toFixed(2)}<\/div><\/div>
+  <div class="kpi"><div class="l">Total Points<\/div><div class="v">${totalP.toLocaleString()}<\/div><\/div>
+  <div class="kpi"><div class="l">Unique Users<\/div><div class="v">${uUsers}<\/div><\/div>
+  <div class="kpi"><div class="l">Shifts<\/div><div class="v">${rows.length}<\/div><\/div>
+<\/div>
+<table><thead><tr>
+  <th>Full Name<\/th><th>Badge #<\/th><th>Type<\/th><th>Department<\/th>
+  <th>Date<\/th><th>Clock In<\/th><th>Clock Out<\/th><th>Hours<\/th><th>Points<\/th><th>Status<\/th>
+<\/tr><\/thead><tbody>${tRows}<\/tbody><\/table>
+<\/body><\/html>`;
+
+      const win = window.open('', '_blank');
+      win.document.write(html);
+      win.document.close();
+      win.focus();
+      setTimeout(() => win.print(), 400);
+    }
+
+    // -- Events ------------------------------------------------
+    backBtn.addEventListener('click', () => {
+      window.location.assign(new URL('../admin.html', window.location.href).toString());
+    });
+    logoutBtn.addEventListener('click', async () => {
+      logoutBtn.disabled = true;
+      try { await supabase.auth.signOut(); } finally {
+        localStorage.removeItem('core_user_profile');
+        window.location.href = '../index.html';
+      }
+    });
+    runBtn.addEventListener('click', runReport);
+    csvBtn.addEventListener('click', exportCsv);
+    pdfBtn.addEventListener('click', exportPdf);
+
+    // -- Templates --------------------------------------------
+    let templates = [];
+
+    async function loadTemplates() {
+      const { data, error } = await supabase
+        .from('report_templates')
+        .select('*')
+        .eq('is_active', true)
+        .order('name', { ascending: true });
+      if (error || !data?.length) return;
+
+      templates = data;
+      const sel = document.getElementById('templateSelect');
+      sel.innerHTML = '<option value="">-- Choose a template --</option>' +
+        templates.map(t => `<option value="${esc(t.id)}">${esc(t.name)}${t.description ? ' -- ' + esc(t.description) : ''}</option>`).join('');
+
+      document.getElementById('applyTemplateBtn').disabled = false;
+    }
+
+    function applyTemplate() {
+      const sel = document.getElementById('templateSelect');
+      const id  = sel.value;
+      if (!id) return;
+
+      const t = templates.find(x => x.id === id);
+      if (!t) return;
+
+      // Fill filters
+      reportType.value = t.report_type || 'all';
+      statusEl.value   = t.status_filter || '';
+
+      if (t.department_id) {
+        deptEl.value = t.department_id;
+      } else {
+        deptEl.value = '';
+      }
+
+      // Handle date range
+      const now   = new Date();
+      const today = now.toISOString().slice(0, 10);
+
+      if (t.date_range === 'this_week') {
+        const day  = now.getDay();
+        const diff = now.getDate() - day + (day === 0 ? -6 : 1);
+        const mon  = new Date(now.setDate(diff));
+        startDateEl.value = mon.toISOString().slice(0, 10);
+        endDateEl.value   = today;
+      } else if (t.date_range === 'this_month') {
+        startDateEl.value = today.slice(0, 7) + '-01';
+        endDateEl.value   = today;
+      } else if (t.date_range === 'this_year') {
+        startDateEl.value = today.slice(0, 4) + '-01-01';
+        endDateEl.value   = today;
+      } else {
+        startDateEl.value = '';
+        endDateEl.value   = '';
+      }
+
+      const tMsg = document.getElementById('templateMsg');
+      tMsg.className = 'msg ok';
+      tMsg.textContent = `Template "${t.name}" applied -- running report...`;
+      tMsg.style.display = 'block';
+      setTimeout(() => { tMsg.style.display = 'none'; }, 2500);
+
+      // Auto-run
+      runReport();
+    }
+
+    document.getElementById('applyTemplateBtn')?.addEventListener('click', applyTemplate);
+
+    // -- Boot --------------------------------------------------
+    (async () => {
+      try {
+        await guardAdmin();
+        await loadDepts();
+        if (PLAN !== 'basic') await loadTemplates();
+      } catch (e) {
+        setMsg('error', e?.message || 'Failed to load Reports.');
+      }
+    })();
+  </script>
+</body>
+</html>

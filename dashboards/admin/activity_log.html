@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="stylesheet" href="../animeiowa.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1" />
+  <title>AnimeIowa | Activity Log</title>
+  <style>
+    :root{
+      --bg:#000;--card:rgba(255,255,255,0.06);--card-border:rgba(255,255,255,0.10);
+      --text:rgba(255,255,255,0.92);--muted:rgba(255,255,255,0.70);
+      --danger:#ff6b6b;--ok:#7CFC90;--btn:#ffffff;--btnText:#000000;
+      --btn2-bg:rgba(255,255,255,0.10);--btn2-border:rgba(255,255,255,0.16);
+      --inputBg:rgba(255,255,255,0.08);--inputBorder:rgba(255,255,255,0.14);
+      --focus:rgba(255,255,255,0.28);
+    }
+    *{box-sizing:border-box;}
+    html,body{height:100%;margin:0;}
+    body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:var(--bg);color:var(--text);}
+    .topbar{position:sticky;top:0;z-index:10;background:rgba(0,0,0,0.85);backdrop-filter:blur(10px);border-bottom:1px solid rgba(255,255,255,0.10);}
+    .topbar-inner{max-width:1200px;margin:0 auto;padding:10px 12px;display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;}
+    .brand{display:flex;flex-direction:column;gap:2px;min-width:0;}
+    .brand h1{margin:0;font-size:18px;font-weight:900;line-height:1.1;white-space:nowrap;}
+    .brand .sub{margin:0;font-size:12px;color:var(--muted);}
+    .actions{display:flex;gap:6px;align-items:center;flex-wrap:wrap;}
+    .btn{appearance:none;border:none;border-radius:12px;padding:12px 14px;font-weight:900;font-size:14px;cursor:pointer;background:var(--btn);color:var(--btnText);line-height:1;white-space:nowrap;}
+    .btn.secondary{background:var(--btn2-bg);color:var(--text);border:1px solid var(--btn2-border);font-weight:800;}
+    .btn:disabled{opacity:0.55;cursor:not-allowed;}
+    .pill{display:inline-flex;align-items:center;gap:8px;padding:8px 10px;border-radius:999px;border:1px solid rgba(255,255,255,0.12);background:rgba(255,255,255,0.05);color:var(--muted);font-size:12px;white-space:nowrap;}
+    .container{max-width:1200px;margin:0 auto;padding:16px;}
+    .card{background:var(--card);border:1px solid var(--card-border);border-radius:16px;padding:16px;margin-bottom:14px;}
+    .card h2{margin:0 0 6px;font-size:16px;font-weight:950;}
+    .msg{margin-top:12px;font-size:14px;line-height:1.35;padding:10px 12px;border-radius:12px;border:1px solid rgba(255,255,255,0.12);background:rgba(255,255,255,0.05);display:none;word-break:break-word;}
+    .msg.error{color:var(--danger);display:block;}
+    .msg.ok{color:var(--ok);display:block;}
+    .field label{display:block;font-size:12px;color:var(--muted);margin-bottom:5px;}
+    .field input,.field select{width:100%;padding:10px 12px;border-radius:12px;border:1px solid var(--inputBorder);background:var(--inputBg);color:var(--text);font-size:14px;outline:none;-webkit-appearance:none;appearance:none;}
+    .field select{background:#fff;color:#000;}
+    .field input:focus,.field select:focus{border-color:var(--focus);box-shadow:0 0 0 3px rgba(255,255,255,0.08);}
+    .filters-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+    @media(min-width:600px){.filters-grid{grid-template-columns:repeat(3,1fr);}}
+    @media(min-width:900px){.filters-grid{grid-template-columns:repeat(5,1fr);}}
+    .bar{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;align-items:center;}
+    .table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;border-radius:14px;border:1px solid rgba(255,255,255,0.10);margin-top:12px;}
+    table{width:100%;border-collapse:collapse;min-width:900px;background:rgba(0,0,0,0.15);}
+    th,td{padding:11px 10px;border-bottom:1px solid rgba(255,255,255,0.08);text-align:left;font-size:13px;vertical-align:middle;}
+    th{color:var(--muted);font-weight:900;font-size:12px;position:sticky;top:0;background:rgba(0,0,0,0.65);backdrop-filter:blur(10px);white-space:nowrap;z-index:1;}
+    .a-approved{color:var(--ok);}
+    .a-rejected{color:var(--danger);}
+    .a-edited{color:#7fc8ff;}
+    .a-account_activated{color:#b8a0ff;}
+    .a-account_deactivated{color:var(--danger);}
+    .a-role_changed{color:#FFD700;}
+    .a-badge_assigned{color:#FFD700;}
+    .a-plan_changed{color:#7fc8ff;}
+    .a-profile_updated{color:var(--muted);}
+    .a-other{color:var(--muted);}
+    .footer{margin:18px 0 40px;color:var(--muted);font-size:12px;text-align:center;}
+    @media(max-width:480px){.btn{padding:8px 10px;font-size:12px;}.pill{font-size:11px;padding:6px 8px;}}
+  </style>
+</head>
+<body>
+  <div class="topbar">
+    <div class="topbar-inner">
+      <div class="brand">
+        <h1>AnimeIowa</h1>
+        <p class="sub">Activity Log</p>
+      </div>
+      <div class="actions">
+        <span id="rolePill" class="pill">Loading...</span>
+        <button id="backBtn" class="btn secondary" type="button">Back</button>
+        <button id="logoutBtn" class="btn secondary" type="button">Log Out</button>
+      </div>
+    </div>
+  </div>
+
+  <main class="container">
+
+    <section class="card" style="margin-top:10px;border-color:rgba(170,132,82,0.5);background:rgba(170,132,82,0.08);">
+      <h2 style="margin-bottom:10px;">Testing Guide -- Activity Log</h2>
+      <p style="font-size:14px;line-height:1.7;color:var(--text);margin:0;">
+        <b>What this page is:</b> A full audit trail of every action taken in the system.<br><br>
+        <b>Action Type</b> -- Filter by approved, rejected, edited, activated, deactivated, role changed, etc.<br>
+        <b>Hour Type</b> -- Filter by volunteer hours, staff hours, or user management actions.<br>
+        <b>Search</b> -- Search by name, description, or action.<br>
+        <b>Date Range</b> -- Narrow to a specific period.<br><br>
+        <b>How to test:</b> Approve or reject some hours, then come back here and click Load Log to see the entries.
+      </p>
+    </section>
+
+    <section class="card">
+      <h2>Filters</h2>
+
+      <div class="filters-grid">
+        <div class="field">
+          <label for="actionFilter">Action Type</label>
+          <select id="actionFilter">
+            <option value="">All actions</option>
+            <option value="approved">Approved</option>
+            <option value="rejected">Rejected</option>
+            <option value="edited">Edited</option>
+            <option value="account_activated">Account Activated</option>
+            <option value="account_deactivated">Account Deactivated</option>
+            <option value="role_changed">Role Changed</option>
+            <option value="badge_assigned">Badge Assigned</option>
+            <option value="plan_changed">Plan Changed</option>
+            <option value="profile_updated">Profile Updated</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="typeFilter">Hour Type</label>
+          <select id="typeFilter">
+            <option value="">All types</option>
+            <option value="vol_hours">Volunteer Hours</option>
+            <option value="staff_hours">Staff Hours</option>
+            <option value="user">User Management</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="searchInput">Search</label>
+          <input id="searchInput" type="text" placeholder="Name, description..." />
+        </div>
+        <div class="field">
+          <label for="startDate">Start Date</label>
+          <input id="startDate" type="date" />
+        </div>
+        <div class="field">
+          <label for="endDate">End Date</label>
+          <input id="endDate" type="date" />
+        </div>
+      </div>
+
+      <div class="bar">
+        <button id="loadBtn" class="btn" type="button">Load Log</button>
+      </div>
+
+      <div id="message" class="msg" aria-live="polite"></div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Date &amp; Time</th>
+              <th>Action</th>
+              <th>Type</th>
+              <th>Performed By</th>
+              <th>Target User</th>
+              <th>Description</th>
+              <th>Previous</th>
+              <th>New</th>
+            </tr>
+          </thead>
+          <tbody id="tbody">
+            <tr><td colspan="8" style="color:var(--muted);padding:16px;">Click Load Log to see activity.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p style="margin:10px 0 0;font-size:12px;color:var(--muted);">Showing most recent first. Max 1000 entries per load.</p>
+    </section>
+
+    <div class="footer">Admin access required -- Full plan only.</div>
+  </main>
+
+  <script type="module">
+    import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+
+    const SUPABASE_URL      = 'https://mjnphetnuiuxgsghzdoo.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1qbnBoZXRudWl1eGdzZ2h6ZG9vIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE4OTA2OTMsImV4cCI6MjA4NzQ2NjY5M30.sB1i6dy5e7brQHRiCJ-0Kf2aIcIO1DkUR1O2RtkmRGc';
+    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    const rolePill    = document.getElementById('rolePill');
+    const backBtn     = document.getElementById('backBtn');
+    const logoutBtn   = document.getElementById('logoutBtn');
+    const msgEl       = document.getElementById('message');
+    const tbody       = document.getElementById('tbody');
+    const loadBtn     = document.getElementById('loadBtn');
+    const actionFilter = document.getElementById('actionFilter');
+    const typeFilter  = document.getElementById('typeFilter');
+    const searchInput = document.getElementById('searchInput');
+    const startDate   = document.getElementById('startDate');
+    const endDate     = document.getElementById('endDate');
+
+    function setMsg(type, text) {
+      msgEl.className = 'msg ' + (type || '');
+      msgEl.textContent = text || '';
+      msgEl.style.display = text ? 'block' : 'none';
+    }
+
+    function esc(s) {
+      return String(s ?? '').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;');
+    }
+
+    function safe(v) { return (v === null || v === undefined || v === '') ? '--' : String(v); }
+
+    function fmtDateTime(iso) {
+      if (!iso) return '--';
+      return new Date(iso).toLocaleString('en-US', { month:'short', day:'numeric', year:'numeric', hour:'numeric', minute:'2-digit', hour12:true });
+    }
+
+    function actionClass(action) {
+      const a = (action || '').toLowerCase();
+      const map = { approved:'a-approved', rejected:'a-rejected', edited:'a-edited', account_activated:'a-account_activated', account_deactivated:'a-account_deactivated', role_changed:'a-role_changed', badge_assigned:'a-badge_assigned', plan_changed:'a-plan_changed', profile_updated:'a-profile_updated' };
+      return map[a] || 'a-other';
+    }
+
+    function typeLabel(t) {
+      if (t === 'vol_hours')   return 'Volunteer';
+      if (t === 'staff_hours') return 'Staff';
+      if (t === 'user')        return 'User Mgmt';
+      return safe(t);
+    }
+
+    // -- Auth guard (admin + full plan only) --
+    async function guard() {
+      const { data, error } = await supabase.auth.getSession();
+      if (error) throw error;
+      const session = data?.session;
+      if (!session?.user?.id) { window.location.href = '../index.html'; return; }
+
+      const { data: p, error: pe } = await supabase
+        .from('core_users')
+        .select('id, role, is_active, plan, first_name, last_name')
+        .eq('auth_id', session.user.id)
+        .single();
+      if (pe) throw pe;
+
+      const role = (p?.role || '').toLowerCase().trim();
+      if (!p?.is_active || (role !== 'admin' && role !== 'super_user')) {
+        window.location.href = '../index.html'; return;
+      }
+
+      const plan = (p?.plan || 'basic').toLowerCase();
+      if (plan !== 'full') {
+        window.location.href = '../admin.html'; return;
+      }
+
+      localStorage.setItem('core_user_profile', JSON.stringify(p));
+      rolePill.textContent = role === 'super_user' ? 'Role: Super User' : 'Role: Admin';
+    }
+
+    // -- Load user names for display --
+    let userCache = {};
+    async function getUserName(id) {
+      if (!id) return '--';
+      if (userCache[id]) return userCache[id];
+      const { data } = await supabase.from('core_users').select('first_name, last_name, nickname').eq('id', id).single();
+      if (!data) return id.slice(0, 8) + '...';
+      const nick = (data.nickname || '').trim();
+      const full = ([data.first_name, data.last_name].filter(Boolean).join(' ')).trim();
+      const name = nick || full || '--';
+      userCache[id] = name;
+      return name;
+    }
+function friendlyDescription(r) {
+      const action   = (r.action || '').toLowerCase();
+      const type     = (r.hour_type || '').toLowerCase();
+      const meta     = r.meta || {};
+      const userName = userCache[r.target_user_id] || meta.user_name || null;
+
+      // Hours approved
+      if (action === 'approved' && type === 'vol_hours')
+        return `Volunteer hours approved${meta.points_earned ? ' -- ' + Math.round(meta.points_earned) + ' points awarded' : ''}${meta.total_hours ? ' -- ' + Number(meta.total_hours).toFixed(2) + ' hrs' : ''}`;
+
+      if (action === 'approved' && type === 'staff_hours')
+        return `Staff hours approved${meta.total_hours ? ' -- ' + Number(meta.total_hours).toFixed(2) + ' hrs' : ''}`;
+
+      // Hours rejected
+      if (action === 'rejected' && type === 'vol_hours')
+        return 'Volunteer hours rejected';
+
+      if (action === 'rejected' && type === 'staff_hours')
+        return 'Staff hours rejected';
+
+      // Hours edited
+      if (action === 'edited' && type === 'vol_hours')
+        return 'Volunteer shift edited by admin';
+
+      if (action === 'edited' && type === 'staff_hours')
+        return 'Staff shift edited by admin';
+
+      // User management
+      if (action === 'account_activated')
+        return `Account activated${userName ? ' -- ' + userName : ''}`;
+
+      if (action === 'account_deactivated')
+        return `Account deactivated${userName ? ' -- ' + userName : ''}`;
+
+      if (action === 'role_changed')
+        return `Role changed to ${meta.new_role || '--'}${userName ? ' -- ' + userName : ''}`;
+
+      if (action === 'badge_assigned')
+        return `Badge number assigned: ${meta.new_badge || '--'}${userName ? ' -- ' + userName : ''}`;
+
+      if (action === 'plan_changed')
+        return `Plan changed to ${meta.new_plan || '--'}${userName ? ' -- ' + userName : ''}`;
+
+      if (action === 'profile_updated')
+        return `Profile updated${userName ? ' -- ' + userName : ''}`;
+
+      // Points added
+      if (action === 'points_added' || (r.description || '').toLowerCase().includes('points'))
+        return `Points awarded${meta.points ? ' -- ' + Math.round(Number(meta.points)) + ' pts' : ''}${meta.source_type ? ' from ' + meta.source_type.replace('_', ' ') : ''}`;
+
+      // Fallback to whatever description is stored
+      return r.description || '--';
+    }
+    // -- Load log --
+    async function loadLog() {
+      setMsg('', '');
+      tbody.innerHTML = `<tr><td colspan="8" style="color:var(--muted);padding:16px;">Loading...</td></tr>`;
+      loadBtn.disabled = true;
+      loadBtn.textContent = 'Loading...';
+
+      const action  = actionFilter.value;
+      const type    = typeFilter.value;
+      const q       = (searchInput.value || '').trim().toLowerCase();
+      const start   = startDate.value ? startDate.value + 'T00:00:00' : null;
+      const end     = endDate.value   ? endDate.value   + 'T23:59:59' : null;
+
+      let query = supabase
+        .from('hour_approval_log')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(1000);
+
+      if (action) query = query.eq('action', action);
+      if (type)   query = query.eq('hour_type', type);
+      if (start)  query = query.gte('created_at', start);
+      if (end)    query = query.lte('created_at', end);
+
+      const { data, error } = await query;
+      if (error) {
+        setMsg('error', error.message || 'Failed to load log.');
+        tbody.innerHTML = `<tr><td colspan="8" style="color:var(--muted);padding:16px;">Failed to load.</td></tr>`;
+        loadBtn.disabled = false;
+        loadBtn.textContent = 'Load Log';
+        return;
+      }
+
+      let rows = data || [];
+
+      // Client side search
+      if (q) {
+        rows = rows.filter(r => {
+          const hay = [r.action, r.description, r.hour_type, r.previous_status, r.new_status].join(' ').toLowerCase();
+          return hay.includes(q);
+        });
+      }
+
+      if (!rows.length) {
+        tbody.innerHTML = `<tr><td colspan="8" style="color:var(--muted);padding:16px;">No entries found.</td></tr>`;
+        loadBtn.disabled = false;
+        loadBtn.textContent = 'Load Log';
+        setMsg('ok', 'No entries match your filters.');
+        setTimeout(() => setMsg('', ''), 3000);
+        return;
+      }
+
+      // Fetch user names for all unique IDs
+      const allIds = [...new Set([...rows.map(r => r.performed_by), ...rows.map(r => r.target_user_id)].filter(Boolean))];
+      await Promise.all(allIds.map(id => getUserName(id)));
+
+      tbody.innerHTML = rows.map(r => {
+        const cls = actionClass(r.action);
+        return `<tr>
+          <td style="white-space:nowrap;">${fmtDateTime(r.created_at)}</td>
+          <td class="${cls}">${esc(safe(r.action))}</td>
+          <td style="color:var(--muted);font-size:12px;">${esc(typeLabel(r.hour_type))}</td>
+          <td>${esc(userCache[r.performed_by] || '--')}</td>
+          <td>${esc(userCache[r.target_user_id] || '--')}</td>
+          <td style="max-width:260px;white-space:normal;line-height:1.4;">${esc(friendlyDescription(r))}</td>
+          <td style="color:var(--muted);font-size:12px;">${esc(safe(r.previous_status))}</td>
+          <td style="color:var(--muted);font-size:12px;">${esc(safe(r.new_status))}</td>
+        </tr>`;
+      }).join('');
+
+      loadBtn.disabled = false;
+      loadBtn.textContent = 'Load Log';
+      setMsg('ok', `Loaded ${rows.length} entr${rows.length === 1 ? 'y' : 'ies'}.`);
+      setTimeout(() => setMsg('', ''), 3000);
+    }
+
+    // -- Events --
+    backBtn.addEventListener('click', () => {
+      window.location.assign(new URL('../admin.html', window.location.href).toString());
+    });
+    logoutBtn.addEventListener('click', async () => {
+      logoutBtn.disabled = true;
+      try { await supabase.auth.signOut(); } finally {
+        localStorage.removeItem('core_user_profile');
+        window.location.href = '../index.html';
+      }
+    });
+    loadBtn.addEventListener('click', loadLog);
+
+    // -- Boot --
+    (async () => {
+      try {
+        await guard();
+      } catch (e) {
+        setMsg('error', e?.message || 'Failed to load Activity Log.');
+      }
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="stylesheet" href="./dashboards/animeiowa.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AnimeIowa | Login</title>
+
+  <style>
+    :root {
+      --bg: #000000;
+      --card: rgba(255,255,255,0.06);
+      --card-border: rgba(255,255,255,0.10);
+
+      --text: rgba(255,255,255,0.92);
+      --muted: rgba(255,255,255,0.70);
+
+      --danger: #ff6b6b;
+      --ok: #7CFC90;
+
+      --btn: #ffffff;
+      --btnText: #000000;
+
+      --inputBg: rgba(255,255,255,0.08);
+      --inputBorder: rgba(255,255,255,0.14);
+      --focus: rgba(255,255,255,0.28);
+    }
+
+    * { box-sizing: border-box; }
+   html, body { min-height: 100%; }
+
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  padding: 20px 16px 40px;
+}
+
+    .wrap {
+      width: 100%;
+      max-width: 420px;
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .title {
+      margin: 0;
+      font-size: 28px;
+      font-weight: 800;
+    }
+
+    .subtitle {
+      margin: 8px 0 0 0;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 20px;
+      backdrop-filter: blur(10px);
+    }
+
+    label {
+      display: block;
+      font-size: 13px;
+      color: var(--muted);
+      margin: 14px 0 6px;
+    }
+
+    .input-group {
+      position: relative;
+    }
+
+    input {
+      width: 100%;
+      padding: 14px 12px;
+      border-radius: 12px;
+      border: 1px solid var(--inputBorder);
+      background: var(--inputBg);
+      color: var(--text);
+      outline: none;
+      font-size: 16px;
+    }
+
+    input:focus {
+      border-color: var(--focus);
+      box-shadow: 0 0 0 3px rgba(255,255,255,0.08);
+    }
+
+    .toggle-password {
+      position: absolute;
+      right: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      color: var(--muted);
+      font-size: 13px;
+      cursor: pointer;
+    }
+
+    .btn {
+      width: 100%;
+      margin-top: 18px;
+      padding: 14px;
+      border-radius: 12px;
+      border: none;
+      background: var(--btn);
+      color: var(--btnText);
+      font-size: 16px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .row {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 14px;
+      font-size: 14px;
+    }
+.toggle-password {
+  color: #000000;
+}
+    .link {
+      color: var(--text);
+      text-decoration: none;
+      border-bottom: 1px dashed rgba(255,255,255,0.4);
+      padding-bottom: 2px;
+    }
+
+    .msg {
+      margin-top: 14px;
+      font-size: 14px;
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.05);
+      display: none;
+    }
+
+    .msg.error { color: var(--danger); display:block; }
+    .msg.ok { color: var(--ok); display:block; }
+
+    .tiny {
+      margin-top: 16px;
+      text-align: center;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .plan-card {
+      width: 100%;
+      background: var(--card);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 18px 20px;
+      text-align: left;
+      cursor: pointer;
+      color: var(--text);
+      transition: border-color 0.15s, background 0.15s;
+    }
+    .plan-card:hover {
+      border-color: rgba(255,255,255,0.30);
+      background: rgba(255,255,255,0.10);
+    }
+    .plan-card:disabled { opacity: 0.55; cursor: not-allowed; }
+    .plan-title {
+      font-size: 17px;
+      font-weight: 900;
+      margin-bottom: 6px;
+    }
+    .plan-desc {
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <div class="header">
+      <h1 class="title">AnimeIowa</h1>
+      <p class="subtitle">Volunteer & Staff Hours System</p>
+    </div>
+
+    <div class="card">
+      <form id="loginForm">
+        <label>Email</label>
+        <input id="email" type="email" required />
+
+        <label>Password</label>
+        <div class="input-group">
+          <input id="password" type="password" required />
+          <button type="button" class="toggle-password" id="togglePassword">
+            Show
+          </button>
+        </div>
+
+        <button id="loginBtn" class="btn" type="submit">Log In</button>
+
+        <div id="message" class="msg"></div>
+
+        <div class="row">
+          <a class="link" href="reset.html">Forgot Password?</a>
+          <a class="link" href="signup.html">Create Account</a>
+        </div>
+      </form>
+
+      <div class="tiny">
+        If you don't have access yet, contact an admin.
+      </div>
+    </div>
+
+    <!-- Plan Selector (shown after login) -->
+    <div id="planSelector" style="display:none; width:100%; max-width:520px;">
+      <div class="header">
+        <h1 class="title">AnimeIowa</h1>
+        <p class="subtitle">Choose a plan to preview</p>
+      </div>
+      <div id="planName" style="text-align:center; font-size:13px; color:var(--muted); margin-bottom:16px;"></div>
+
+      <div style="display:flex; flex-direction:column; gap:12px;">
+
+        <button class="plan-card" data-plan="basic" type="button">
+          <div class="plan-title">Basic</div>
+          <div class="plan-desc">Core time clock, hour submissions, points tracking, and admin approvals. No photos, no department management.</div>
+        </button>
+
+        <button class="plan-card" data-plan="standard" type="button">
+          <div class="plan-title">Standard</div>
+          <div class="plan-desc">Everything in Basic plus profile photos, department management, edit profile, and CSV + PDF export on reports.</div>
+        </button>
+
+        <button class="plan-card" data-plan="full" type="button">
+          <div class="plan-title">Full</div>
+          <div class="plan-desc">Everything in Standard plus email notifications, custom branding, activity history, and advanced reports.</div>
+        </button>
+
+      </div>
+
+      <div id="planMsg" class="msg" style="margin-top:14px;"></div>
+    </div>
+
+  </div>
+
+  <script type="module">
+  import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+
+  const SUPABASE_URL = 'https://mjnphetnuiuxgsghzdoo.supabase.co';
+  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1qbnBoZXRudWl1eGdzZ2h6ZG9vIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE4OTA2OTMsImV4cCI6MjA4NzQ2NjY5M30.sB1i6dy5e7brQHRiCJ-0Kf2aIcIO1DkUR1O2RtkmRGc';
+
+  const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+
+  const form = document.getElementById('loginForm')
+  const emailEl = document.getElementById('email')
+  const passwordEl = document.getElementById('password')
+  const btn = document.getElementById('loginBtn')
+  const msgEl = document.getElementById('message')
+  const toggleBtn = document.getElementById('togglePassword')
+
+  toggleBtn.addEventListener('click', () => {
+    if (passwordEl.type === 'password') {
+      passwordEl.type = 'text'
+      toggleBtn.textContent = 'Hide'
+    } else {
+      passwordEl.type = 'password'
+      toggleBtn.textContent = 'Show'
+    }
+  })
+
+  function setMsg(type, text) {
+    msgEl.className = 'msg ' + (type || '')
+    msgEl.textContent = text || ''
+    msgEl.style.display = text ? 'block' : 'none'
+  }
+
+  function roleToDashboard(role) {
+    const r = (role || '').toLowerCase().trim()
+    if (r === 'volunteer') return 'dashboards/volunteer.html'
+    if (r === 'staff') return 'dashboards/staff.html'
+    if (r === 'volunteer_staff') return 'dashboards/volunteer_staff.html'
+    if (r === 'admin' || r === 'super_user') return 'dashboards/admin.html'
+    return null
+  }
+
+  async function fetchProfileByAuthId(authId) {
+    const { data, error } = await supabase
+      .from('core_users')
+      .select('id, auth_id, role, is_active, first_name, last_name, nickname, badge_number, plan')
+      .eq('auth_id', authId)
+      .single()
+
+    if (error) throw error
+    return data
+  }
+
+   async function routeByRole(session) {
+    const authId = session?.user?.id
+    if (!authId) return
+
+    let profile = null
+    try {
+      profile = await fetchProfileByAuthId(authId)
+    } catch (e) {
+      window.location.href = 'dashboards/profile_setup.html'
+      return
+    }
+
+const hasFirst = (profile?.first_name || '').trim().length > 0
+const hasLast = (profile?.last_name || '').trim().length > 0
+
+if (!hasFirst || !hasLast) {
+  window.location.href = 'dashboards/profile_setup.html'
+  return
+}
+
+if (!profile?.is_active) {
+  await supabase.auth.signOut()
+  setMsg('ok', '✅ Your account was created successfully! However, it is not active yet. Please wait for an admin to activate your account before you can log in. If you need access sooner, contact your event organizer.')
+  return
+}
+
+// Show plan selector instead of redirecting directly
+    showPlanSelector(profile)
+  }
+
+  function showPlanSelector(profile) {
+    document.querySelector('.card').style.display = 'none'
+    document.querySelector('.header').style.display = 'none'
+    const selector = document.getElementById('planSelector')
+    selector.style.display = 'block'
+
+    const nick = (profile.nickname || '').trim()
+    const full = ([profile.first_name, profile.last_name].filter(Boolean).join(' ')).trim()
+    const name = nick || full || 'there'
+    document.getElementById('planName').textContent = `Welcome, ${name} — pick a plan to continue`
+
+    const planMsg = document.getElementById('planMsg')
+
+    selector.querySelectorAll('.plan-card').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const plan = btn.getAttribute('data-plan')
+
+        selector.querySelectorAll('.plan-card').forEach(b => b.disabled = true)
+        planMsg.className = 'msg'
+        planMsg.textContent = 'Saving...'
+        planMsg.style.display = 'block'
+
+        try {
+          const { error } = await supabase
+            .from('core_users')
+            .update({ plan })
+            .eq('id', profile.id)
+
+          if (error) throw error
+
+          localStorage.setItem('core_user_profile', JSON.stringify({ ...profile, plan }))
+
+          const dest = roleToDashboard(profile.role) || 'dashboards/volunteer.html'
+          window.location.href = dest
+        } catch (e) {
+          planMsg.className = 'msg error'
+          planMsg.textContent = e?.message || 'Failed to save plan.'
+          selector.querySelectorAll('.plan-card').forEach(b => b.disabled = false)
+        }
+      })
+    })
+  }
+
+  ;(async () => {
+    try {
+      const { data, error } = await supabase.auth.getSession()
+      if (error) throw error
+      if (data?.session) {
+        setMsg('', '')
+        await routeByRole(data.session)
+      }
+    } catch (e) {
+      // stay on login
+    }
+  })()
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault()
+    setMsg('', '')
+
+    const email = (emailEl.value || '').trim()
+    const password = passwordEl.value || ''
+
+    if (!email || !password) {
+      setMsg('error', 'Please enter your email and password.')
+      return
+    }
+
+    btn.disabled = true
+    btn.textContent = 'Logging in…'
+
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password })
+      if (error) throw error
+
+      setMsg('ok', 'Login successful. Redirecting…')
+      await routeByRole(data.session)
+    } catch (err) {
+      setMsg('error', err?.message || 'Login failed.')
+    } finally {
+      btn.disabled = false
+      btn.textContent = 'Log In'
+    }
+  })
+</script>
+</body>
+</html>

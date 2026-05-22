@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="stylesheet" href="../animeiowa.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>AnimeIowa | Departments</title>
+
+  <style>
+    :root{
+      --bg:#000;
+      --card: rgba(255,255,255,0.06);
+      --card-border: rgba(255,255,255,0.10);
+      --text: rgba(255,255,255,0.92);
+      --muted: rgba(255,255,255,0.70);
+      --danger:#ff6b6b;
+      --ok:#7CFC90;
+
+      --btn:#ffffff;
+      --btnText:#000000;
+
+      --btn2-bg: rgba(255,255,255,0.10);
+      --btn2-border: rgba(255,255,255,0.16);
+
+      --inputBg: rgba(255,255,255,0.08);
+      --inputBorder: rgba(255,255,255,0.14);
+      --focus: rgba(255,255,255,0.28);
+    }
+
+    *{ box-sizing:border-box; }
+    html,body{ height:100%; }
+    body{
+      margin:0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    .topbar{
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background: rgba(0,0,0,0.85);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid rgba(255,255,255,0.10);
+    }
+    .topbar-inner{
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 14px 16px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: 12px;
+    }
+    .brand{
+      display:flex;
+      flex-direction:column;
+      gap:2px;
+      min-width: 0;
+    }
+    .brand h1{
+      margin:0;
+      font-size: 18px;
+      letter-spacing: 0.3px;
+      font-weight: 900;
+      line-height: 1.1;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .brand .sub{
+      margin:0;
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.2;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .actions{
+      display:flex;
+      gap:10px;
+      align-items:center;
+      flex-shrink: 0;
+    }
+
+    .btn{
+      appearance:none;
+      border:none;
+      border-radius: 12px;
+      padding: 12px 14px;
+      font-weight: 900;
+      font-size: 14px;
+      cursor:pointer;
+      background: var(--btn);
+      color: var(--btnText);
+      line-height: 1;
+    }
+    .btn.secondary{
+      background: var(--btn2-bg);
+      color: var(--text);
+      border: 1px solid var(--btn2-border);
+      font-weight: 800;
+    }
+    .btn:disabled{ opacity:0.6; cursor:not-allowed; }
+
+    .pill{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding: 8px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.05);
+      color: var(--muted);
+      font-size: 12px;
+      white-space: nowrap;
+      max-width: 100%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .container{
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 16px;
+    }
+
+    .card{
+      background: var(--card);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 14px;
+    }
+
+    .toolbar{
+      display:flex;
+      gap: 10px;
+      align-items:center;
+      justify-content:space-between;
+      flex-wrap: wrap;
+      margin-bottom: 12px;
+    }
+
+    .search{
+      flex: 1;
+      min-width: 220px;
+      display:flex;
+      gap: 10px;
+      align-items:center;
+      flex-wrap: wrap;
+    }
+
+    input, select{
+      border-radius: 12px;
+      border: 1px solid var(--inputBorder);
+      background: var(--inputBg);
+      color: var(--text);
+      outline: none;
+      font-size: 14px;
+      padding: 12px 12px;
+    }
+    input:focus, select:focus{
+      border-color: var(--focus);
+      box-shadow: 0 0 0 3px rgba(255,255,255,0.08);
+    }
+
+    .table-wrap{
+      overflow:auto;
+      border-radius: 14px;
+      border: 1px solid rgba(255,255,255,0.10);
+    }
+
+    table{
+      width:100%;
+      border-collapse: collapse;
+      min-width: 760px;
+      background: rgba(0,0,0,0.15);
+    }
+    th, td{
+      padding: 12px 12px;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      text-align:left;
+      font-size: 13px;
+      vertical-align: middle;
+      white-space: nowrap;
+    }
+    th{
+      color: var(--muted);
+      font-weight: 900;
+      position: sticky;
+      top: 0;
+      background: rgba(0,0,0,0.65);
+      backdrop-filter: blur(10px);
+      z-index: 1;
+    }
+
+    .badge{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.05);
+      color: var(--muted);
+    }
+    .badge.ok{ color: var(--ok); }
+    .badge.bad{ color: var(--danger); }
+
+    .msg{
+      margin-top: 12px;
+      font-size: 14px;
+      line-height: 1.35;
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.05);
+      display:none;
+      word-break: break-word;
+    }
+    .msg.error{ color: var(--danger); display:block; }
+    .msg.ok{ color: var(--ok); display:block; }
+
+    /* Modal */
+    .overlay{
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.70);
+      display:none;
+      align-items:center;
+      justify-content:center;
+      padding: 16px;
+      z-index: 999;
+    }
+    .modal{
+      width: 100%;
+      max-width: 560px;
+      background: rgba(20,20,20,0.95);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 16px;
+      padding: 14px;
+    }
+    .modal h2{
+      margin: 0 0 6px 0;
+      font-size: 16px;
+      font-weight: 950;
+    }
+    .modal p{
+      margin: 0 0 12px 0;
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.35;
+      word-break: break-word;
+    }
+    .grid{
+      display:grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+    }
+    @media(min-width:520px){
+      .grid{ grid-template-columns: 1fr 1fr; }
+    }
+    label{
+      display:block;
+      font-size: 12px;
+      color: var(--muted);
+      margin: 10px 0 6px;
+    }
+    .modal-actions{
+      display:flex;
+      gap: 10px;
+      justify-content:flex-end;
+      margin-top: 12px;
+      flex-wrap: wrap;
+    }
+    .hint{
+      color: var(--muted);
+      font-size: 12px;
+      margin-top: 6px;
+      line-height: 1.35;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="topbar">
+    <div class="topbar-inner">
+      <div class="brand">
+        <h1>AnimeIowa</h1>
+        <p class="sub">Departments</p>
+      </div>
+
+      <div class="actions">
+        <span id="rolePill" class="pill" title="Role">Loading…</span>
+        <button id="backBtn" class="btn secondary" type="button">Back</button>
+        <button id="logoutBtn" class="btn secondary" type="button">Log Out</button>
+      </div>
+    </div>
+  </div>
+
+  <main class="container">
+    <div class=<main class="container">
+
+    <div class="card" style="margin-bottom:16px; border-color: rgba(170,132,82,0.5); background: rgba(170,132,82,0.08);">
+      <h2 style="margin-bottom:10px;">🧪 Testing Guide — Departments</h2>
+      <p style="font-size:14px; line-height:1.7; margin:0;">
+        <b>What this page is:</b> This is where you create and manage departments. Departments are the groups that volunteers and staff belong to — for example: Security, Registration, or Operations.<br><br>
+        <b>Add Department</b> — Click this button to create a new department. You will give it a name and a short code (example: SEC01 for Security).<br>
+        <b>The code</b> — This is a short unique label for the department. Keep it simple and easy to remember.<br>
+        <b>Edit</b> — Click Edit on any row to rename a department, change its code, or mark it as inactive.<br>
+        <b>Inactive departments</b> — These are hidden from regular use but their data is kept.<br><br>
+        <b>How to test:</b> Click Add Department, fill in a name and code, and save it. Then try editing it.
+      </p>
+    </div>
+
+    <div class="card">
+      <div class="toolbar">"card">
+      <div class="toolbar">
+        <div class="search">
+          <input id="searchInput" type="text" placeholder="Search department name or code…" />
+          <select id="activeFilter">
+            <option value="">All statuses</option>
+            <option value="active">Active only</option>
+            <option value="inactive">Inactive only</option>
+          </select>
+        </div>
+
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+          <button id="addBtn" class="btn" type="button">Add Department</button>
+          <button id="refreshBtn" class="btn" type="button">Refresh</button>
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Code</th>
+              <th>Status</th>
+              <th>Created</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="tbody">
+            <tr><td colspan="5" style="color:rgba(255,255,255,0.7);padding:16px;">Loading…</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div id="message" class="msg" aria-live="polite"></div>
+    </div>
+  </main>
+
+  <!-- Add/Edit Modal -->
+  <div id="overlay" class="overlay">
+    <div class="modal">
+      <h2 id="modalTitle">Add Department</h2>
+      <p id="modalSubtitle">Create a department and a code that department heads can type during hour logging.</p>
+
+      <div class="grid">
+        <div>
+          <label for="deptName">Department name</label>
+          <input id="deptName" type="text" placeholder="Example: Security" />
+        </div>
+
+        <div>
+          <label for="deptCode">Department code</label>
+          <input id="deptCode" type="text" placeholder="Example: SEC01" />
+          <div class="hint">Codes should be unique and easy to type. (We will enforce uniqueness in Supabase.)</div>
+        </div>
+
+        <div>
+          <label for="deptActive">Active</label>
+          <select id="deptActive">
+            <option value="true">true</option>
+            <option value="false">false</option>
+          </select>
+        </div>
+      </div>
+
+      <div id="editMsg" class="msg" aria-live="polite"></div>
+
+      <div class="modal-actions">
+        <button id="cancelBtn" class="btn secondary" type="button">Cancel</button>
+        <button id="saveBtn" class="btn" type="button">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+
+    const SUPABASE_URL = 'https://mjnphetnuiuxgsghzdoo.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1qbnBoZXRudWl1eGdzZ2h6ZG9vIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE4OTA2OTMsImV4cCI6MjA4NzQ2NjY5M30.sB1i6dy5e7brQHRiCJ-0Kf2aIcIO1DkUR1O2RtkmRGc';
+
+    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    const rolePill = document.getElementById('rolePill');
+    const backBtn = document.getElementById('backBtn');
+    const logoutBtn = document.getElementById('logoutBtn');
+
+    const msgEl = document.getElementById('message');
+    const tbody = document.getElementById('tbody');
+
+    const searchInput = document.getElementById('searchInput');
+    const activeFilter = document.getElementById('activeFilter');
+    const refreshBtn = document.getElementById('refreshBtn');
+    const addBtn = document.getElementById('addBtn');
+
+    const overlay = document.getElementById('overlay');
+    const modalTitle = document.getElementById('modalTitle');
+    const modalSubtitle = document.getElementById('modalSubtitle');
+    const deptName = document.getElementById('deptName');
+    const deptCode = document.getElementById('deptCode');
+    const deptActive = document.getElementById('deptActive');
+    const editMsg = document.getElementById('editMsg');
+    const cancelBtn = document.getElementById('cancelBtn');
+    const saveBtn = document.getElementById('saveBtn');
+
+    let allDepts = [];
+    let editingDept = null; // null = add mode, otherwise holds dept row
+
+    function setMsg(type, text) {
+      msgEl.className = 'msg ' + (type || '');
+      msgEl.textContent = text || '';
+      msgEl.style.display = text ? 'block' : 'none';
+    }
+
+    function setEditMsg(type, text) {
+      editMsg.className = 'msg ' + (type || '');
+      editMsg.textContent = text || '';
+      editMsg.style.display = text ? 'block' : 'none';
+    }
+
+    function isAdminRole(role) {
+      const r = (role || '').toLowerCase().trim();
+      return r === 'admin' || r === 'super_user';
+    }
+
+    async function fetchProfileByAuthId(authId) {
+      const { data, error } = await supabase
+        .from('core_users')
+        .select('id, auth_id, role, is_active, first_name, last_name, nickname, badge_number')
+        .eq('auth_id', authId)
+        .single();
+      if (error) throw error;
+      return data;
+    }
+
+    function safe(v) {
+      return (v === null || v === undefined || v === '') ? '—' : String(v);
+    }
+
+    function escapeHtml(s) {
+      return String(s)
+        .replaceAll('&','&amp;')
+        .replaceAll('<','&lt;')
+        .replaceAll('>','&gt;')
+        .replaceAll('"','&quot;')
+        .replaceAll("'","&#039;");
+    }
+
+    function matchesFilters(d) {
+      const q = (searchInput.value || '').trim().toLowerCase();
+      const af = (activeFilter.value || '').trim();
+
+      if (af === 'active' && !d.is_active) return false;
+      if (af === 'inactive' && d.is_active) return false;
+
+      if (!q) return true;
+
+      const hay = [
+        d.name || '',
+        d.code || ''
+      ].join(' ').toLowerCase();
+
+      return hay.includes(q);
+    }
+
+    function fmtDate(ts) {
+      if (!ts) return '—';
+      const d = new Date(ts);
+      if (Number.isNaN(d.getTime())) return '—';
+      return d.toLocaleString();
+    }
+
+    function render() {
+      const rows = allDepts.filter(matchesFilters);
+
+      if (rows.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="5" style="color:rgba(255,255,255,0.7);padding:16px;">No departments match your filters.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = rows.map(d => {
+        const statusBadge = d.is_active
+          ? `<span class="badge ok">Active</span>`
+          : `<span class="badge bad">Inactive</span>`;
+
+        return `
+          <tr>
+            <td>${escapeHtml(safe(d.name))}</td>
+            <td>${escapeHtml(safe(d.code))}</td>
+            <td>${statusBadge}</td>
+            <td>${escapeHtml(fmtDate(d.created_at))}</td>
+            <td>
+              <button class="btn secondary" type="button" data-edit="${escapeHtml(d.id)}">Edit</button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    async function loadDepartments() {
+      setMsg('', '');
+      tbody.innerHTML = `<tr><td colspan="5" style="color:rgba(255,255,255,0.7);padding:16px;">Loading…</td></tr>`;
+
+      const { data, error } = await supabase
+        .from('core_departments')
+        .select('id, name, code, is_active, created_at')
+        .order('created_at', { ascending: false })
+        .limit(500);
+
+      if (error) {
+        setMsg('error', error.message || 'Failed to load departments.');
+        tbody.innerHTML = `<tr><td colspan="5" style="color:rgba(255,255,255,0.7);padding:16px;">Failed to load.</td></tr>`;
+        return;
+      }
+
+      allDepts = data || [];
+      render();
+    }
+
+    function openAdd() {
+      editingDept = null;
+      setEditMsg('', '');
+
+      modalTitle.textContent = 'Add Department';
+      modalSubtitle.textContent = 'Create a department and a code that department heads can type during hour logging.';
+
+      deptName.value = '';
+      deptCode.value = '';
+      deptActive.value = 'true';
+
+      overlay.style.display = 'flex';
+    }
+
+    function openEdit(deptId) {
+      const d = allDepts.find(x => x.id === deptId);
+      if (!d) return;
+
+      editingDept = d;
+      setEditMsg('', '');
+
+      modalTitle.textContent = 'Edit Department';
+      modalSubtitle.textContent = `${d.name || '—'} • ${d.code || '—'}`;
+
+      deptName.value = d.name || '';
+      deptCode.value = d.code || '';
+      deptActive.value = String(!!d.is_active);
+
+      overlay.style.display = 'flex';
+    }
+
+    function closeModal() {
+      overlay.style.display = 'none';
+      editingDept = null;
+    }
+
+    async function saveDepartment() {
+      setEditMsg('', '');
+
+      const name = (deptName.value || '').trim();
+      const code = (deptCode.value || '').trim();
+      const is_active = (deptActive.value === 'true');
+
+      if (!name || !code) {
+        setEditMsg('error', 'Department name and code are required.');
+        return;
+      }
+
+      saveBtn.disabled = true;
+      saveBtn.textContent = 'Saving…';
+
+      try {
+        if (!editingDept) {
+          // ADD
+          const { error } = await supabase
+            .from('core_departments')
+            .insert([{ name, code, is_active }]);
+
+          if (error) throw error;
+          setEditMsg('ok', 'Created.');
+        } else {
+          // EDIT
+          const { error } = await supabase
+            .from('core_departments')
+            .update({ name, code, is_active })
+            .eq('id', editingDept.id);
+
+          if (error) throw error;
+          setEditMsg('ok', 'Saved.');
+        }
+
+        await loadDepartments();
+        setTimeout(() => closeModal(), 250);
+      } catch (e) {
+        // Most common admin error here: duplicate department code (unique constraint)
+        setEditMsg('error', e?.message || 'Save failed.');
+      } finally {
+        saveBtn.disabled = false;
+        saveBtn.textContent = 'Save';
+      }
+    }
+
+    async function guardAdmin() {
+      setMsg('', '');
+
+      const { data, error } = await supabase.auth.getSession();
+      if (error) throw error;
+
+      const session = data?.session;
+      if (!session?.user?.id) {
+        window.location.href = '../index.html';
+        return;
+      }
+
+      const profile = await fetchProfileByAuthId(session.user.id);
+
+      if (!profile?.is_active) {
+        await supabase.auth.signOut();
+        window.location.href = '../index.html';
+        return;
+      }
+
+      if (!isAdminRole(profile.role)) {
+        window.location.href = '../index.html';
+        return;
+      }
+
+      localStorage.setItem('core_user_profile', JSON.stringify(profile));
+      rolePill.textContent = profile.role === 'super_user' ? 'Role: Super User' : 'Role: Admin';
+    }
+
+  backBtn.addEventListener('click', () => {
+  window.location.assign(new URL('../admin.html', window.location.href).toString());
+});
+
+    logoutBtn.addEventListener('click', async () => {
+      logoutBtn.disabled = true;
+      try {
+        await supabase.auth.signOut();
+      } finally {
+        localStorage.removeItem('core_user_profile');
+        window.location.href = '../index.html';
+      }
+    });
+
+    refreshBtn.addEventListener('click', loadDepartments);
+    addBtn.addEventListener('click', openAdd);
+
+    searchInput.addEventListener('input', render);
+    activeFilter.addEventListener('change', render);
+
+    tbody.addEventListener('click', (e) => {
+      const btn = e.target.closest('button[data-edit]');
+      if (!btn) return;
+      openEdit(btn.getAttribute('data-edit'));
+    });
+
+    cancelBtn.addEventListener('click', closeModal);
+    overlay.addEventListener('click', (e) => {
+      if (e.target === overlay) closeModal();
+    });
+    saveBtn.addEventListener('click', saveDepartment);
+
+    // Start
+    (async () => {
+      try {
+        await guardAdmin();
+        await loadDepartments();
+      } catch (e) {
+        setMsg('error', e?.message || 'Failed to load Departments page.');
+      }
+    })();
+  </script>
+</body>
+</html>
