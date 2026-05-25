@@ -353,6 +353,7 @@
     let departments = [];
     let pointsPerHour = 1;
     let bonusWindows = [];
+    let PLAN = 'basic';
 
     function setMsg(type, text) {
       msgEl.className = 'msg ' + (type || '');
@@ -504,11 +505,7 @@
 
           return `
             <tr>
-              <td>
-  ${PLAN !== 'basic' && r.profile_image_url
-    ? `<img src="${escapeHtml(r.profile_image_url)}" style="width:32px;height:32px;border-radius:50%;object-fit:cover;vertical-align:middle;margin-right:8px;" />`
-    : ''}${escapeHtml(r.user_name || '—')}
-</td>
+              <td>${escapeHtml(r.user_name || '—')}</td>
               <td>${escapeHtml(r.badge_number || '—')}</td>
               <td>
                 <select data-edit-dept="${escapeHtml(r.id)}">
@@ -658,7 +655,7 @@
         .from('vol_hours')
         .select(`
           id, user_id, department_id, start_time, end_time, total_hours, points_earned, status, notes, approved_by, created_at,
-          user:core_users!vol_hours_user_id_fkey ( first_name, last_name, nickname, badge_number, profile_image_url ),
+          user:core_users!vol_hours_user_id_fkey ( first_name, last_name, nickname, badge_number ),
           dept:core_departments!vol_hours_department_id_fkey ( name )
         `)
         .order('created_at', { ascending: false })
@@ -678,13 +675,12 @@
           (([u.first_name, u.last_name].filter(Boolean).join(' ')).trim()) ||
           '—';
 
-     return {
-  ...x,
-  user_name,
-  badge_number: u.badge_number || '—',
-  department_name: d.name || '—',
-  profile_image_url: u.profile_image_url || null
-};
+        return {
+          ...x,
+          user_name,
+          badge_number: u.badge_number || '—',
+          department_name: d.name || '—'
+        };
       });
 
       render();
@@ -737,28 +733,6 @@
         }
       }
 
-      // Log the action
-      try {
-        await supabase.from('hour_approval_log').insert([{
-          hour_type: 'vol_hours',
-          hour_id: id,
-          action: status === 'approved' ? 'approved' : 'rejected',
-          performed_by: myCoreUserId,
-          target_user_id: row?.user_id || null,
-          previous_status: row?.status || null,
-          new_status: status,
-          description: status === 'approved'
-            ? `Volunteer hours approved — ${pointsEarned} points awarded`
-            : 'Volunteer hours rejected',
-          meta: {
-            total_hours: row?.total_hours || null,
-            points_earned: pointsEarned,
-            start_time: row?.start_time || null,
-            end_time: row?.end_time || null
-          }
-        }]);
-      } catch (_) { /* log failure is non-fatal */ }
-
       setMsg('ok', `Updated: ${status}${status === 'approved' ? ` — ${pointsEarned} points awarded` : ''}`);
       await loadVolunteerHours();
     }
@@ -791,18 +765,6 @@
         return false;
       }
 
-      // Log the edit
-      try {
-        await supabase.from('hour_approval_log').insert([{
-          hour_type: 'vol_hours',
-          hour_id: id,
-          action: 'edited',
-          performed_by: myCoreUserId,
-          description: 'Volunteer shift details edited by admin',
-          meta: patch
-        }]);
-      } catch (_) {}
-
       setMsg('ok', 'Saved edits.');
       return true;
     }
@@ -832,10 +794,11 @@
         return;
       }
 
-    myCoreUserId = profile.id;
-localStorage.setItem('core_user_profile', JSON.stringify(profile));
-rolePill.textContent = profile.role === 'super_user' ? 'Role: Super User' : 'Role: Admin';
-PLAN = (profile.plan || 'basic').toLowerCase();}
+      myCoreUserId = profile.id;
+      localStorage.setItem('core_user_profile', JSON.stringify(profile));
+      rolePill.textContent = profile.role === 'super_user' ? 'Role: Super User' : 'Role: Admin';
+      PLAN = (profile.plan || 'basic').toLowerCase();
+    }
 
     logoutBtn.addEventListener('click', async () => {
       logoutBtn.disabled = true;
