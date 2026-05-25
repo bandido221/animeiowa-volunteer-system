@@ -188,54 +188,21 @@
       box-shadow: 0 0 0 3px rgba(255,255,255,0.08);
     }
 
-    .table-wrap{
-      overflow:auto;
-      border-radius: 14px;
-      border: 1px solid rgba(255,255,255,0.10);
-    }
-
-    table{
-      width:100%;
-      border-collapse: collapse;
-      min-width: 1080px;
-      background: rgba(0,0,0,0.15);
-    }
-    th, td{
-      padding: 12px 12px;
-      border-bottom: 1px solid rgba(255,255,255,0.08);
-      text-align:left;
-      font-size: 13px;
-      vertical-align: middle;
-      white-space: nowrap;
-    }
-    td.dtcell{ white-space: normal; line-height: 1.2; }
-    td.dtcell .d{ display:block; }
-    td.dtcell .t{ display:block; color: var(--muted); font-size: 12px; margin-top: 2px; }
-
-    th{
-      color: var(--muted);
-      font-weight: 900;
-      position: sticky;
-      top: 0;
-      background: rgba(0,0,0,0.65);
-      backdrop-filter: blur(10px);
-      z-index: 1;
-    }
-
     .badge{
       display:inline-flex;
       align-items:center;
       gap:6px;
-      padding: 6px 10px;
+      padding: 4px 10px;
       border-radius: 999px;
       font-size: 12px;
+      font-weight: 700;
       border: 1px solid rgba(255,255,255,0.12);
       background: rgba(255,255,255,0.05);
       color: var(--muted);
     }
-    .badge.pending{ color: rgba(255,255,255,0.85); }
-    .badge.approved{ color: var(--ok); }
-    .badge.rejected{ color: var(--danger); }
+    .badge.pending{ color: rgba(255,255,255,0.85); border-color: rgba(255,255,255,0.2); }
+    .badge.approved{ color: var(--ok); border-color: rgba(124,252,144,0.3); background: rgba(124,252,144,0.07); }
+    .badge.rejected{ color: var(--danger); border-color: rgba(255,107,107,0.3); background: rgba(255,107,107,0.07); }
 
     .msg{
       margin-top: 12px;
@@ -262,6 +229,151 @@
       gap: 8px;
       align-items:center;
       flex-wrap: wrap;
+    }
+
+    /* Card list layout */
+    #tbody {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .shift-card {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.10);
+      border-radius: 14px;
+      padding: 12px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .shift-card.is-editing {
+      border-color: rgba(255,255,255,0.22);
+      background: rgba(255,255,255,0.07);
+    }
+
+    /* Row 1: name + badge + status */
+    .sc-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .sc-name {
+      font-weight: 900;
+      font-size: 14px;
+      flex: 1;
+      min-width: 0;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .sc-badge-num {
+      font-size: 12px;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+
+    /* Row 2: info grid */
+    .sc-meta {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+      gap: 6px 12px;
+    }
+    .sc-field {
+      display: flex;
+      flex-direction: column;
+      gap: 1px;
+    }
+    .sc-label {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--muted);
+    }
+    .sc-value {
+      font-size: 13px;
+      color: var(--text);
+    }
+    .sc-value.muted { color: var(--muted); }
+    .sc-value.sc-muted { color: var(--muted); font-size: 12px; }
+
+    /* Subheader row: email + role */
+    .sc-subheader {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: -4px;
+    }
+    .sc-email {
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .sc-role-pill {
+      font-size: 11px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.14);
+      color: var(--muted);
+      text-transform: capitalize;
+    }
+
+    /* Notes row */
+    .sc-notes {
+      font-size: 12px;
+      color: var(--muted);
+      font-style: italic;
+      border-top: 1px solid rgba(255,255,255,0.07);
+      padding-top: 8px;
+    }
+
+    /* Action buttons row */
+    .sc-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      border-top: 1px solid rgba(255,255,255,0.07);
+      padding-top: 10px;
+    }
+    .sc-actions .btn {
+      flex: 1;
+      min-width: 80px;
+      text-align: center;
+    }
+
+    /* Edit form inside card */
+    .sc-edit-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+    @media (max-width: 420px) {
+      .sc-edit-grid { grid-template-columns: 1fr; }
+    }
+    .sc-edit-grid label {
+      font-size: 11px;
+      color: var(--muted);
+      display: block;
+      margin-bottom: 3px;
+      font-weight: 700;
+    }
+    .sc-edit-grid input,
+    .sc-edit-grid select {
+      width: 100%;
+      font-size: 13px;
+      padding: 9px 10px;
+    }
+    .sc-edit-full {
+      grid-column: 1 / -1;
+    }
+    .sc-preview {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 4px;
     }
   </style>
 </head>
@@ -301,26 +413,8 @@
         </div>
       </div>
 
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>User</th>
-              <th>Badge #</th>
-              <th>Department</th>
-              <th>Start</th>
-              <th>End</th>
-              <th>Total</th>
-              <th>Points</th>
-              <th>Status</th>
-              <th>Notes</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody id="tbody">
-            <tr><td colspan="10" style="color:rgba(255,255,255,0.7);padding:16px;">Loading…</td></tr>
-          </tbody>
-        </table>
+      <div id="tbody">
+        <div style="color:rgba(255,255,255,0.7);padding:16px;">Loading…</div>
       </div>
 
       <div id="message" class="msg" aria-live="polite"></div>
@@ -476,11 +570,18 @@
       return hay.includes(q);
     }
 
+    function fmtShort(ts) {
+      if (!ts) return '—';
+      const d = new Date(ts);
+      if (Number.isNaN(d.getTime())) return '—';
+      return d.toLocaleDateString() + ' ' + d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    }
+
     function render() {
       const filtered = rows.filter(matchesFilters);
 
       if (filtered.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="10" style="color:rgba(255,255,255,0.7);padding:16px;">No volunteer hour rows match your filters.</td></tr>`;
+        tbody.innerHTML = `<div style="color:rgba(255,255,255,0.7);padding:16px;">No volunteer hour rows match your filters.</div>`;
         return;
       }
 
@@ -492,87 +593,102 @@
         const missingEndTime = !r.end_time;
         const approveDisabled = (r.user_id === myCoreUserId) || missingEndTime;
         const rejectDisabled = (r.user_id === myCoreUserId) || missingEndTime;
+        const disabledTitle = missingEndTime ? 'No end time — use Edit to add it first' : '';
 
         if (r._editing) {
           const draft = r._draft || {};
           const startVal = toDatetimeLocalValue(draft.start_time);
           const endVal = toDatetimeLocalValue(draft.end_time);
           const previewTotal = calcTotalHoursRoundedUp(draft.start_time, draft.end_time);
-          const previewTxt =
-  previewTotal == null
-    ? '—'
-    : (Math.ceil(Number(previewTotal) / 0.05) * 0.05).toFixed(2);
+          const previewTxt = previewTotal == null ? '—' : (Math.ceil(Number(previewTotal) / 0.05) * 0.05).toFixed(2);
 
           return `
-            <tr>
-              <td>${escapeHtml(r.user_name || '—')}</td>
-              <td>${escapeHtml(r.badge_number || '—')}</td>
-              <td>
-                <select data-edit-dept="${escapeHtml(r.id)}">
-                  <option value="">—</option>
-                  ${deptOptionsHtml}
-                </select>
-              </td>
-              <td>
-                <input type="datetime-local" data-edit-start="${escapeHtml(r.id)}" value="${escapeHtml(startVal)}" />
-              </td>
-              <td>
-                <input type="datetime-local" data-edit-end="${escapeHtml(r.id)}" value="${escapeHtml(endVal)}" />
-              </td>
-              <td title="Auto recalculated (rounded up)">
-                ${escapeHtml(previewTxt)}
-              </td>
-              <td title="Points are calculated on approval">
-                ${escapeHtml(
-  r.points_earned == null
-    ? '—'
-    : String(Math.round(Number(r.points_earned)))
-)}
-              </td>
-              <td>${badgeStatus(r.status)}</td>
-              <td>
-                <input type="text" data-edit-notes="${escapeHtml(r.id)}" value="${escapeHtml(draft.notes || '')}" />
-              </td>
-              <td>
-                <div class="row-actions">
-                  <button class="btn" type="button" data-save="${escapeHtml(r.id)}">Save</button>
-                  <button class="btn secondary" type="button" data-cancel="${escapeHtml(r.id)}">Cancel</button>
+            <div class="shift-card is-editing" data-id="${escapeHtml(r.id)}">
+              <div class="sc-header">
+                <span class="sc-name">${escapeHtml(r.user_name || '—')}</span>
+                <span class="sc-badge-num">Badge: ${escapeHtml(r.badge_number || '—')}</span>
+                ${badgeStatus(r.status)}
+              </div>
+              <div class="sc-edit-grid">
+                <div class="sc-edit-full">
+                  <label>Department</label>
+                  <select data-edit-dept="${escapeHtml(r.id)}">
+                    <option value="">—</option>
+                    ${deptOptionsHtml}
+                  </select>
                 </div>
-              </td>
-            </tr>
+                <div>
+                  <label>Start Time</label>
+                  <input type="datetime-local" data-edit-start="${escapeHtml(r.id)}" value="${escapeHtml(startVal)}" />
+                </div>
+                <div>
+                  <label>End Time</label>
+                  <input type="datetime-local" data-edit-end="${escapeHtml(r.id)}" value="${escapeHtml(endVal)}" />
+                </div>
+                <div class="sc-edit-full">
+                  <label>Notes</label>
+                  <input type="text" data-edit-notes="${escapeHtml(r.id)}" value="${escapeHtml(draft.notes || '')}" placeholder="Notes…" />
+                </div>
+              </div>
+              <div class="sc-preview">Total (auto): ${escapeHtml(previewTxt)} hrs &nbsp;|&nbsp; Points: ${escapeHtml(String(r.points_earned ?? '—'))}</div>
+              <div class="sc-actions">
+                <button class="btn" type="button" data-save="${escapeHtml(r.id)}">Save</button>
+                <button class="btn secondary" type="button" data-cancel="${escapeHtml(r.id)}">Cancel</button>
+              </div>
+            </div>
           `;
         }
 
+        const totalDisplay = r.total_hours == null ? '—'
+          : (Math.ceil(Number(r.total_hours) / 0.05) * 0.05).toFixed(2) + ' hrs';
+        const pointsDisplay = r.points_earned == null ? '—' : Math.round(Number(r.points_earned));
+        const submittedDisplay = r.created_at ? fmtShort(r.created_at) : '—';
+
         return `
-          <tr>
-            <td>${escapeHtml(r.user_name || '—')}</td>
-            <td>${escapeHtml(r.badge_number || '—')}</td>
-            <td>${escapeHtml(r.department_name || '—')}</td>
-            <td class="dtcell">${fmtDateTopTime(r.start_time)}</td>
-            <td class="dtcell">${fmtDateTopTime(r.end_time)}</td>
-            <td>${
-  r.total_hours == null
-    ? '—'
-    : escapeHtml(
-        (Math.ceil(Number(r.total_hours) / 0.05) * 0.05)
-          .toFixed(2)
-      )
-}</td>
-            <td>${
-  r.points_earned == null
-    ? '—'
-    : escapeHtml(String(Math.round(Number(r.points_earned))))
-}</td>
-            <td>${badgeStatus(r.status)}</td>
-            <td title="${escapeHtml(r.notes || '')}">${escapeHtml(r.notes || '—')}</td>
-            <td>
-              <div class="row-actions">
-                <button class="btn secondary" type="button" data-edit="${escapeHtml(r.id)}">Edit</button>
-                <button class="btn secondary" type="button" data-approve="${escapeHtml(r.id)}" ${approveDisabled ? 'disabled' : ''} title="${missingEndTime ? 'Shift has no end time — use Edit to add it first' : ''}">Approve</button>
-                <button class="btn danger" type="button" data-reject="${escapeHtml(r.id)}" ${rejectDisabled ? 'disabled' : ''} title="${missingEndTime ? 'Shift has no end time — use Edit to add it first' : ''}">Reject</button>
+          <div class="shift-card" data-id="${escapeHtml(r.id)}">
+            <div class="sc-header">
+              <span class="sc-name">${escapeHtml(r.user_name || '—')}</span>
+              <span class="sc-badge-num">Badge: ${escapeHtml(r.badge_number || '—')}</span>
+              ${badgeStatus(r.status)}
+            </div>
+            ${r.user_email || r.user_role ? `
+            <div class="sc-subheader">
+              ${r.user_email ? `<span class="sc-email">📧 ${escapeHtml(r.user_email)}</span>` : ''}
+              ${r.user_role ? `<span class="sc-role-pill">${escapeHtml(r.user_role)}</span>` : ''}
+            </div>` : ''}
+            <div class="sc-meta">
+              <div class="sc-field">
+                <span class="sc-label">Department</span>
+                <span class="sc-value">${escapeHtml(r.department_name || '—')}</span>
               </div>
-            </td>
-          </tr>
+              <div class="sc-field">
+                <span class="sc-label">Start</span>
+                <span class="sc-value">${escapeHtml(fmtShort(r.start_time))}</span>
+              </div>
+              <div class="sc-field">
+                <span class="sc-label">End</span>
+                <span class="sc-value ${missingEndTime ? 'muted' : ''}">${missingEndTime ? 'Not clocked out' : escapeHtml(fmtShort(r.end_time))}</span>
+              </div>
+              <div class="sc-field">
+                <span class="sc-label">Total</span>
+                <span class="sc-value">${escapeHtml(totalDisplay)}</span>
+              </div>
+              <div class="sc-field">
+                <span class="sc-label">Points</span>
+                <span class="sc-value">${escapeHtml(String(pointsDisplay))}</span>
+              </div>
+              <div class="sc-field">
+                <span class="sc-label">Submitted</span>
+                <span class="sc-value sc-muted">${escapeHtml(submittedDisplay)}</span>
+              </div>
+            </div>
+            ${r.notes ? `<div class="sc-notes">📝 ${escapeHtml(r.notes)}</div>` : ''}
+            <div class="sc-actions">
+              <button class="btn secondary" type="button" data-edit="${escapeHtml(r.id)}">Edit</button>
+              <button class="btn secondary" type="button" data-approve="${escapeHtml(r.id)}" ${approveDisabled ? 'disabled' : ''} title="${escapeHtml(disabledTitle)}">Approve</button>
+              <button class="btn danger" type="button" data-reject="${escapeHtml(r.id)}" ${rejectDisabled ? 'disabled' : ''} title="${escapeHtml(disabledTitle)}">Reject</button>
+            </div>
+          </div>
         `;
       }).join('');
 
@@ -649,13 +765,13 @@
 
     async function loadVolunteerHours() {
       setMsg('', '');
-      tbody.innerHTML = `<tr><td colspan="10" style="color:rgba(255,255,255,0.7);padding:16px;">Loading…</td></tr>`;
+      tbody.innerHTML = `<div style="color:rgba(255,255,255,0.7);padding:16px;">Loading…</div>`;
 
       const { data, error } = await supabase
         .from('vol_hours')
         .select(`
           id, user_id, department_id, start_time, end_time, total_hours, points_earned, status, notes, approved_by, created_at,
-          user:core_users!vol_hours_user_id_fkey ( first_name, last_name, nickname, badge_number ),
+          user:core_users!vol_hours_user_id_fkey ( first_name, last_name, nickname, badge_number, email, role ),
           dept:core_departments!vol_hours_department_id_fkey ( name )
         `)
         .order('created_at', { ascending: false })
@@ -663,7 +779,7 @@
 
       if (error) {
         setMsg('error', error.message || 'Failed to load volunteer hours.');
-        tbody.innerHTML = `<tr><td colspan="10" style="color:rgba(255,255,255,0.7);padding:16px;">Failed to load.</td></tr>`;
+        tbody.innerHTML = `<div style="color:rgba(255,255,255,0.7);padding:16px;">Failed to load.</div>`;
         return;
       }
 
@@ -679,7 +795,9 @@
           ...x,
           user_name,
           badge_number: u.badge_number || '—',
-          department_name: d.name || '—'
+          department_name: d.name || '—',
+          user_email: u.email || null,
+          user_role: u.role || null
         };
       });
 
