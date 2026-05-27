@@ -216,7 +216,7 @@
       const { data, error } = await supabase.auth.getSession();
       if (error) throw error;
       const session = data?.session;
-      if (!session?.user?.id) { window.location.href = '../index.html'; return; }
+      if (!session?.user?.id) { window.location.href = '../../index.html'; return; }
 
       const { data: p, error: pe } = await supabase
         .from('core_users')
@@ -227,7 +227,7 @@
 
       const role = (p?.role || '').toLowerCase().trim();
       if (!p?.is_active || (role !== 'admin' && role !== 'super_user')) {
-        window.location.href = '../index.html'; return;
+        window.location.href = '../../index.html'; return;
       }
 
       const plan = (p?.plan || 'basic').toLowerCase();
@@ -241,16 +241,17 @@
 
     // -- Load user names for display --
     let userCache = {};
-    async function getUserName(id) {
+   async function getUserName(id) {
       if (!id) return '--';
       if (userCache[id]) return userCache[id];
-      const { data } = await supabase.from('core_users').select('first_name, last_name, nickname').eq('id', id).single();
+      const { data } = await supabase.from('core_users').select('first_name, last_name, nickname, badge_number').eq('id', id).single();
       if (!data) return id.slice(0, 8) + '...';
       const nick = (data.nickname || '').trim();
       const full = ([data.first_name, data.last_name].filter(Boolean).join(' ')).trim();
       const name = nick || full || '--';
-      userCache[id] = name;
-      return name;
+      const badge = data.badge_number ? ` (Badge #${data.badge_number})` : '';
+      userCache[id] = name + badge;
+      return name + badge;
     }
 function friendlyDescription(r) {
       const action   = (r.action || '').toLowerCase();
@@ -273,11 +274,11 @@ function friendlyDescription(r) {
         return 'Staff hours rejected';
 
       // Hours edited
-      if (action === 'edited' && type === 'vol_hours')
-        return 'Volunteer shift edited by admin';
-
-      if (action === 'edited' && type === 'staff_hours')
-        return 'Staff shift edited by admin';
+      if (action === 'edit' || action === 'edited') {
+        if (type === 'vol' || type === 'vol_hours') return 'Volunteer shift updated';
+        if (type === 'staff' || type === 'staff_hours') return 'Staff shift updated';
+        return 'Shift updated';
+      }
 
       // User management
       if (action === 'account_activated')
@@ -299,7 +300,7 @@ function friendlyDescription(r) {
         return `Profile updated${userName ? ' -- ' + userName : ''}`;
 
       // Points added
-      if (action === 'points_added' || (r.description || '').toLowerCase().includes('points'))
+      if (action === 'points_add' || action === 'points_added')
         return `Points awarded${meta.points ? ' -- ' + Math.round(Number(meta.points)) + ' pts' : ''}${meta.source_type ? ' from ' + meta.source_type.replace('_', ' ') : ''}`;
 
       // Fallback to whatever description is stored
@@ -383,13 +384,13 @@ function friendlyDescription(r) {
 
     // -- Events --
     backBtn.addEventListener('click', () => {
-      window.location.assign(new URL('../admin.html', window.location.href).toString());
+      window.location.href = '../admin.html';
     });
     logoutBtn.addEventListener('click', async () => {
       logoutBtn.disabled = true;
       try { await supabase.auth.signOut(); } finally {
         localStorage.removeItem('core_user_profile');
-        window.location.href = '../index.html';
+        window.location.href = '../../index.html';
       }
     });
     loadBtn.addEventListener('click', loadLog);

@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="stylesheet" href="../animeiowa.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1" />
+  <title>AnimeIowa | Points Redemption</title>
+  <style>
+    :root{
+      --bg:#000;--card:rgba(255,255,255,0.06);--card-border:rgba(255,255,255,0.10);
+      --text:rgba(255,255,255,0.92);--muted:rgba(255,255,255,0.70);
+      --danger:#ff6b6b;--ok:#7CFC90;
+      --btn:#ffffff;--btnText:#000000;
+      --btn2-bg:rgba(255,255,255,0.10);--btn2-border:rgba(255,255,255,0.16);
+      --inputBg:rgba(255,255,255,0.08);--inputBorder:rgba(255,255,255,0.14);
+      --focus:rgba(255,255,255,0.28);
+    }
+    *{box-sizing:border-box;}
+    html,body{height:100%;margin:0;}
+    body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:var(--bg);color:var(--text);}
+    .topbar{position:sticky;top:0;z-index:10;background:rgba(0,0,0,0.85);backdrop-filter:blur(10px);border-bottom:1px solid rgba(255,255,255,0.10);}
+    .topbar-inner{max-width:980px;margin:0 auto;padding:10px 12px;display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;}
+    .brand{display:flex;flex-direction:column;gap:2px;}
+    .brand h1{margin:0;font-size:18px;font-weight:900;line-height:1.1;}
+    .brand .sub{margin:0;font-size:12px;color:var(--muted);}
+    .actions{display:flex;gap:6px;align-items:center;flex-wrap:wrap;}
+    .btn{appearance:none;border:none;border-radius:12px;padding:12px 14px;font-weight:900;font-size:14px;cursor:pointer;background:var(--btn);color:var(--btnText);line-height:1;white-space:nowrap;}
+    .btn.secondary{background:var(--btn2-bg);color:var(--text);border:1px solid var(--btn2-border);font-weight:800;}
+    .btn.danger{background:rgba(255,107,107,0.15);color:var(--danger);border:1px solid rgba(255,107,107,0.35);}
+    .btn:disabled{opacity:0.55;cursor:not-allowed;}
+    .pill{display:inline-flex;align-items:center;padding:8px 10px;border-radius:999px;border:1px solid rgba(255,255,255,0.12);background:rgba(255,255,255,0.05);color:var(--muted);font-size:12px;white-space:nowrap;}
+    .container{max-width:980px;margin:0 auto;padding:16px;}
+    .card{background:var(--card);border:1px solid var(--card-border);border-radius:16px;padding:16px;margin-bottom:14px;}
+    .card h2{margin:0 0 6px;font-size:16px;font-weight:950;}
+    .card p{margin:0 0 12px;color:var(--muted);font-size:13px;line-height:1.4;}
+    .msg{margin-top:12px;font-size:14px;line-height:1.35;padding:10px 12px;border-radius:12px;border:1px solid rgba(255,255,255,0.12);background:rgba(255,255,255,0.05);display:none;word-break:break-word;}
+    .msg.error{color:var(--danger);display:block;}
+    .msg.ok{color:var(--ok);display:block;}
+    .field label{display:block;font-size:12px;color:var(--muted);margin-bottom:5px;}
+    .field input{width:100%;padding:10px 12px;border-radius:12px;border:1px solid var(--inputBorder);background:var(--inputBg);color:var(--text);font-size:14px;outline:none;}
+    .field input:focus{border-color:var(--focus);box-shadow:0 0 0 3px rgba(255,255,255,0.08);}
+    .search-row{display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap;}
+    .search-row .field{flex:1;min-width:160px;}
+
+    /* Volunteer info card */
+    .vol-info{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;}
+    @media(max-width:500px){.vol-info{grid-template-columns:1fr;}}
+    .info-item{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:12px 14px;}
+    .info-item .label{font-size:11px;color:var(--muted);margin-bottom:4px;}
+    .info-item .value{font-size:16px;font-weight:900;}
+    .points-big{font-size:36px;font-weight:900;color:var(--ok);}
+
+    /* History table */
+    .table-wrap{overflow-x:auto;border-radius:12px;border:1px solid rgba(255,255,255,0.10);margin-top:12px;}
+    table{width:100%;border-collapse:collapse;min-width:500px;}
+    th,td{padding:10px 10px;border-bottom:1px solid rgba(255,255,255,0.08);text-align:left;font-size:13px;}
+    th{color:var(--muted);font-weight:900;font-size:12px;background:rgba(0,0,0,0.4);}
+    .redemption-row td{color:var(--danger);}
+
+    /* Redeem form */
+    .redeem-form{display:none;margin-top:14px;border-top:1px solid rgba(255,255,255,0.10);padding-top:14px;}
+  </style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-inner">
+    <div class="brand">
+      <h1>AnimeIowa</h1>
+      <p class="sub">Points Redemption</p>
+    </div>
+    <div class="actions">
+      <span id="rolePill" class="pill">Loading…</span>
+      <button class="btn secondary" type="button" id="backBtn">← Back</button>
+      <button class="btn secondary" type="button" id="logoutBtn">Log Out</button>
+    </div>
+  </div>
+</div>
+
+<main class="container">
+
+  <div id="msgGlobal" class="msg" style="margin-bottom:14px;"></div>
+
+  <!-- Search -->
+  <div class="card">
+    <h2>Find Volunteer by Badge Number</h2>
+    <p>Enter the volunteer's badge number to look up their account and points balance.</p>
+    <div class="search-row">
+      <div class="field">
+        <label>Badge Number</label>
+        <input id="badgeInput" type="text" placeholder="e.g. V-1042" />
+      </div>
+      <button class="btn" id="searchBtn" type="button">Search</button>
+    </div>
+    <div id="searchMsg" class="msg"></div>
+  </div>
+
+  <!-- Volunteer profile — hidden until found -->
+  <div id="volCard" class="card" style="display:none;">
+    <h2 id="volName">—</h2>
+    <div class="vol-info">
+      <div class="info-item">
+        <div class="label">Badge Number</div>
+        <div class="value" id="volBadge">—</div>
+      </div>
+      <div class="info-item">
+        <div class="label">Role</div>
+        <div class="value" id="volRole">—</div>
+      </div>
+      <div class="info-item">
+        <div class="label">Department(s)</div>
+        <div class="value" id="volDepts">—</div>
+      </div>
+      <div class="info-item" style="border-color:rgba(124,252,144,0.3);">
+        <div class="label">Current Points Balance</div>
+        <div class="value points-big" id="volPoints">—</div>
+      </div>
+    </div>
+
+    <!-- Redeem button -->
+    <button class="btn danger" id="redeemBtn" type="button">Redeem Points</button>
+
+    <!-- Redeem form — hidden until button clicked -->
+    <div class="redeem-form" id="redeemForm">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
+        <div class="field">
+          <label>Points to Remove *</label>
+          <input id="redeemPoints" type="number" min="1" placeholder="e.g. 30" />
+        </div>
+        <div class="field">
+          <label>Item / Reason *</label>
+          <input id="redeemReason" type="text" placeholder="e.g. T-shirt (30 pts)" />
+        </div>
+      </div>
+      <div id="redeemMsg" class="msg"></div>
+      <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;">
+        <button class="btn danger" id="confirmRedeemBtn" type="button">Confirm Redemption</button>
+        <button class="btn secondary" id="cancelRedeemBtn" type="button">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Points history -->
+  <div id="historyCard" class="card" style="display:none;">
+    <h2>Points History</h2>
+    <p>All points earned and redeemed for this volunteer.</p>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Type</th>
+            <th>Points</th>
+            <th>Note</th>
+          </tr>
+        </thead>
+        <tbody id="historyTbody">
+          <tr><td colspan="4" style="color:var(--muted);padding:16px;">Loading…</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</main>
+
+<script type="module">
+  import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+
+  const SUPABASE_URL      = 'https://mjnphetnuiuxgsghzdoo.supabase.co';
+  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1qbnBoZXRudWl1eGdzZ2h6ZG9vIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE4OTA2OTMsImV4cCI6MjA4NzQ2NjY5M30.sB1i6dy5e7brQHRiCJ-0Kf2aIcIO1DkUR1O2RtkmRGc';
+  const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  const rolePill        = document.getElementById('rolePill');
+  const backBtn         = document.getElementById('backBtn');
+  const logoutBtn       = document.getElementById('logoutBtn');
+  const badgeInput      = document.getElementById('badgeInput');
+  const searchBtn       = document.getElementById('searchBtn');
+  const searchMsg       = document.getElementById('searchMsg');
+  const volCard         = document.getElementById('volCard');
+  const historyCard     = document.getElementById('historyCard');
+  const redeemBtn       = document.getElementById('redeemBtn');
+  const redeemForm      = document.getElementById('redeemForm');
+  const redeemPoints    = document.getElementById('redeemPoints');
+  const redeemReason    = document.getElementById('redeemReason');
+  const redeemMsg       = document.getElementById('redeemMsg');
+  const confirmRedeemBtn= document.getElementById('confirmRedeemBtn');
+  const cancelRedeemBtn = document.getElementById('cancelRedeemBtn');
+  const historyTbody    = document.getElementById('historyTbody');
+
+  let CURRENT_USER    = null; // logged in volunteer head / admin
+  let FOUND_VOLUNTEER = null; // the volunteer being looked up
+  let CURRENT_BALANCE = 0;
+
+  function setMsg(el, type, text) {
+    el.className = 'msg ' + (type || '');
+    el.textContent = text || '';
+    el.style.display = text ? 'block' : 'none';
+  }
+
+  function fmtDate(d) { return d ? new Date(d).toLocaleDateString() : '—'; }
+
+  function displayName(p) {
+    return (p?.nickname||'').trim() || ([p?.first_name,p?.last_name].filter(Boolean).join(' ')).trim() || '—';
+  }
+
+  // ── Guard ──────────────────────────────────────────────────────────
+  async function guard() {
+    const { data, error } = await supabase.auth.getSession();
+    if (error) throw error;
+    const session = data?.session;
+    if (!session?.user?.id) { window.location.href = '../../index.html'; return; }
+
+    const { data: p, error: pe } = await supabase
+      .from('core_users')
+      .select('id, role, is_active, first_name, last_name, nickname, badge_number')
+      .eq('auth_id', session.user.id)
+      .single();
+    if (pe) throw pe;
+
+    const role = (p?.role || '').toLowerCase().trim();
+    if (!p?.is_active || !['admin','super_user','volunteer_head'].includes(role)) {
+      window.location.href = '../../index.html'; return;
+    }
+
+    CURRENT_USER = p;
+    rolePill.textContent = role === 'volunteer_head' ? 'Role: Volunteer Head' : role === 'super_user' ? 'Role: Super User' : 'Role: Admin';
+  }
+
+  // ── Search volunteer by badge ──────────────────────────────────────
+  async function searchVolunteer() {
+    const badge = (badgeInput.value || '').trim();
+    if (!badge) { setMsg(searchMsg, 'error', 'Please enter a badge number.'); return; }
+
+    setMsg(searchMsg, '', '');
+    searchBtn.disabled = true; searchBtn.textContent = 'Searching…';
+    volCard.style.display = 'none';
+    historyCard.style.display = 'none';
+
+    const { data, error } = await supabase
+      .from('core_users')
+      .select('id, first_name, last_name, nickname, badge_number, role, is_active')
+      .eq('badge_number', badge)
+      .maybeSingle();
+
+    searchBtn.disabled = false; searchBtn.textContent = 'Search';
+
+    if (error) { setMsg(searchMsg, 'error', error.message); return; }
+    if (!data)  { setMsg(searchMsg, 'error', 'No volunteer found with that badge number.'); return; }
+    if (!data.is_active) { setMsg(searchMsg, 'error', 'This account is not active.'); return; }
+
+    FOUND_VOLUNTEER = data;
+    await loadVolunteerInfo();
+  }
+
+  async function loadVolunteerInfo() {
+    const v = FOUND_VOLUNTEER;
+
+    // Get departments
+    const { data: deptRows } = await supabase
+      .from('core_user_departments')
+      .select('core_departments(name)')
+      .eq('user_id', v.id);
+    const depts = (deptRows || []).map(d => d.core_departments?.name).filter(Boolean).join(', ') || '—';
+
+    // Get points balance
+    const { data: ledger } = await supabase
+      .from('user_points_ledger')
+      .select('points')
+      .eq('user_id', v.id);
+    CURRENT_BALANCE = Math.round((ledger || []).reduce((s, r) => s + Number(r.points || 0), 0));
+
+    document.getElementById('volName').textContent  = displayName(v);
+    document.getElementById('volBadge').textContent = v.badge_number || '—';
+    document.getElementById('volRole').textContent  = v.role || '—';
+    document.getElementById('volDepts').textContent = depts;
+    document.getElementById('volPoints').textContent = CURRENT_BALANCE.toLocaleString();
+
+    // Reset redeem form
+    redeemForm.style.display = 'none';
+    redeemPoints.value = '';
+    redeemReason.value = '';
+    setMsg(redeemMsg, '', '');
+
+    volCard.style.display = 'block';
+
+    await loadHistory();
+    historyCard.style.display = 'block';
+  }
+
+  async function loadHistory() {
+    historyTbody.innerHTML = `<tr><td colspan="4" style="color:var(--muted);padding:16px;">Loading…</td></tr>`;
+    const { data, error } = await supabase
+      .from('user_points_ledger')
+      .select('points, notes, source_type, created_at')
+      .eq('user_id', FOUND_VOLUNTEER.id)
+      .order('created_at', { ascending: false });
+
+    if (error || !data?.length) {
+      historyTbody.innerHTML = `<tr><td colspan="4" style="color:var(--muted);padding:16px;">No history yet.</td></tr>`;
+      return;
+    }
+
+    historyTbody.innerHTML = data.map(r => {
+      const pts = Number(r.points || 0);
+      const isRedemption = pts < 0;
+      const color = isRedemption ? 'var(--danger)' : 'var(--ok)';
+      const type  = isRedemption ? 'Redemption' : (r.source_type || 'Earned').replace('_', ' ');
+      return `<tr style="border-bottom:1px solid rgba(255,255,255,0.08);">
+        <td>${fmtDate(r.created_at)}</td>
+        <td style="color:${color};">${type}</td>
+        <td style="color:${color};font-weight:900;">${pts > 0 ? '+' : ''}${Math.round(pts)}</td>
+        <td style="color:var(--muted);">${r.notes || '—'}</td>
+      </tr>`;
+    }).join('');
+  }
+
+  // ── Redeem ─────────────────────────────────────────────────────────
+  redeemBtn.addEventListener('click', () => {
+    redeemForm.style.display = 'block';
+    redeemPoints.focus();
+  });
+
+  cancelRedeemBtn.addEventListener('click', () => {
+    redeemForm.style.display = 'none';
+    redeemPoints.value = '';
+    redeemReason.value = '';
+    setMsg(redeemMsg, '', '');
+  });
+
+  confirmRedeemBtn.addEventListener('click', async () => {
+    const pts    = parseInt(redeemPoints.value || '0');
+    const reason = (redeemReason.value || '').trim();
+
+    if (!pts || pts <= 0)  { setMsg(redeemMsg, 'error', 'Enter a valid number of points to remove.'); return; }
+    if (!reason)           { setMsg(redeemMsg, 'error', 'A reason is required.'); return; }
+    if (pts > CURRENT_BALANCE) { setMsg(redeemMsg, 'error', `Cannot remove more than the current balance (${CURRENT_BALANCE} pts).`); return; }
+
+    confirmRedeemBtn.disabled = true; confirmRedeemBtn.textContent = 'Processing…';
+    setMsg(redeemMsg, '', '');
+
+    try {
+      // Insert negative points entry
+      const { data: ledgerRow, error: ledgerErr } = await supabase
+        .from('user_points_ledger')
+        .insert([{
+          user_id:     FOUND_VOLUNTEER.id,
+          source_type: 'redemption',
+          points:      -pts,
+          created_by:  CURRENT_USER.id,
+          notes:       reason
+        }])
+        .select('id')
+        .single();
+      if (ledgerErr) throw ledgerErr;
+
+      // Log to hour_approval_log
+      await supabase.from('hour_approval_log').insert([{
+        hour_type:      'points',
+        hour_id:        ledgerRow.id,
+        action:         'points_redeemed',
+        performed_by:   CURRENT_USER.id,
+        target_user_id: FOUND_VOLUNTEER.id,
+        description:    `Points redeemed: ${pts} pts — ${reason} — by ${displayName(CURRENT_USER)} (Badge #${CURRENT_USER.badge_number || '?'})`,
+        meta: {
+          points_removed: pts,
+          reason,
+          balance_before: CURRENT_BALANCE,
+          balance_after:  CURRENT_BALANCE - pts
+        }
+      }]);
+
+      // Update UI
+      CURRENT_BALANCE -= pts;
+      document.getElementById('volPoints').textContent = CURRENT_BALANCE.toLocaleString();
+
+      redeemForm.style.display = 'none';
+      redeemPoints.value = '';
+      redeemReason.value = '';
+
+      setMsg(document.getElementById('msgGlobal'), 'ok', `✅ ${pts} points removed from ${displayName(FOUND_VOLUNTEER)}. New balance: ${CURRENT_BALANCE} pts.`);
+      setTimeout(() => setMsg(document.getElementById('msgGlobal'), '', ''), 5000);
+
+      await loadHistory();
+
+    } catch(e) {
+      setMsg(redeemMsg, 'error', e?.message || 'Redemption failed.');
+    } finally {
+      confirmRedeemBtn.disabled = false; confirmRedeemBtn.textContent = 'Confirm Redemption';
+    }
+  });
+
+  // ── Nav ────────────────────────────────────────────────────────────
+  backBtn.addEventListener('click', () => { window.location.href = '../admin.html'; });
+
+  logoutBtn.addEventListener('click', async () => {
+    logoutBtn.disabled = true;
+    try { await supabase.auth.signOut(); } finally {
+      localStorage.removeItem('core_user_profile');
+      window.location.href = '../../index.html';
+    }
+  });
+
+  badgeInput.addEventListener('keydown', e => { if (e.key === 'Enter') searchBtn.click(); });
+
+  // ── Boot ───────────────────────────────────────────────────────────
+  guard().catch(e => {
+    console.error(e);
+    window.location.href = '../../index.html';
+  });
+</script>
+</body>
+</html>

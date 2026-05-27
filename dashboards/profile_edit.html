@@ -36,22 +36,17 @@
     .wrap { width: 100%; max-width: 520px; margin: 0 auto; }
 
     .topbar-row {
-      display: flex;
-      align-items: center;
+      display: flex; align-items: center;
       justify-content: space-between;
-      margin-bottom: 20px;
-      flex-wrap: wrap;
-      gap: 10px;
+      margin-bottom: 20px; flex-wrap: wrap; gap: 10px;
     }
-
     h1 { margin: 0; font-size: 22px; font-weight: 900; }
 
     .btn {
       appearance: none; border: none; border-radius: 12px;
       padding: 12px 18px; font-weight: 900; font-size: 14px;
       cursor: pointer; background: var(--btn); color: var(--btnText);
-      line-height: 1; white-space: nowrap; text-decoration: none;
-      display: inline-block;
+      line-height: 1; white-space: nowrap; display: inline-block;
     }
     .btn.secondary {
       background: var(--btn2-bg); color: var(--text);
@@ -66,37 +61,23 @@
     }
     .card h2 { margin: 0 0 16px; font-size: 16px; font-weight: 900; }
 
-    /* Photo section */
-    .photo-wrap {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-      margin-bottom: 16px;
-    }
-    #photoPreview {
+    /* Avatar placeholder */
+    .avatar-wrap { display: flex; justify-content: center; margin-bottom: 8px; }
+    .avatar-circle {
       width: 80px; height: 80px; border-radius: 50%;
-      object-fit: cover;
-      border: 2px solid rgba(255,255,255,0.18);
       background: rgba(255,255,255,0.08);
+      border: 2px solid rgba(255,255,255,0.14);
       display: flex; align-items: center; justify-content: center;
-      font-size: 32px; flex-shrink: 0;
-      overflow: hidden;
+      font-size: 34px;
     }
-    #photoPreview img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
-    .photo-btns { display: flex; flex-direction: column; gap: 8px; }
+    .avatar-note { text-align: center; font-size: 12px; color: var(--muted); }
 
     /* Locked fields */
     .field-locked {
       padding: 13px 12px; border-radius: 12px;
       border: 1px solid rgba(255,255,255,0.08);
       background: rgba(255,255,255,0.04);
-      color: var(--muted); font-size: 14px;
-      margin-bottom: 10px;
-    }
-
-    label {
-      display: block; font-size: 13px;
-      color: var(--muted); margin-bottom: 6px;
+      color: var(--muted); font-size: 14px; margin-bottom: 10px;
     }
     .locked-label {
       display: flex; align-items: center; gap: 6px;
@@ -104,20 +85,32 @@
     }
     .lock-icon { font-size: 12px; opacity: 0.6; }
 
-    input, select {
+    label { display: block; font-size: 13px; color: var(--muted); margin-bottom: 6px; }
+
+    input {
       width: 100%; padding: 13px 12px; border-radius: 12px;
       border: 1px solid var(--inputBorder); background: var(--inputBg);
       color: var(--text); font-size: 16px; outline: none;
       -webkit-appearance: none; appearance: none; margin-bottom: 10px;
     }
-    select { background: #fff; color: #000; }
-    input:focus, select:focus {
+    input:focus {
       border-color: var(--focus);
       box-shadow: 0 0 0 3px rgba(255,255,255,0.08);
     }
+    input[type="password"] { letter-spacing: 0.2em; }
+
+    .passkey-row { display: flex; gap: 8px; align-items: flex-start; }
+    .passkey-row input { margin-bottom: 0; flex: 1; }
+    .passkey-toggle {
+      appearance: none; border: 1px solid var(--btn2-border);
+      border-radius: 10px; background: var(--btn2-bg);
+      color: var(--text); font-size: 13px; font-weight: 700;
+      padding: 13px 12px; cursor: pointer; white-space: nowrap;
+      flex-shrink: 0;
+    }
 
     .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-    .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+    @media (max-width: 400px) { .grid-2 { grid-template-columns: 1fr; } }
 
     .msg {
       margin-top: 12px; font-size: 14px; line-height: 1.4;
@@ -129,12 +122,8 @@
     .msg.error { color: var(--danger); display: block; }
     .msg.ok    { color: var(--ok);     display: block; }
 
-    .tiny { margin-top: 12px; font-size: 12px; color: var(--muted); line-height: 1.5; }
-
-    @media (max-width: 400px) {
-      .grid-2 { grid-template-columns: 1fr; }
-      .grid-3 { grid-template-columns: 1fr 1fr; }
-    }
+    .tiny { margin-top: 10px; font-size: 12px; color: var(--muted); line-height: 1.5; }
+    .divider { border: none; border-top: 1px solid rgba(255,255,255,0.08); margin: 16px 0; }
   </style>
 </head>
 
@@ -146,113 +135,85 @@
       <button id="backBtn" class="btn secondary" type="button">Back</button>
     </div>
 
-    <!-- Photo card -->
+    <!-- Avatar card -->
     <div class="card">
       <h2>Profile Photo</h2>
-      <div class="photo-wrap">
-        <div id="photoPreview"><span id="photoPlaceholder" style="font-size:32px;">&#128100;</span></div>
-        <div class="photo-btns">
-          <button id="takePhotoBtn" class="btn secondary" type="button" style="font-size:13px; padding:9px 14px;">Take Photo</button>
-          <button id="uploadPhotoBtn" class="btn secondary" type="button" style="font-size:13px; padding:9px 14px;">Upload Image</button>
-          <button id="removePhotoBtn" class="btn secondary" type="button" style="font-size:13px; padding:9px 14px; color:var(--danger); display:none;">Remove</button>
-        </div>
+      <div class="avatar-wrap">
+        <div class="avatar-circle">&#128100;</div>
       </div>
-      <input id="cameraInput" type="file" accept="image/*" capture="environment" style="display:none;" />
-      <input id="fileInput"   type="file" accept="image/*" style="display:none;" />
-      <div id="photoMsg" class="msg"></div>
+      <p class="avatar-note">Profile photo coming soon.</p>
     </div>
 
     <!-- Info card -->
     <div class="card">
       <h2>My Information</h2>
 
-      <!-- Locked: name -->
-      <div class="grid-2" style="margin-bottom:0;">
+      <div class="grid-2" style="margin-bottom:10px;">
         <div>
-          <div class="locked-label"><span class="lock-icon">&#128274;</span> First Name</div>
-          <div class="field-locked" id="lockedFirstName">--</div>
+          <label for="first_name">First Name</label>
+          <input id="first_name" type="text" />
         </div>
         <div>
-          <div class="locked-label"><span class="lock-icon">&#128274;</span> Last Name</div>
-          <div class="field-locked" id="lockedLastName">--</div>
+          <label for="last_name">Last Name</label>
+          <input id="last_name" type="text" />
         </div>
       </div>
 
-      <!-- Locked: badge -->
-      <div class="locked-label"><span class="lock-icon">&#128274;</span> Badge Number</div>
-      <div class="field-locked" id="lockedBadge">Not assigned yet</div>
+      <label for="badge_number">Badge Number</label>
+      <input id="badge_number" type="text" placeholder="e.g. V-1042" />
 
-      <p class="tiny" style="margin-top:0; margin-bottom:16px;">Name and badge number are assigned by admin and cannot be changed here.</p>
+      <hr class="divider" />
 
-      <!-- Editable fields -->
       <label for="nickname">Nickname (optional)</label>
       <input id="nickname" type="text" placeholder="What should we call you?" />
 
-      <label for="phone">Phone</label>
-      <input id="phone" type="tel" inputmode="tel" placeholder="(555) 555-5555" />
+      <div id="saveMsg" class="msg"></div>
+      <button id="saveBtn" class="btn full" type="button">Save Changes</button>
+    </div>
 
-      <label for="address">Address</label>
-      <input id="address" type="text" placeholder="Street address" />
+    <!-- Passkey card -->
+    <div class="card">
+      <h2>My Passkey</h2>
+   <p class="tiny" style="margin-top:0;margin-bottom:14px;">
+        Your 6-digit passkey is used to approve shifts at clock-out. You can update it here at any time.
+      </p>
 
-      <div class="grid-3">
-        <div style="grid-column: span 1;">
-          <label for="city">City</label>
-          <input id="city" type="text" />
-        </div>
-        <div>
-          <label for="state">State</label>
-          <select id="state">
-            <option value="">--</option>
-            <option>AL</option><option>AK</option><option>AZ</option><option>AR</option>
-            <option>CA</option><option>CO</option><option>CT</option><option>DE</option>
-            <option>FL</option><option>GA</option><option>HI</option><option>ID</option>
-            <option>IL</option><option>IN</option><option>IA</option><option>KS</option>
-            <option>KY</option><option>LA</option><option>ME</option><option>MD</option>
-            <option>MA</option><option>MI</option><option>MN</option><option>MS</option>
-            <option>MO</option><option>MT</option><option>NE</option><option>NV</option>
-            <option>NH</option><option>NJ</option><option>NM</option><option>NY</option>
-            <option>NC</option><option>ND</option><option>OH</option><option>OK</option>
-            <option>OR</option><option>PA</option><option>RI</option><option>SC</option>
-            <option>SD</option><option>TN</option><option>TX</option><option>UT</option>
-            <option>VT</option><option>VA</option><option>WA</option><option>WV</option>
-            <option>WI</option><option>WY</option>
-          </select>
-        </div>
-        <div>
-          <label for="zip">ZIP</label>
-          <input id="zip" type="text" inputmode="numeric" placeholder="12345" />
-        </div>
+      <label for="passkey">New Passkey (6 digits)</label>
+      <div class="passkey-row">
+        <input id="passkey" type="password" inputmode="numeric" maxlength="6" placeholder="••••••" />
+        <button class="passkey-toggle" type="button" id="passkeyToggle">Show</button>
       </div>
 
-      <button id="saveBtn" class="btn full" type="button">Save Changes</button>
-      <div id="saveMsg" class="msg"></div>
+      <label for="passkey_confirm" style="margin-top:10px;">Confirm Passkey</label>
+      <div class="passkey-row">
+        <input id="passkey_confirm" type="password" inputmode="numeric" maxlength="6" placeholder="••••••" />
+        <button class="passkey-toggle" type="button" id="passkeyConfirmToggle">Show</button>
+      </div>
+
+      <div id="passkeyMsg" class="msg"></div>
+      <button id="passkeyBtn" class="btn full" type="button">Set Passkey</button>
     </div>
 
   </div>
 
   <script type="module">
-    import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+    import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
     const SUPABASE_URL      = 'https://mjnphetnuiuxgsghzdoo.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1qbnBoZXRudWl1eGdzZ2h6ZG9vIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE4OTA2OTMsImV4cCI6MjA4NzQ2NjY5M30.sB1i6dy5e7brQHRiCJ-0Kf2aIcIO1DkUR1O2RtkmRGc';
-    const PROFILE_BUCKET    = 'core-user-profile';
-
     const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     let coreUser = null;
 
-    // Elements
-    const backBtn        = document.getElementById('backBtn');
-    const photoPreview   = document.getElementById('photoPreview');
-    const photoPlaceholder = document.getElementById('photoPlaceholder');
-    const takePhotoBtn   = document.getElementById('takePhotoBtn');
-    const uploadPhotoBtn = document.getElementById('uploadPhotoBtn');
-    const removePhotoBtn = document.getElementById('removePhotoBtn');
-    const cameraInput    = document.getElementById('cameraInput');
-    const fileInput      = document.getElementById('fileInput');
-    const photoMsg       = document.getElementById('photoMsg');
-    const saveBtn        = document.getElementById('saveBtn');
-    const saveMsg        = document.getElementById('saveMsg');
+    const backBtn             = document.getElementById('backBtn');
+    const saveBtn             = document.getElementById('saveBtn');
+    const saveMsg             = document.getElementById('saveMsg');
+    const passkeyBtn          = document.getElementById('passkeyBtn');
+    const passkeyMsg          = document.getElementById('passkeyMsg');
+    const passkeyEl           = document.getElementById('passkey');
+    const passkeyConfirmEl    = document.getElementById('passkey_confirm');
+    const passkeyToggle       = document.getElementById('passkeyToggle');
+    const passkeyConfirmToggle= document.getElementById('passkeyConfirmToggle');
 
     function setMsg(el, type, text) {
       el.className = 'msg ' + (type || '');
@@ -260,155 +221,59 @@
       el.style.display = text ? 'block' : 'none';
     }
 
-    // -- Auth guard --
+    // Show/hide passkey toggle
+    function makeToggle(btn, input) {
+      btn.addEventListener('click', () => {
+        const show = input.type === 'password';
+        input.type = show ? 'text' : 'password';
+        btn.textContent = show ? 'Hide' : 'Show';
+      });
+    }
+    makeToggle(passkeyToggle, passkeyEl);
+    makeToggle(passkeyConfirmToggle, passkeyConfirmEl);
+
+    // Only allow digits in passkey fields
+    [passkeyEl, passkeyConfirmEl].forEach(el => {
+      el.addEventListener('input', () => {
+        el.value = el.value.replace(/\D/g, '').slice(0, 6);
+      });
+    });
+
     async function load() {
       const { data, error } = await supabase.auth.getSession();
       if (error || !data?.session?.user?.id) {
-        window.location.href = 'index.html'; return;
+        window.location.href = '../index.html'; return;
       }
 
       const { data: u, error: ue } = await supabase
         .from('core_users')
-        .select('*')
+        .select('id, auth_id, first_name, last_name, nickname, badge_number, role, is_active')
         .eq('auth_id', data.session.user.id)
         .single();
 
       if (ue || !u || !u.is_active) {
-        window.location.href = 'index.html'; return;
+        window.location.href = '../index.html'; return;
       }
 
       coreUser = u;
 
-      // Fill locked fields
-      document.getElementById('lockedFirstName').textContent = u.first_name || '--';
-      document.getElementById('lockedLastName').textContent  = u.last_name  || '--';
-      document.getElementById('lockedBadge').textContent     = u.badge_number || 'Not assigned yet';
-
-      // Fill editable fields
-      document.getElementById('nickname').value = u.nickname || '';
-      document.getElementById('phone').value    = u.phone    || '';
-      document.getElementById('address').value  = u.address  || '';
-      document.getElementById('city').value     = u.city     || '';
-      document.getElementById('state').value    = u.state    || '';
-      document.getElementById('zip').value      = u.zip      || '';
-
-      // Photo
-      setPhotoUi(u.profile_image_url);
+      document.getElementById('first_name').value  = u.first_name   || '';
+      document.getElementById('last_name').value   = u.last_name    || '';
+      document.getElementById('badge_number').value= u.badge_number || '';
+      document.getElementById('nickname').value    = u.nickname     || '';
     }
 
-    function setPhotoUi(url) {
-      photoPreview.innerHTML = '';
-      if (url) {
-        const img = document.createElement('img');
-        img.src = url;
-        img.alt = 'Profile photo';
-        photoPreview.appendChild(img);
-        removePhotoBtn.style.display = 'inline-block';
-      } else {
-        photoPreview.innerHTML = '<span style="font-size:32px;">&#128100;</span>';
-        removePhotoBtn.style.display = 'none';
-      }
-    }
-
-    // -- Image resizing --
-    async function resizeImage(file) {
-      return new Promise((resolve, reject) => {
-        const url = URL.createObjectURL(file);
-        const img = new Image();
-        img.onload = () => {
-          URL.revokeObjectURL(url);
-          const MAX = 512;
-          let w = img.naturalWidth, h = img.naturalHeight;
-          if (w > h && w > MAX) { h = Math.round(h * MAX / w); w = MAX; }
-          else if (h > MAX)     { w = Math.round(w * MAX / h); h = MAX; }
-          const canvas = document.createElement('canvas');
-          canvas.width = w; canvas.height = h;
-          canvas.getContext('2d').drawImage(img, 0, 0, w, h);
-          canvas.toBlob(b => b ? resolve(b) : reject(new Error('Canvas toBlob failed')), 'image/jpeg', 0.85);
-        };
-        img.onerror = reject;
-        img.src = url;
-      });
-    }
-
-    async function uploadPhoto(file) {
-      setMsg(photoMsg, '', 'Uploading...');
-      try {
-        const blob = await resizeImage(file);
-        const path = `core_users/${coreUser.id}.jpg`;
-
-        const { error: upErr } = await supabase.storage
-          .from(PROFILE_BUCKET)
-          .upload(path, blob, { upsert: true, contentType: 'image/jpeg' });
-        if (upErr) throw upErr;
-
-        const { data: urlData } = supabase.storage.from(PROFILE_BUCKET).getPublicUrl(path);
-        const publicUrl = urlData?.publicUrl;
-        if (!publicUrl) throw new Error('Could not get public URL.');
-
-        // Add cache-buster so the new photo shows immediately
-        const displayUrl = publicUrl + '?t=' + Date.now();
-
-        const { error: dbErr } = await supabase
-          .from('core_users')
-          .update({ profile_image_url: publicUrl })
-          .eq('id', coreUser.id);
-        if (dbErr) throw dbErr;
-
-        coreUser.profile_image_url = publicUrl;
-        setPhotoUi(displayUrl);
-        setMsg(photoMsg, 'ok', 'Photo updated!');
-        setTimeout(() => setMsg(photoMsg, '', ''), 3000);
-      } catch (e) {
-        setMsg(photoMsg, 'error', e?.message || 'Upload failed.');
-      }
-    }
-
-    // -- Photo button events --
-    takePhotoBtn.addEventListener('click', () => cameraInput.click());
-    uploadPhotoBtn.addEventListener('click', () => fileInput.click());
-
-    cameraInput.addEventListener('change', () => {
-      if (cameraInput.files[0]) uploadPhoto(cameraInput.files[0]);
-      cameraInput.value = '';
-    });
-    fileInput.addEventListener('change', () => {
-      if (fileInput.files[0]) uploadPhoto(fileInput.files[0]);
-      fileInput.value = '';
-    });
-
-    removePhotoBtn.addEventListener('click', async () => {
-      removePhotoBtn.disabled = true;
-      try {
-        const { error } = await supabase
-          .from('core_users')
-          .update({ profile_image_url: null })
-          .eq('id', coreUser.id);
-        if (error) throw error;
-        coreUser.profile_image_url = null;
-        setPhotoUi(null);
-        setMsg(photoMsg, 'ok', 'Photo removed.');
-        setTimeout(() => setMsg(photoMsg, '', ''), 3000);
-      } catch (e) {
-        setMsg(photoMsg, 'error', e?.message || 'Failed to remove photo.');
-      } finally {
-        removePhotoBtn.disabled = false;
-      }
-    });
-
-    // -- Save profile --
+    // Save nickname
     saveBtn.addEventListener('click', async () => {
       saveBtn.disabled = true;
       saveBtn.textContent = 'Saving...';
       setMsg(saveMsg, '', '');
 
       const payload = {
-        nickname: (document.getElementById('nickname').value || '').trim() || null,
-        phone:    (document.getElementById('phone').value    || '').trim() || null,
-        address:  (document.getElementById('address').value  || '').trim() || null,
-        city:     (document.getElementById('city').value     || '').trim() || null,
-        state:    (document.getElementById('state').value    || '').trim().toUpperCase() || null,
-        zip:      (document.getElementById('zip').value      || '').trim() || null,
+        first_name:   (document.getElementById('first_name').value   || '').trim() || null,
+        last_name:    (document.getElementById('last_name').value    || '').trim() || null,
+        badge_number: (document.getElementById('badge_number').value || '').trim() || null,
+        nickname:     (document.getElementById('nickname').value     || '').trim() || null,
       };
 
       const { error } = await supabase
@@ -418,31 +283,58 @@
 
       if (error) {
         setMsg(saveMsg, 'error', error.message || 'Save failed.');
-        saveBtn.disabled = false;
-        saveBtn.textContent = 'Save Changes';
       } else {
-        setMsg(saveMsg, 'ok', 'Saved! Taking you back...');
-        const role = (coreUser?.role || '').toLowerCase();
-        setTimeout(() => {
-          window.location.href = role === 'staff' ? 'staff.html' : 'volunteer.html';
-        }, 1200);
+        setMsg(saveMsg, 'ok', 'Saved!');
+        setTimeout(() => setMsg(saveMsg, '', ''), 3000);
       }
+
+      saveBtn.disabled = false;
+      saveBtn.textContent = 'Save Changes';
     });
 
-    // -- Back button: go to whichever dashboard they came from --
+    // Set passkey
+    passkeyBtn.addEventListener('click', async () => {
+      const pk  = (passkeyEl.value || '').trim();
+      const pkc = (passkeyConfirmEl.value || '').trim();
+
+      if (!pk) {
+        setMsg(passkeyMsg, 'error', 'Please enter a 6-digit passkey.'); return;
+      }
+      if (!/^\d{6}$/.test(pk)) {
+        setMsg(passkeyMsg, 'error', 'Passkey must be exactly 6 digits.'); return;
+      }
+      if (pk !== pkc) {
+        setMsg(passkeyMsg, 'error', 'Passkeys do not match.'); return;
+      }
+
+      passkeyBtn.disabled = true;
+      passkeyBtn.textContent = 'Saving...';
+      setMsg(passkeyMsg, '', '');
+
+      const { error } = await supabase
+        .from('core_users')
+        .update({ passkey: pk })
+        .eq('id', coreUser.id);
+
+      if (error) {
+        setMsg(passkeyMsg, 'error', error.message || 'Failed to save passkey.');
+      } else {
+        setMsg(passkeyMsg, 'ok', 'Passkey set successfully!');
+        passkeyEl.value = '';
+        passkeyConfirmEl.value = '';
+        setTimeout(() => setMsg(passkeyMsg, '', ''), 4000);
+      }
+
+      passkeyBtn.disabled = false;
+      passkeyBtn.textContent = 'Set Passkey';
+    });
+
     backBtn.addEventListener('click', () => {
       const role = (coreUser?.role || '').toLowerCase();
-      if (role === 'staff') {
-        window.location.href = 'staff.html';
-      } else {
-        window.location.href = 'volunteer.html';
-      }
+      window.location.href = 'dashboard.html';
     });
 
-    load().catch(e => {
-      console.error(e);
-      window.location.href = 'index.html';
-    });
+    load().catch(() => { window.location.href = '../index.html'; });
   </script>
 </body>
 </html>

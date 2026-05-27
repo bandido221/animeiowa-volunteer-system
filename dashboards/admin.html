@@ -238,7 +238,7 @@
 
          <div class="actions">
         <span id="rolePill" class="pill" title="Role">Loading…</span>
-        <button class="btn secondary" type="button" onclick="window.location.href='volunteer.html'">My Hours</button>
+        <button class="btn secondary" type="button" onclick="window.location.href='dashboard.html'">My Dashboard</button>
         <button id="logoutBtn" class="btn secondary" type="button">Log Out</button>
       </div>
     </div>
@@ -264,15 +264,7 @@
       <div id="message" class="msg" aria-live="polite"></div>
     </section>
 
-    <div class="card" style="margin-bottom:14px;">
-      <h2>My Profile</h2>
-      <div id="adminProfileBox">Loading...</div>
-      <div style="margin-top:12px; display:flex; flex-wrap:wrap; gap:8px;">
-        <a id="adminEditProfileBtn" href="profile_edit.html" class="btn secondary" style="display:none;">Edit My Profile</a>
-        <button id="resetPwBtn" class="btn secondary" type="button">Reset Password</button>
-      </div>
-      <div id="resetPwMsg" style="margin-top:10px; font-size:13px; display:none;"></div>
-    </div>
+    
 
     <section class="grid">
       <div class="card">
@@ -331,9 +323,15 @@
         <h2>Reports & Export</h2>
         <p>Export hours by department, date ranges, and user totals.</p>
         <div class="stack">
-          <button class="btn" type="button" onclick="window.location.href='admin/reports.html'">
-  Open Reports
-</button>
+          <button class="btn" type="button" onclick="window.location.href='admin/reports.html'">Open Reports</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Points Redemption</h2>
+        <p>Look up a volunteer by badge number and redeem their points for items.</p>
+        <div class="stack">
+          <button class="btn" type="button" onclick="window.location.href='admin/points_redemption.html'">Open Points Redemption</button>
         </div>
       </div>
 
@@ -429,7 +427,7 @@
 
     function isAdminRole(role) {
       const r = (role || '').toLowerCase().trim();
-      return r === 'admin' || r === 'super_user';
+      return r === 'admin' || r === 'super_user' || r === 'manager' || r === 'volunteer_head';
     }
 
     async function fetchProfileByAuthId(authId) {
@@ -491,26 +489,13 @@
 
       const PLAN = (profile.plan || 'basic').toLowerCase();
 
-      rolePill.textContent = profile.role === 'super_user' ? 'Role: Super User' : 'Role: Admin';
+      const roleLabel = profile.role === 'super_user' ? 'Super User' : profile.role === 'manager' ? 'Manager' : profile.role === 'volunteer_head' ? 'Volunteer Head' : 'Admin';
+      rolePill.textContent = `Role: ${roleLabel}`;
       welcomeNameEl.textContent = `Welcome, ${displayName(profile)}`;
       welcomeMetaEl.textContent = 'Use the cards below to manage users, departments, approvals, and reports.';
 
       // Admin profile card
-      const photoHtml = PLAN === 'basic' ? '' :
-        profile.profile_image_url
-          ? `<img src="${profile.profile_image_url}" alt="Profile photo" style="width:72px;height:72px;border-radius:50%;object-fit:cover;border:2px solid rgba(255,255,255,0.18);margin-bottom:10px;display:block;" />`
-          : `<div style="width:72px;height:72px;border-radius:50%;background:rgba(255,255,255,0.08);border:2px solid rgba(255,255,255,0.14);display:flex;align-items:center;justify-content:center;margin-bottom:10px;font-size:28px;">&#128100;</div>`;
-
-      document.getElementById('adminProfileBox').innerHTML = `
-        ${photoHtml}
-        <div style="font-size:16px;font-weight:bold;margin-bottom:6px;">${displayName(profile)}</div>
-        <div style="display:inline-flex;align-items:center;padding:6px 10px;border-radius:999px;border:1px solid rgba(255,255,255,0.12);background:rgba(255,255,255,0.05);color:rgba(255,255,255,0.70);font-size:12px;margin-bottom:8px;">Role: <b style="margin-left:4px;">${profile.role}</b></div>
-        <div style="color:rgba(255,255,255,0.70);font-size:13px;margin-top:4px;"><b>Badge #:</b> ${profile.badge_number || '--'}</div>
-      `;
-
-      if (PLAN !== 'basic') {
-        document.getElementById('adminEditProfileBtn').style.display = 'inline-block';
-      }
+      
 
       // Apply plan UI
       if (PLAN === 'basic') {
@@ -524,6 +509,13 @@
       }
       if (PLAN === 'full') {
         document.getElementById('activityLogCard').style.display = 'block';
+      }
+
+      // Managers can only see approvals — hide user manager and departments
+      if (profile.role === 'manager' || profile.role === 'volunteer_head') {
+        document.getElementById('departmentsCard').style.display = 'none';
+        document.querySelector('[onclick*="user_manager"]').closest('.card').style.display = 'none';
+        document.getElementById('activityLogCard').style.display = 'none';
       }
 
       // Check for pending staff hours
@@ -706,29 +698,7 @@
       }
     });
 
-    document.getElementById('resetPwBtn').addEventListener('click', async () => {
-      const btn = document.getElementById('resetPwBtn');
-      const msg = document.getElementById('resetPwMsg');
-      btn.disabled = true;
-      btn.textContent = 'Sending...';
-      try {
-        const { data: s } = await supabase.auth.getSession();
-        const email = s?.session?.user?.email;
-        if (!email) throw new Error('Could not find your email.');
-        const { error } = await supabase.auth.resetPasswordForEmail(email);
-        if (error) throw error;
-        msg.style.display = 'block';
-        msg.style.color = '#7CFC90';
-        msg.textContent = 'Reset link sent! Check your email.';
-      } catch (e) {
-        msg.style.display = 'block';
-        msg.style.color = '#ff6b6b';
-        msg.textContent = e?.message || 'Failed to send reset email.';
-      } finally {
-        btn.disabled = false;
-        btn.textContent = 'Reset Password';
-      }
-    });
+    
 
     // Run guard
     (async () => {

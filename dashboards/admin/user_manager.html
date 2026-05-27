@@ -336,7 +336,7 @@
             <option value="">All roles</option>
             <option value="volunteer">volunteer</option>
             <option value="staff">staff</option>
-            <option value="volunteer_staff">volunteer_staff</option>
+            <option value="volunteer_head">volunteer_head</option>
             <option value="admin">admin</option>
             <option value="super_user">super_user</option>
           </select>
@@ -450,7 +450,7 @@
           <select id="editRole">
             <option value="volunteer">volunteer</option>
             <option value="staff">staff</option>
-            <option value="volunteer_staff">volunteer_staff</option>
+            <option value="volunteer_head">volunteer_head</option>
             <option value="admin">admin</option>
             <option value="super_user">super_user</option>
           </select>
@@ -555,7 +555,7 @@
           <select id="addRole">
             <option value="volunteer">volunteer</option>
             <option value="staff">staff</option>
-            <option value="volunteer_staff">volunteer_staff</option>
+            <option value="volunteer_head">volunteer_head</option>
             <option value="admin">admin</option>
             <option value="super_user">super_user</option>
           </select>
@@ -1516,7 +1516,7 @@ updateActiveBtnUi();
 
       const session = data?.session;
       if (!session?.user?.id) {
-        window.location.href = '../index.html';
+        window.location.href = '../../index.html';
         return;
       }
 
@@ -1524,12 +1524,12 @@ updateActiveBtnUi();
 
       if (!profile?.is_active) {
         await supabase.auth.signOut();
-        window.location.href = '../index.html';
+        window.location.href = '../../index.html';
         return;
       }
 
       if (!isAdminRole(profile.role)) {
-        window.location.href = '../index.html';
+        window.location.href = '../../index.html';
         return;
       }
 

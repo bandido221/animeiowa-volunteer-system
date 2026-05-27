@@ -11,35 +11,52 @@
       --bg: #000000;
       --card: rgba(255,255,255,0.06);
       --card-border: rgba(255,255,255,0.10);
-
       --text: rgba(255,255,255,0.92);
       --muted: rgba(255,255,255,0.70);
-
       --danger: #ff6b6b;
       --ok: #7CFC90;
-
       --btn: #ffffff;
       --btnText: #000000;
-
       --inputBg: rgba(255,255,255,0.08);
       --inputBorder: rgba(255,255,255,0.14);
       --focus: rgba(255,255,255,0.28);
     }
 
     * { box-sizing: border-box; }
-  html, body { min-height: 100%; }
+    html, body { min-height: 100%; }
 
-body {
-  margin: 0;
-  font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-  background: var(--bg);
-  color: var(--text);
-  padding: 20px 16px 40px;
-}
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      padding: 20px 16px 40px;
+      display: flex;
+      justify-content: center;
+    }
 
     .wrap { width: 100%; max-width: 520px; }
 
-    .header { text-align: center; margin-bottom: 20px; }
+    .header { text-align: center; margin-bottom: 24px; }
+
+    /* Avatar placeholder */
+    .avatar-wrap {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 20px;
+    }
+    .avatar-placeholder {
+      width: 88px;
+      height: 88px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.08);
+      border: 2px solid rgba(255,255,255,0.14);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 38px;
+    }
+
     .title { margin: 0; font-size: 26px; font-weight: 800; }
     .subtitle { margin: 8px 0 0 0; color: var(--muted); font-size: 14px; }
 
@@ -57,8 +74,9 @@ body {
       color: var(--muted);
       margin: 14px 0 6px;
     }
+    label:first-child { margin-top: 0; }
 
-    input, select {
+    input {
       width: 100%;
       padding: 14px 12px;
       border-radius: 12px;
@@ -68,26 +86,30 @@ body {
       outline: none;
       font-size: 16px;
     }
-
-    input:focus, select:focus {
+    input:focus {
       border-color: var(--focus);
       box-shadow: 0 0 0 3px rgba(255,255,255,0.08);
     }
 
-    .grid {
+    .grid-2 {
       display: grid;
-      grid-template-columns: 1fr;
+      grid-template-columns: 1fr 1fr;
       gap: 12px;
     }
+    @media (max-width: 400px) {
+      .grid-2 { grid-template-columns: 1fr; }
+    }
 
-    @media (min-width: 520px) {
-      .grid.two { grid-template-columns: 1fr 1fr; }
-      .grid.three { grid-template-columns: 1fr 1fr 1fr; }
+    .badge-note {
+      margin: 6px 0 0 0;
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.4;
     }
 
     .btn {
       width: 100%;
-      margin-top: 18px;
+      margin-top: 20px;
       padding: 14px;
       border-radius: 12px;
       border: none;
@@ -97,7 +119,6 @@ body {
       font-weight: 800;
       cursor: pointer;
     }
-
     .btn:disabled { opacity: 0.6; cursor: not-allowed; }
 
     .msg {
@@ -109,14 +130,14 @@ body {
       background: rgba(255,255,255,0.05);
       display: none;
     }
-    .msg.error { color: var(--danger); display:block; }
-    .msg.ok { color: var(--ok); display:block; }
+    .msg.error { color: var(--danger); display: block; }
+    .msg.ok    { color: var(--ok);     display: block; }
 
     .tiny {
       margin-top: 14px;
       font-size: 12px;
       color: var(--muted);
-      line-height: 1.4;
+      line-height: 1.5;
     }
   </style>
 </head>
@@ -124,70 +145,43 @@ body {
 <body>
   <div class="wrap">
     <div class="header">
+      <!-- Static avatar placeholder — no upload -->
+      <div class="avatar-wrap">
+        <div class="avatar-placeholder">&#128100;</div>
+      </div>
       <h1 class="title">Complete Your Profile</h1>
-      <p class="subtitle">Fill this out so staff can assign your role and badge number.</p>
+      <p class="subtitle">Fill this out so staff can verify and activate your account.</p>
     </div>
-
-    
 
     <div class="card">
       <form id="profileForm">
-        <div class="grid two">
+
+        <div class="grid-2">
           <div>
-            <label>First Name</label>
-            <input id="first_name" type="text" required />
+            <label for="first_name">First Name *</label>
+            <input id="first_name" type="text" autocomplete="given-name" required />
           </div>
           <div>
-            <label>Last Name</label>
-            <input id="last_name" type="text" required />
-          </div>
-        </div>
-
-        <label>Nickname (optional)</label>
-        <input id="nickname" type="text" />
-
-        <label>Phone</label>
-        <input id="phone" type="tel" inputmode="tel" placeholder="(555) 555-5555" />
-
-        <label>Address</label>
-        <input id="address" type="text" placeholder="Street address" />
-
-        <div class="grid two">
-          <div>
-            <label>City</label>
-            <input id="city" type="text" />
-          </div>
-          <div>
-            <label>State</label>
-            <select id="state">
-              <option value="">Select</option>
-              <option value="AL">AL</option><option value="AK">AK</option><option value="AZ">AZ</option><option value="AR">AR</option>
-              <option value="CA">CA</option><option value="CO">CO</option><option value="CT">CT</option><option value="DE">DE</option>
-              <option value="FL">FL</option><option value="GA">GA</option><option value="HI">HI</option><option value="ID">ID</option>
-              <option value="IL">IL</option><option value="IN">IN</option><option value="IA">IA</option><option value="KS">KS</option>
-              <option value="KY">KY</option><option value="LA">LA</option><option value="ME">ME</option><option value="MD">MD</option>
-              <option value="MA">MA</option><option value="MI">MI</option><option value="MN">MN</option><option value="MS">MS</option>
-              <option value="MO">MO</option><option value="MT">MT</option><option value="NE">NE</option><option value="NV">NV</option>
-              <option value="NH">NH</option><option value="NJ">NJ</option><option value="NM">NM</option><option value="NY">NY</option>
-              <option value="NC">NC</option><option value="ND">ND</option><option value="OH">OH</option><option value="OK">OK</option>
-              <option value="OR">OR</option><option value="PA">PA</option><option value="RI">RI</option><option value="SC">SC</option>
-              <option value="SD">SD</option><option value="TN">TN</option><option value="TX">TX</option><option value="UT">UT</option>
-              <option value="VT">VT</option><option value="VA">VA</option><option value="WA">WA</option><option value="WV">WV</option>
-              <option value="WI">WI</option><option value="WY">WY</option>
-            </select>
+            <label for="last_name">Last Name *</label>
+            <input id="last_name" type="text" autocomplete="family-name" required />
           </div>
         </div>
 
-        <label>ZIP</label>
-        <input id="zip" type="text" inputmode="numeric" placeholder="12345 or 12345-6789" />
+        <label for="nickname">Nickname (optional)</label>
+        <input id="nickname" type="text" placeholder="What should we call you?" />
+
+        <label for="badge_number">Badge Number (if you already have one)</label>
+        <input id="badge_number" type="text" placeholder="e.g. V-1042" inputmode="text" />
+        <p class="badge-note">If you don't have a badge number yet, leave this blank — staff will assign one when they activate your account.</p>
 
         <button id="saveBtn" class="btn" type="submit">Save Profile</button>
 
         <div id="message" class="msg"></div>
 
         <div class="tiny">
-          After you save, an admin/staff member will activate your account and assign your role and badge number.
+          After saving, a staff member will review and activate your account. You will be signed out automatically.
         </div>
+
       </form>
     </div>
   </div>
@@ -195,25 +189,18 @@ body {
   <script type="module">
     import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
-    const SUPABASE_URL = 'https://mjnphetnuiuxgsghzdoo.supabase.co';
+    const SUPABASE_URL     = 'https://mjnphetnuiuxgsghzdoo.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1qbnBoZXRudWl1eGdzZ2h6ZG9vIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE4OTA2OTMsImV4cCI6MjA4NzQ2NjY5M30.sB1i6dy5e7brQHRiCJ-0Kf2aIcIO1DkUR1O2RtkmRGc';
 
     const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
 
-    const form = document.getElementById('profileForm')
-    const saveBtn = document.getElementById('saveBtn')
-    const msgEl = document.getElementById('message')
-
+    const form        = document.getElementById('profileForm')
+    const saveBtn     = document.getElementById('saveBtn')
+    const msgEl       = document.getElementById('message')
     const firstNameEl = document.getElementById('first_name')
-    const lastNameEl = document.getElementById('last_name')
-    const nicknameEl = document.getElementById('nickname')
-    const phoneEl = document.getElementById('phone')
-    const addressEl = document.getElementById('address')
-    const cityEl = document.getElementById('city')
-    const stateEl = document.getElementById('state')
-    const zipEl = document.getElementById('zip')
-
-    
+    const lastNameEl  = document.getElementById('last_name')
+    const nicknameEl  = document.getElementById('nickname')
+    const badgeEl     = document.getElementById('badge_number')
 
     function setMsg(type, text) {
       msgEl.className = 'msg ' + (type || '')
@@ -225,52 +212,42 @@ body {
       const { data, error } = await supabase.auth.getSession()
       if (error) throw error
       if (!data?.session) {
-        window.location.href = '../index.html'
+        window.location.href = 'index.html'
         return null
       }
       return data.session
     }
 
+    // Pre-fill if the user has already partially saved
     async function loadExisting(authId) {
-      const { data, error } = await supabase
+      const { data } = await supabase
         .from('core_users')
-        .select('first_name,last_name,nickname,phone,address,city,state,zip')
+        .select('first_name, last_name, nickname, badge_number')
         .eq('auth_id', authId)
         .maybeSingle()
+      if (!data) return
 
-      if (error) throw error
-      return data
+      firstNameEl.value = data.first_name || ''
+      lastNameEl.value  = data.last_name  || ''
+      nicknameEl.value  = data.nickname   || ''
+      badgeEl.value     = data.badge_number || ''
+
+      // Lock name if already confirmed
+      if (data.first_name) {
+        firstNameEl.readOnly = true
+        firstNameEl.style.opacity = '0.6'
+      }
+      if (data.last_name) {
+        lastNameEl.readOnly = true
+        lastNameEl.style.opacity = '0.6'
+      }
     }
-
-    function fillForm(row) {
-  if (!row) return
-  firstNameEl.value = row.first_name || ''
-  lastNameEl.value = row.last_name || ''
-  nicknameEl.value = row.nickname || ''
-  phoneEl.value = row.phone || ''
-  addressEl.value = row.address || ''
-  cityEl.value = row.city || ''
-  stateEl.value = (row.state || '').toUpperCase()
-  zipEl.value = row.zip || ''
-
-  // Lock name fields if already set
-  if (row.first_name) {
-    firstNameEl.readOnly = true
-    firstNameEl.style.opacity = '0.6'
-  }
-  if (row.last_name) {
-    lastNameEl.readOnly = true
-    lastNameEl.style.opacity = '0.6'
-  }
-}
 
     ;(async () => {
       try {
         const session = await requireSession()
         if (!session) return
-        const authId = session.user.id
-        const existing = await loadExisting(authId)
-        fillForm(existing)
+        await loadExisting(session.user.id)
       } catch (e) {
         setMsg('error', e?.message || 'Failed to load profile.')
       }
@@ -282,98 +259,93 @@ body {
 
       const session = await requireSession()
       if (!session) return
-      const authId = session.user.id
+
+      const authId    = session.user.id
       const userEmail = session.user.email || ''
 
-      const payload = {
-        auth_id: authId,
-        first_name: (firstNameEl.value || '').trim(),
-        last_name: (lastNameEl.value || '').trim(),
-        nickname: (nicknameEl.value || '').trim() || null,
-        phone: (phoneEl.value || '').trim() || null,
-        address: (addressEl.value || '').trim() || null,
-        city: (cityEl.value || '').trim() || null,
-        state: ((stateEl.value || '').trim().toUpperCase()) || null,
-        zip: (zipEl.value || '').trim() || null,
-      }
+      const firstName  = (firstNameEl.value || '').trim()
+      const lastName   = (lastNameEl.value  || '').trim()
+      const nickname   = (nicknameEl.value  || '').trim() || null
+      const badgeInput = (badgeEl.value     || '').trim() || null
 
-      if (!payload.first_name || !payload.last_name) {
+      if (!firstName || !lastName) {
         setMsg('error', 'First name and last name are required.')
         return
       }
 
-      saveBtn.disabled = true
+      saveBtn.disabled    = true
       saveBtn.textContent = 'Saving…'
 
       try {
-        // upsert by auth_id (unique)
+        const payload = {
+          auth_id:      authId,
+          email:        userEmail,
+          first_name:   firstName,
+          last_name:    lastName,
+          nickname:     nickname,
+          // Only include badge_number if the user entered one
+          ...(badgeInput ? { badge_number: badgeInput } : {}),
+        }
+
         const { error } = await supabase
           .from('core_users')
           .upsert(payload, { onConflict: 'auth_id' })
 
         if (error) throw error
 
-        
-
-        // Send email to all admins and staff (Full plan only)
-        const { data: planCheck } = await supabase
-          .from('core_users')
-          .select('plan')
-          .eq('auth_id', authId)
-          .maybeSingle()
-        const currentPlan = (planCheck?.plan || 'basic').toLowerCase()
-
-        if (currentPlan === 'full') try {
-          const { data: admins } = await supabase
+        // Notify admins by email (full plan only — non-fatal if it fails)
+        try {
+          const { data: planCheck } = await supabase
             .from('core_users')
-            .select('email')
-            .in('role', ['admin', 'super_user', 'staff'])
-            .eq('is_active', true)
+            .select('plan')
+            .eq('auth_id', authId)
+            .maybeSingle()
 
-          if (admins && admins.length > 0) {
-            const adminEmails = admins.map(a => a.email).filter(Boolean)
+          if ((planCheck?.plan || 'basic').toLowerCase() === 'full') {
+            const { data: admins } = await supabase
+              .from('core_users')
+              .select('email')
+              .in('role', ['admin', 'super_user', 'staff'])
+              .eq('is_active', true)
 
-            const photoHtml = payload.profile_image_url
-              ? `<img src="${payload.profile_image_url}" style="width:80px;height:80px;border-radius:50%;object-fit:cover;margin-bottom:12px;" />`
-              : `<div style="width:80px;height:80px;border-radius:50%;background:#e5e5e5;display:flex;align-items:center;justify-content:center;margin-bottom:12px;font-size:32px;">&#128100;</div>`
-
-            const html = `
-              <div style="font-family:Arial,sans-serif;max-width:480px;margin:0 auto;padding:24px;">
-                <h2 style="margin:0 0 4px;">New Member Waiting for Activation</h2>
-                <p style="color:#555;margin:0 0 20px;">A new member has completed their profile and is waiting to be activated.</p>
-                <div style="text-align:center;margin-bottom:16px;">${photoHtml}</div>
-                <table style="width:100%;border-collapse:collapse;">
-                  <tr><td style="padding:8px 0;color:#777;font-size:13px;">Full Name</td><td style="padding:8px 0;font-weight:bold;">${payload.first_name} ${payload.last_name}</td></tr>
-                  <tr><td style="padding:8px 0;color:#777;font-size:13px;">Email</td><td style="padding:8px 0;">${userEmail}</td></tr>
-                  <tr><td style="padding:8px 0;color:#777;font-size:13px;">Phone</td><td style="padding:8px 0;">${payload.phone || '--'}</td></tr>
-                </table>
-                <p style="margin-top:20px;font-size:13px;color:#888;">Log into the AnimeIowa admin panel to activate this account.</p>
-              </div>
-            `
-
-            await supabase.functions.invoke('send-email', {
-              body: {
-                to: adminEmails,
-                subject: 'New member waiting for activation — AnimeIowa',
-                html
-              }
-            })
+            const adminEmails = (admins || []).map(a => a.email).filter(Boolean)
+            if (adminEmails.length > 0) {
+              const html = `
+                <div style="font-family:Arial,sans-serif;max-width:480px;margin:0 auto;padding:24px;">
+                  <h2 style="margin:0 0 4px;">New Member Waiting for Activation</h2>
+                  <p style="color:#555;margin:0 0 20px;">A new member has completed their profile and is waiting to be activated.</p>
+                  <table style="width:100%;border-collapse:collapse;">
+                    <tr><td style="padding:8px 0;color:#777;font-size:13px;">Full Name</td><td style="padding:8px 0;font-weight:bold;">${firstName} ${lastName}</td></tr>
+                    <tr><td style="padding:8px 0;color:#777;font-size:13px;">Email</td><td style="padding:8px 0;">${userEmail}</td></tr>
+                    ${badgeInput ? `<tr><td style="padding:8px 0;color:#777;font-size:13px;">Badge #</td><td style="padding:8px 0;">${badgeInput}</td></tr>` : ''}
+                  </table>
+                  <p style="margin-top:20px;font-size:13px;color:#888;">Log into the AnimeIowa admin panel to activate this account.</p>
+                </div>
+              `
+              await supabase.functions.invoke('send-email', {
+                body: {
+                  to: adminEmails,
+                  subject: 'New member waiting for activation — AnimeIowa',
+                  html
+                }
+              })
+            }
           }
         } catch (_) { /* email failure is non-fatal */ }
 
-        setMsg('ok', 'Saved. Please wait for staff to activate your account and assign your role.')
+        setMsg('ok', 'Profile saved! Please wait for staff to activate your account.')
         setTimeout(async () => {
           try { await supabase.auth.signOut() } catch {}
-          window.location.href = '../index.html'
-        }, 1200)
+          window.location.href = 'index.html'
+        }, 2000)
+
       } catch (err) {
-        setMsg('error', err?.message || 'Save failed.')
+        setMsg('error', err?.message || 'Save failed. Please try again.')
       } finally {
-        saveBtn.disabled = false
+        saveBtn.disabled    = false
         saveBtn.textContent = 'Save Profile'
       }
     })
-  
   </script>
 </body>
 </html>

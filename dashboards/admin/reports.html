@@ -364,7 +364,7 @@
     function roleInfo(role, source) {
       const r = (role || '').toLowerCase();
       if (r === 'admin' || r === 'super_user')       return { label:'Admin',     cls:'role-admin' };
-      if (r === 'staff' || r === 'volunteer_staff')  return { label:'Staff',     cls:'role-staff' };
+      if (r === 'staff' || r === 'volunteer_head')  return { label:'Staff',     cls:'role-staff' };
       if (source === 'staff_hours')                  return { label:'Staff',     cls:'role-staff' };
       return                                                { label:'Volunteer', cls:'role-vol'   };
     }
@@ -376,6 +376,8 @@
     }
 
     // -- Auth guard -------------------------------------------
+   let MANAGER_DEPT_IDS = []; // empty = no restriction (admin), populated = manager filter
+
     async function guardAdmin() {
       const { data, error } = await supabase.auth.getSession();
       if (error) throw error;
@@ -390,7 +392,7 @@
       if (pe) throw pe;
 
       const role = (p?.role || '').toLowerCase().trim();
-      if (!p?.is_active || (role !== 'admin' && role !== 'super_user')) {
+      if (!p?.is_active || !['admin','super_user','manager'].includes(role)) {
         await supabase.auth.signOut();
         window.location.href = '../index.html';
         return;
@@ -398,7 +400,16 @@
 
       PLAN = (p.plan || 'basic').toLowerCase();
       localStorage.setItem('core_user_profile', JSON.stringify(p));
-      rolePill.textContent = role === 'super_user' ? 'Role: Super User' : 'Role: Admin';
+      rolePill.textContent = role === 'manager' ? 'Role: Manager' : role === 'super_user' ? 'Role: Super User' : 'Role: Admin';
+
+      // If manager, load their departments and lock the dept filter
+      if (role === 'manager') {
+        const { data: deptRows } = await supabase
+          .from('core_user_departments')
+          .select('department_id')
+          .eq('user_id', p.id);
+        MANAGER_DEPT_IDS = (deptRows || []).map(d => d.department_id);
+      }
 
       if (PLAN !== 'basic') {
         csvBtn.style.display = 'inline-block';
@@ -413,9 +424,16 @@
         .from('core_departments').select('id,name,code,is_active')
         .order('name', { ascending:true }).limit(500);
       if (error) return;
-      const active = (data || []).filter(d => d.is_active);
-      deptEl.innerHTML = `<option value="">All departments<\/option>` +
-        active.map(d => `<option value="${esc(d.id)}">${esc(d.name)} (${esc(d.code)})<\/option>`).join('');
+      let active = (data || []).filter(d => d.is_active);
+      // Manager: only show their departments
+      if (MANAGER_DEPT_IDS.length > 0) {
+        active = active.filter(d => MANAGER_DEPT_IDS.includes(d.id));
+        deptEl.innerHTML = active.map(d => `<option value="${esc(d.id)}">${esc(d.name)} (${esc(d.code)})<\/option>`).join('');
+        deptEl.disabled = active.length === 1; // lock if only one dept
+      } else {
+        deptEl.innerHTML = `<option value="">All departments<\/option>` +
+          active.map(d => `<option value="${esc(d.id)}">${esc(d.name)} (${esc(d.code)})<\/option>`).join('');
+      }
     }
 
     // -- Render ------------------------------------------------
@@ -494,6 +512,7 @@
 
         if (status)    query = query.eq('status', status);
         if (deptId)    query = query.eq('department_id', deptId);
+        else if (MANAGER_DEPT_IDS.length > 0) query = query.in('department_id', MANAGER_DEPT_IDS);
         if (startDate) query = query.gte('start_time', startDate);
         if (endDate)   query = query.lte('end_time', endDate);
 
@@ -639,13 +658,13 @@
 
     // -- Events ------------------------------------------------
     backBtn.addEventListener('click', () => {
-      window.location.assign(new URL('../admin.html', window.location.href).toString());
+      window.location.href = '../admin.html';
     });
     logoutBtn.addEventListener('click', async () => {
       logoutBtn.disabled = true;
       try { await supabase.auth.signOut(); } finally {
         localStorage.removeItem('core_user_profile');
-        window.location.href = '../index.html';
+        window.location.href = '../../index.html';
       }
     });
     runBtn.addEventListener('click', runReport);

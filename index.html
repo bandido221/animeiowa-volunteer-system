@@ -290,10 +290,11 @@ body {
 
   function roleToDashboard(role) {
     const r = (role || '').toLowerCase().trim()
-    if (r === 'volunteer') return 'dashboards/volunteer.html'
-    if (r === 'staff') return 'dashboards/staff.html'
-    if (r === 'volunteer_staff') return 'dashboards/volunteer_staff.html'
-    if (r === 'admin' || r === 'super_user') return 'dashboards/admin.html'
+    if (r === 'volunteer') return 'dashboards/dashboard.html'
+    if (r === 'staff') return 'dashboards/dashboard.html'
+    if (r === 'volunteer_head') return 'dashboards/admin.html'
+    if (r === 'manager') return 'dashboards/dashboard.html'
+    if (r === 'admin' || r === 'super_user') return 'dashboards/dashboard.html'
     return null
   }
 

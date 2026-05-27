@@ -895,7 +895,7 @@
 
       const session = data?.session;
       if (!session?.user?.id) {
-        window.location.href = '../index.html';
+        window.location.href = '../../index.html';
         return;
       }
 
@@ -903,12 +903,12 @@
 
       if (!profile?.is_active) {
         await supabase.auth.signOut();
-        window.location.href = '../index.html';
+        window.location.href = '../../index.html';
         return;
       }
 
       if (!isAdminRole(profile.role)) {
-        window.location.href = '../index.html';
+        window.location.href = '../../index.html';
         return;
       }
 
@@ -924,7 +924,7 @@
         await supabase.auth.signOut();
       } finally {
         localStorage.removeItem('core_user_profile');
-        window.location.href = '../index.html';
+        window.location.href = '../../index.html';
       }
     });
 

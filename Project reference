@@ -1,0 +1,335 @@
+# AnimeIowa Project Reference
+
+> Keep this file updated as the project evolves.
+
+---
+
+## Folder Structure
+
+```
+ANIMEIOWA-VOLU.../
+├── index.html                  ← Login page
+├── reset.html                  ← Password reset
+├── signup.html                 ← Sign up
+└── dashboards/
+    ├── admin.html              ← Admin/Manager panel
+    ├── animeiowa.css           ← Shared styles
+    ├── dashboard.html          ← Single dashboard for all roles (volunteer/staff/manager/admin)
+    ├── profile_edit.html       ← Edit profile
+    ├── profile_setup.html      ← First-time profile setup
+    └── admin/
+        ├── activity_log.html
+        ├── departments.html
+        ├── reports.html
+        ├── staff_approvals.html
+        ├── user_manager.html
+        └── volunteer_approvals.html
+```
+
+### Correct redirect paths by file location
+
+| From | To login | To admin panel | To dashboard |
+|---|---|---|---|
+| `dashboards/*.html` | `../index.html` | `admin.html` | `dashboard.html` |
+| `dashboards/admin/*.html` | `../../index.html` | `../admin.html` | `../dashboard.html` |
+| Root files (index, reset, signup) | — | `dashboards/admin.html` | `dashboards/dashboard.html` |
+
+---
+
+## Supabase URL
+`https://mjnphetnuiuxgsghzdoo.supabase.co`
+
+---
+
+## Database Tables (confirmed via SQL, May 2026)
+
+### `ai_users`
+| Column | Type | Notes |
+|---|---|---|
+| auth_id | uuid | PK |
+| email | text | |
+| email_confirmed_at | timestamptz | |
+| raw_user_meta_data | jsonb | |
+| created_at | timestamptz | default now() |
+
+---
+
+### `bonus_time_windows`
+| Column | Type | Notes |
+|---|---|---|
+| id | uuid | PK |
+| label | text | |
+| start_time | timestamptz | |
+| end_time | timestamptz | |
+| multiplier | numeric | default 2 |
+| is_active | boolean | default true |
+| created_at | timestamptz | |
+| applies_to | text | 'both' / 'volunteer' / 'staff' |
+
+---
+
+### `core_admins`
+| Column | Type | Notes |
+|---|---|---|
+| id | uuid | PK |
+| user_id | uuid | |
+| created_at | timestamptz | |
+
+---
+
+### `core_departments`
+| Column | Type | Notes |
+|---|---|---|
+| id | uuid | PK |
+| name | text | |
+| code | text | |
+| is_active | boolean | default true |
+| created_at | timestamptz | |
+
+---
+
+### `core_user_department_roles`
+| Column | Type | Notes |
+|---|---|---|
+| id | uuid | PK |
+| user_id | uuid | |
+| department_id | uuid | |
+| role | text | |
+| created_at | timestamptz | |
+
+---
+
+### `core_user_departments`
+| Column | Type | Notes |
+|---|---|---|
+| id | uuid | PK |
+| user_id | uuid | |
+| department_id | uuid | |
+| created_at | timestamptz | |
+
+---
+
+### `core_users`
+| Column | Type | Notes |
+|---|---|---|
+| id | uuid | PK |
+| auth_id | uuid | |
+| first_name | text | required |
+| last_name | text | required |
+| nickname | text | optional |
+| badge_number | text | assigned by admin |
+| role | text | default 'volunteer' |
+| is_active | boolean | default true |
+| created_at | timestamptz | |
+| phone | text | ⚠️ TO BE REMOVED from UI (minor protection) |
+| address | text | ⚠️ TO BE REMOVED from UI (minor protection) |
+| city | text | ⚠️ TO BE REMOVED from UI (minor protection) |
+| state | text | ⚠️ TO BE REMOVED from UI (minor protection) |
+| zip | text | ⚠️ TO BE REMOVED from UI (minor protection) |
+| email | text | |
+| profile_image_url | text | ⚠️ Image upload removed for now — placeholder only |
+| plan | text | 'basic' or 'full' |
+| passkey | text | 🆕 TO ADD — 6-digit numeric, set by user, used for shift approval |
+
+---
+
+### `hour_approval_log`
+| Column | Type | Notes |
+|---|---|---|
+| id | uuid | PK |
+| hour_type | text | 'vol_hours' or 'staff_hours' |
+| hour_id | uuid | |
+| action | text | |
+| performed_by | uuid | |
+| previous_status | text | |
+| new_status | text | |
+| notes | text | |
+| created_at | timestamptz | |
+| entity | text | |
+| target_user_id | uuid | |
+| record_id | uuid | |
+| description | text | |
+| meta | jsonb | default '{}' |
+
+---
+
+### `points_settings`
+| Column | Type | Notes |
+|---|---|---|
+| id | uuid | PK |
+| points_per_hour | numeric | default 1 |
+| updated_by | uuid | |
+| updated_at | timestamptz | |
+
+---
+
+### `report_templates`
+| Column | Type | Notes |
+|---|---|---|
+| id | uuid | PK |
+| name | text | |
+| description | text | |
+| report_type | text | default 'all' |
+| status_filter | text | |
+| department_id | uuid | |
+| date_range | text | default 'none' |
+| is_active | boolean | default true |
+| created_at | timestamptz | |
+
+---
+
+### `staff_hours`
+| Column | Type | Notes |
+|---|---|---|
+| id | uuid | PK |
+| user_id | uuid | |
+| department_id | uuid | |
+| start_time | timestamptz | |
+| end_time | timestamptz | |
+| total_hours | numeric | |
+| status | text | default 'pending' |
+| approved_by | uuid | |
+| notes | text | |
+| created_at | timestamptz | |
+| approved_at | timestamptz | |
+| rejected_at | timestamptz | |
+| rejection_reason | text | |
+| multiplier | numeric | default 1 |
+| points_earned | numeric | |
+| attention_required | boolean | 🆕 TO ADD — flags that approver must read notes first |
+
+---
+
+### `user_points_ledger`
+| Column | Type | Notes |
+|---|---|---|
+| id | uuid | PK |
+| user_id | uuid | |
+| source_type | text | |
+| source_id | uuid | |
+| points | numeric | |
+| created_by | uuid | |
+| notes | text | |
+| created_at | timestamptz | |
+
+---
+
+### `vol_hours`
+| Column | Type | Notes |
+|---|---|---|
+| id | uuid | PK |
+| user_id | uuid | |
+| department_id | uuid | |
+| badge_number | text | |
+| start_time | timestamptz | |
+| end_time | timestamptz | |
+| total_hours | numeric | |
+| status | text | default 'pending' |
+| approved_by | uuid | |
+| notes | text | |
+| created_at | timestamptz | |
+| approved_at | timestamptz | |
+| rejected_at | timestamptz | |
+| rejection_reason | text | |
+| multiplier | numeric | default 1 |
+| points_earned | numeric | |
+| attention_required | boolean | default false — flags approver must read notes first |
+
+---
+
+## SQL Migrations
+
+All 3 migrations run ✅
+
+```sql
+-- 1. Add passkey to core_users (6-digit, set by the user themselves)
+ALTER TABLE core_users ADD COLUMN IF NOT EXISTS passkey TEXT DEFAULT NULL;
+
+-- 2. Add attention_required flag to vol_hours
+ALTER TABLE vol_hours ADD COLUMN IF NOT EXISTS attention_required BOOLEAN DEFAULT FALSE;
+
+-- 3. Add attention_required flag to staff_hours
+ALTER TABLE staff_hours ADD COLUMN IF NOT EXISTS attention_required BOOLEAN DEFAULT FALSE;
+```
+
+---
+
+## Completed Changes
+
+### profile_setup.html ✅
+- Removed: phone, address, city, state, zip fields
+- Removed: profile image upload
+- Added: badge number field (user can self-enter; admin confirms/overrides)
+- Added: placeholder avatar (emoji only, no upload)
+
+### profile_edit.html ✅
+- All fields now editable (first name, last name, badge number, nickname)
+- Removed: phone, address, city, state, zip
+- Placeholder avatar only (no upload)
+- Passkey section shown only for admin/manager — hidden behind Reset Passkey button
+- New/confirm passkey fields hidden until Reset Passkey clicked, hide again after save
+
+### dashboard.html ✅ (NEW — replaces volunteer.html and staff.html)
+- Single dashboard for all roles: volunteer, staff, manager, admin/super_user
+- Title and clock table adapt based on role
+- Department selector on clock-in (all active departments)
+- Attention flag checkbox — turns green when checked, requires note before ending shift
+- Passkey approval modal on clock-out — cannot be dismissed, persists until approved
+- Modal shows volunteer name + badge, notes if attention flagged, ack checkbox
+- Approver enters badge number + 6-digit passkey
+- System verifies approver is admin/super_user/manager and belongs to department
+- Self-approval blocked
+- Points calculated and logged on approval
+- Passkey section in profile (admin/manager only) with show/hide and reset
+
+### admin.html ✅
+- Manager role can now access (isAdminRole includes manager)
+- Manager sees only approvals — user manager, departments, activity log hidden
+- My Dashboard button links to dashboard.html
+- Profile card removed (use dashboard instead)
+- Passkey reset added (in dashboard, not admin)
+
+### activity_log.html ✅
+- Badge number shown next to name for performed_by and target_user
+- Edit entries show clean "Volunteer/Staff shift updated" instead of raw SQL
+- Approved entries show target user, hours, and points
+- Action filter fixed (points_add, edit)
+
+### Supabase triggers updated ✅
+- vol_hours_enforce_and_points: now allows passkey approvals, logs target_user_id + description + meta
+- staff_hours_enforce_and_points: same fixes
+- Old log entries backfilled with target_user_id and description
+
+---
+
+## Still To Do
+
+### reports.html
+- [ ] Manager role: see only their own department's data
+
+### New page: points_redemption.html (Volunteer Head)
+- [ ] Search volunteer by badge number
+- [ ] Show volunteer info + total points
+- [ ] Remove points only (NO add, NO + button anywhere)
+- [ ] Reason/note required for every redemption
+- [ ] All redemptions logged to hour_approval_log
+
+---
+
+## Roles in the System
+- `volunteer` — basic volunteer
+- `staff` — staff member
+- `manager` — can approve shifts for their department, access admin panel
+- `admin` — full access
+- `super_user` — full access
+- Volunteer Head — role name TBD (for points redemption page)
+
+---
+
+## Notes
+- No PII collected from minors: phone, address, city, state, zip hidden in UI (columns remain in DB)
+- Passkey: 6-digit numeric, per-user, stored in core_users.passkey — only admin/manager have one
+- No image uploads for now; gallery picker may be added later
+- volunteer.html and staff.html replaced by dashboard.html
+- Points per hour hardcoded at 60 in trigger — should eventually use points_settings table
+- Trigger uses auth.uid() for approver detection — passkey flow uses approved_by field instead

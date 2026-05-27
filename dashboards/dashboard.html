@@ -1,0 +1,840 @@
+<!DOCTYPE html>
+<html lang="en" style="overflow-x:hidden;">
+<head>
+  <link rel="stylesheet" href="animeiowa.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1" />
+  <title>Dashboard | AnimeIowa</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500&family=Domine&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+    html, body { overflow-x: hidden; max-width: 100%; }
+    body {
+      font-family: 'Domine', serif;
+      background: #000;
+      color: #f0e6d2;
+      margin: 0;
+      padding: 12px;
+      text-align: center;
+    }
+    h1 { font-family: 'Cinzel', serif; margin: 0 0 6px; font-size: clamp(20px, 6vw, 36px); }
+    h2 { font-family: 'Cinzel', serif; margin: 0 0 10px; font-size: clamp(16px, 4vw, 24px); }
+    .wrap { max-width: 920px; margin: 0 auto; width: 100%; }
+    .card {
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 14px;
+      padding: 14px;
+      margin: 10px 0;
+      text-align: left;
+      width: 100%;
+    }
+    .row { display: flex; gap: 8px; flex-wrap: wrap; }
+    .btn {
+      display: inline-block;
+      padding: 10px 14px;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.18);
+      background: rgba(170,132,82,0.20);
+      color: #f0e6d2;
+      text-decoration: none;
+      cursor: pointer;
+      font-family: 'Cinzel', serif;
+      letter-spacing: 0.5px;
+      font-size: 14px;
+      white-space: nowrap;
+    }
+    .btn:hover { background: rgba(170,132,82,0.30); }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn.secondary { background: rgba(255,255,255,0.08); }
+    .muted { opacity: 0.85; }
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 8px;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+    }
+    .pill {
+      display: inline-block;
+      padding: 5px 8px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.18);
+      background: rgba(255,255,255,0.06);
+      font-size: 13px;
+    }
+    input, select {
+      width: 100%;
+      box-sizing: border-box;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.18);
+      border-radius: 10px;
+      color: #f0e6d2;
+      font-family: 'Domine', serif;
+      font-size: 14px;
+      padding: 10px 12px;
+      outline: none;
+    }
+    select option { background: #111; color: #f0e6d2; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th, td { padding: 8px 6px; }
+    thead tr { text-align: left; border-bottom: 1px solid rgba(255,255,255,0.14); }
+
+    /* Passkey toggle */
+    .passkey-row { display: flex; gap: 8px; align-items: center; }
+    .passkey-row input { flex: 1; letter-spacing: 0.2em; }
+    .passkey-toggle {
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.18);
+      border-radius: 10px;
+      color: #f0e6d2;
+      font-size: 13px;
+      font-family: 'Domine', serif;
+      padding: 10px 12px;
+      cursor: pointer;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    /* Passkey approval modal */
+    #passkeyOverlay {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,0.88); z-index: 1000;
+      align-items: center; justify-content: center;
+    }
+    #passkeyOverlay.active { display: flex !important; }
+    .pk-modal {
+      background: #111; border: 1px solid rgba(255,255,255,0.18);
+      border-radius: 18px; padding: 28px 24px;
+      width: 100%; max-width: 380px; margin: 16px; text-align: center;
+    }
+    .pk-modal h3 { font-family: 'Cinzel', serif; font-size: 18px; margin: 0 0 10px; color: #f0e6d2; }
+    .pk-modal p  { font-size: 13px; color: rgba(240,230,210,0.75); margin: 0 0 14px; line-height: 1.5; }
+    #passkeyError   { color: #ff6b6b; font-size: 13px; margin-top: 6px; min-height: 18px; }
+    #passkeySuccess { color: #7CFC90; font-size: 13px; margin-top: 6px; min-height: 18px; }
+  </style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="topbar">
+    <div>
+      <h1 id="dashTitle">Dashboard</h1>
+      <div class="muted" id="welcomeLine">Loading…</div>
+    </div>
+    <div class="row">
+      <a class="btn secondary" id="adminBtn" href="admin.html" style="display:none;">Admin Panel</a>
+      <button class="btn" id="logoutBtn" type="button">Logout</button>
+    </div>
+  </div>
+
+  <div id="approvedContent" style="display:none;">
+
+    <!-- Profile card -->
+    <div class="card">
+      <h2>My Profile</h2>
+      <div id="profileBox">Loading…</div>
+      <div style="margin-top:12px; display:flex; flex-wrap:wrap; gap:8px;">
+        <a id="editProfileBtn" href="profile_edit.html" class="btn secondary" style="display:none;">Edit My Profile</a>
+        <button id="resetPwBtn" class="btn secondary" type="button">Reset Password</button>
+      </div>
+      <div id="resetPwMsg" style="margin-top:10px; font-size:13px; display:none;"></div>
+
+      <!-- Passkey section — only for admin/manager -->
+      <div id="passkeySection" style="display:none; margin-top:16px; border-top:1px solid rgba(255,255,255,0.10); padding-top:14px;">
+        <div style="font-size:14px; font-weight:bold; margin-bottom:8px;">My Passkey</div>
+        <p class="muted" style="font-size:13px; margin:0 0 10px;">Used to approve shifts at clock-out. Keep it private.</p>
+        <div style="margin-bottom:10px;">
+          <label class="muted" style="display:block; font-size:12px; margin-bottom:4px;">Current Passkey</label>
+          <div class="passkey-row">
+            <input id="passkeyDisplay" type="password" readonly value="------" style="letter-spacing:0.3em;" />
+            <button class="passkey-toggle" id="passkeyShowBtn" type="button">Show</button>
+          </div>
+        </div>
+        <button class="btn secondary" id="resetPasskeyBtn" type="button">Reset Passkey</button>
+        <div id="passkeyForm" style="display:none; margin-top:12px;">
+          <div style="margin-bottom:8px;">
+            <label class="muted" style="display:block; font-size:12px; margin-bottom:4px;">New Passkey (6 digits)</label>
+            <input id="passkeyNew" type="password" inputmode="numeric" maxlength="6" placeholder="••••••" style="letter-spacing:0.3em;" />
+          </div>
+          <div style="margin-bottom:10px;">
+            <label class="muted" style="display:block; font-size:12px; margin-bottom:4px;">Confirm New Passkey</label>
+            <input id="passkeyConfirm" type="password" inputmode="numeric" maxlength="6" placeholder="••••••" style="letter-spacing:0.3em;" />
+          </div>
+          <div id="passkeySetMsg" style="font-size:13px; margin-bottom:8px; display:none;"></div>
+          <button class="btn secondary" id="passkeySetBtn" type="button">Save Passkey</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Time Clock card -->
+    <div class="card">
+      <h2 id="clockTitle">Time Clock</h2>
+      <p class="muted">Select your department, then click Start. Click End when your shift is done.</p>
+      <div id="deptSelectWrap" style="margin-bottom:12px;">
+        <label class="muted" style="display:block; margin-bottom:6px;">Department *</label>
+        <select id="deptSelect">
+          <option value="">— Select Department —</option>
+        </select>
+      </div>
+      <div class="row" style="margin-top:12px; align-items:center;">
+        <button class="btn" id="startShiftBtn" type="button">Start Time</button>
+        <button class="btn" id="endShiftBtn" type="button" style="display:none;">End Time</button>
+        <span class="pill" id="shiftPill" style="display:none;">Shift: —</span>
+      </div>
+      <div style="margin-top:12px;">
+        <label class="muted" style="display:block; margin-bottom:6px;">Notes (optional)</label>
+        <input id="notes" type="text" placeholder="What did you work on today?" />
+      </div>
+      <div style="margin-top:12px;">
+        <label id="attentionLabel" style="display:flex; align-items:center; gap:8px; font-size:13px; cursor:pointer; padding:8px 10px; border-radius:10px; border:1px solid rgba(255,255,255,0.15); transition: background 0.2s, border-color 0.2s;">
+          <input type="checkbox" id="attentionCheck" style="width:16px; height:16px; cursor:pointer; accent-color:#7CFC90;" />
+          ⚠️ Flag for manager attention — manager must read notes before approving
+        </label>
+        <div id="attentionNoteWrap" style="display:none; margin-top:8px;">
+          <input id="attentionNote" type="text" placeholder="Explain why you are flagging this shift (required)" />
+        </div>
+      </div>
+      <div class="muted" id="submitStatus" style="margin-top:10px;"></div>
+    </div>
+
+    <!-- Points card — volunteers only -->
+    <div class="card" id="pointsCard">
+      <h2>My Points</h2>
+      <p class="muted">Points are calculated when hours are approved.</p>
+      <div class="row" style="margin-top:10px;">
+        <button class="btn secondary" id="refreshPointsBtn" type="button">Refresh</button>
+        <div class="muted" id="pointsSummary" style="align-self:center;"></div>
+      </div>
+      <div style="margin-top:12px; overflow:auto;">
+        <table>
+          <thead><tr><th>Total Points</th></tr></thead>
+          <tbody id="pointsTbody">
+            <tr><td class="muted" style="padding:12px 8px;">Loading…</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Hours card -->
+    <div class="card">
+      <h2>My Submitted Hours</h2>
+      <p class="muted">Every shift you have submitted appears here.</p>
+      <div class="row" style="margin-top:10px;">
+        <button class="btn secondary" id="refreshHoursBtn" type="button">Refresh</button>
+        <div class="muted" id="hoursSummary" style="align-self:center;"></div>
+      </div>
+      <div style="margin-top:12px; overflow-x:auto; -webkit-overflow-scrolling:touch;">
+        <table>
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Dept</th>
+              <th>Start</th>
+              <th>End</th>
+              <th>Hours</th>
+              <th>Bonus</th>
+              <th>Points</th>
+              <th>Status</th>
+              <th>Notes</th>
+            </tr>
+          </thead>
+          <tbody id="hoursTbody">
+            <tr><td colspan="9" class="muted" style="padding:12px 8px;">Loading…</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div><!-- /approvedContent -->
+
+  <div id="pendingCard" class="card" style="display:none;">
+    <h2>Application Pending Review</h2>
+    <p class="muted">Thank you for registering with AnimeIowa. Your account is currently under review.</p>
+    <p class="muted">You will receive an email once your badge number and role have been approved.</p>
+    <p class="muted">If you have any questions, please visit the Volunteer Desk during event hours.</p>
+  </div>
+
+</div>
+
+<!-- Passkey approval modal — no way to dismiss, must be approved -->
+<div id="passkeyOverlay">
+  <div class="pk-modal">
+    <h3>⏱ Shift Ended</h3>
+    <p id="passkeyShiftInfo">Waiting for approval…</p>
+    <div id="passkeyNotesBox" style="display:none; margin-bottom:10px; padding:10px 12px; border-radius:10px; background:rgba(255,107,107,0.12); border:1px solid rgba(255,107,107,0.35); font-size:13px; color:#ff6b6b; text-align:left;">
+      📝 <b>Notes from volunteer:</b> <span id="passkeyNotesText"></span>
+    </div>
+    <div id="passkeyAckWrap" style="display:none; margin-bottom:12px;">
+      <label style="display:flex; align-items:center; gap:8px; font-size:13px; cursor:pointer; color:#f0e6d2; text-align:left;">
+        <input type="checkbox" id="passkeyAckBox" style="width:16px; height:16px; cursor:pointer;" />
+        I have read the notes and understand the situation
+      </label>
+    </div>
+    <div style="margin-bottom:10px;">
+      <input id="passkeyApproverBadge" type="text" placeholder="Approver Badge #" style="text-align:center; margin-bottom:8px;" />
+      <input id="passkeyApproverCode" type="password" inputmode="numeric" maxlength="6" placeholder="••••••" style="text-align:center; font-size:24px; letter-spacing:0.4em;" />
+    </div>
+    <div id="passkeyError"></div>
+    <div id="passkeySuccess"></div>
+    <div style="margin-top:14px;">
+      <button class="btn" id="passkeySubmitBtn" type="button">Approve Shift</button>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+  import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+
+  const SUPABASE_URL      = 'https://mjnphetnuiuxgsghzdoo.supabase.co';
+  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1qbnBoZXRudWl1eGdzZ2h6ZG9vIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE4OTA2OTMsImV4cCI6MjA4NzQ2NjY5M30.sB1i6dy5e7brQHRiCJ-0Kf2aIcIO1DkUR1O2RtkmRGc';
+  const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  // ── Element refs ───────────────────────────────────────────────────
+  const welcomeLine      = document.getElementById('welcomeLine');
+  const dashTitle        = document.getElementById('dashTitle');
+  const clockTitle       = document.getElementById('clockTitle');
+  const profileBox       = document.getElementById('profileBox');
+  const logoutBtn        = document.getElementById('logoutBtn');
+  const adminBtn         = document.getElementById('adminBtn');
+  const startShiftBtn    = document.getElementById('startShiftBtn');
+  const endShiftBtn      = document.getElementById('endShiftBtn');
+  const shiftPill        = document.getElementById('shiftPill');
+  const notesEl          = document.getElementById('notes');
+  const submitStatus     = document.getElementById('submitStatus');
+  const deptSelect       = document.getElementById('deptSelect');
+  const deptSelectWrap   = document.getElementById('deptSelectWrap');
+  const refreshHoursBtn  = document.getElementById('refreshHoursBtn');
+  const hoursSummary     = document.getElementById('hoursSummary');
+  const hoursTbody       = document.getElementById('hoursTbody');
+  const refreshPointsBtn = document.getElementById('refreshPointsBtn');
+  const pointsSummary    = document.getElementById('pointsSummary');
+  const pointsTbody      = document.getElementById('pointsTbody');
+
+  // Passkey profile section
+  const passkeySection  = document.getElementById('passkeySection');
+  
+  const passkeyNew      = document.getElementById('passkeyNew');
+  const passkeyConfirm  = document.getElementById('passkeyConfirm');
+  const passkeySetBtn   = document.getElementById('passkeySetBtn');
+  const passkeySetMsg   = document.getElementById('passkeySetMsg');
+
+  // Passkey approval modal
+  const passkeyOverlay      = document.getElementById('passkeyOverlay');
+  const passkeyShiftInfo    = document.getElementById('passkeyShiftInfo');
+  const passkeyApproverBadge= document.getElementById('passkeyApproverBadge');
+  const passkeyApproverCode = document.getElementById('passkeyApproverCode');
+  const passkeySubmitBtn    = document.getElementById('passkeySubmitBtn');
+  const passkeyError        = document.getElementById('passkeyError');
+  const passkeySuccess      = document.getElementById('passkeySuccess');
+
+  // ── State ──────────────────────────────────────────────────────────
+  let CURRENT_CORE_USER = null;
+  let ACTIVE_SHIFT_ID   = null;
+  let USER_ROLE         = '';   // 'volunteer' | 'staff' | 'manager' | 'admin' | 'super_user'
+  let HOURS_TABLE       = 'vol_hours'; // switches to 'staff_hours' for staff/manager/admin
+  let bonusWindows      = [];
+  let pointsPerHour     = 1;
+  let departments       = [];
+
+  // ── Helpers ────────────────────────────────────────────────────────
+  function goLogin() { localStorage.removeItem('core_user_profile'); window.location.href = '../index.html'; }
+  function setStatus(t) { submitStatus.textContent = t || ''; }
+  function fmtDate(d)  { return d ? new Date(d).toLocaleDateString() : '—'; }
+  function fmtTime(d)  { return d ? new Date(d).toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' }) : '—'; }
+  function fmtLocal(d) { return d ? new Date(d).toLocaleString() : '—'; }
+  function roundUp(n, step) { const x = Number(n); return Number.isFinite(x) && x > 0 ? Number((Math.ceil(x/step)*step).toFixed(2)) : 0; }
+
+  function displayName(p) {
+    return (p?.nickname||'').trim() || ([p?.first_name,p?.last_name].filter(Boolean).join(' ')).trim() || p?.email || 'User';
+  }
+
+  // ── Digit-only filter for passkey inputs ───────────────────────────
+  document.getElementById('attentionCheck').addEventListener('change', function() {
+    const label = document.getElementById('attentionLabel');
+    document.getElementById('attentionNoteWrap').style.display = this.checked ? 'block' : 'none';
+    if (!this.checked) document.getElementById('attentionNote').value = '';
+    label.style.background     = this.checked ? 'rgba(124,252,144,0.12)' : 'transparent';
+    label.style.borderColor    = this.checked ? 'rgba(124,252,144,0.5)'  : 'rgba(255,255,255,0.15)';
+    label.style.color          = this.checked ? '#7CFC90'                : 'inherit';
+  });
+
+  [passkeyNew, passkeyConfirm, passkeyApproverCode].forEach(el => {
+    el.addEventListener('input', () => { el.value = el.value.replace(/\D/g,'').slice(0,6); });
+  });
+
+  // ── Show/hide current passkey ──────────────────────────────────────
+  const passkeyDisplay = document.getElementById('passkeyDisplay');
+  const passkeyShowBtn = document.getElementById('passkeyShowBtn');
+
+  passkeyShowBtn.addEventListener('click', async () => {
+    if (passkeyDisplay.type === 'password') {
+      const { data } = await supabase.from('core_users').select('passkey').eq('id', CURRENT_CORE_USER.id).single();
+      passkeyDisplay.value = data?.passkey || '(not set)';
+      passkeyDisplay.type  = 'text';
+      passkeyShowBtn.textContent = 'Hide';
+    } else {
+      passkeyDisplay.value = '------';
+      passkeyDisplay.type  = 'password';
+      passkeyShowBtn.textContent = 'Show';
+    }
+  });
+
+  document.getElementById('resetPasskeyBtn').addEventListener('click', () => {
+    document.getElementById('passkeyForm').style.display = 'block';
+    passkeyNew.focus();
+  });
+
+  // ── Save new passkey ───────────────────────────────────────────────
+  passkeySetBtn.addEventListener('click', async () => {
+    const pk  = passkeyNew.value.trim();
+    const pkc = passkeyConfirm.value.trim();
+
+    if (!pk || !/^\d{6}$/.test(pk)) { showSetMsg('error','Passkey must be exactly 6 digits.'); return; }
+    if (pk !== pkc)                  { showSetMsg('error','Passkeys do not match.'); return; }
+
+    passkeySetBtn.disabled = true; passkeySetBtn.textContent = 'Saving…';
+    const { error } = await supabase.from('core_users').update({ passkey: pk }).eq('id', CURRENT_CORE_USER.id);
+    if (error) {
+      showSetMsg('error', error.message);
+    } else {
+      passkeyNew.value = ''; passkeyConfirm.value = '';
+      document.getElementById('passkeyForm').style.display = 'none';
+      const btn = document.getElementById('resetPasskeyBtn');
+      btn.textContent = '✅ Passkey Saved';
+      setTimeout(() => { btn.textContent = 'Reset Passkey'; }, 3000);
+    }
+    passkeySetBtn.disabled = false; passkeySetBtn.textContent = 'Save Passkey';
+  });
+
+  function showSetMsg(type, text) {
+    passkeySetMsg.style.display = 'block';
+    passkeySetMsg.style.color = type === 'ok' ? '#7CFC90' : '#ff6b6b';
+    passkeySetMsg.textContent = text;
+    setTimeout(() => { passkeySetMsg.style.display = 'none'; }, 4000);
+  }
+
+  // ── Bonus / points ─────────────────────────────────────────────────
+  async function loadBonusWindows() {
+    const { data } = await supabase.from('bonus_time_windows').select('*').eq('is_active', true);
+    bonusWindows = data || [];
+  }
+
+  async function loadPointsSettings() {
+    const { data } = await supabase.from('points_settings').select('points_per_hour').limit(1).single();
+    pointsPerHour = Number(data?.points_per_hour ?? 1);
+  }
+
+  function getBonusLabel(s, e) {
+    if (!s||!e) return null;
+    const st = new Date(s).getTime(), et = new Date(e).getTime();
+    for (const w of bonusWindows) {
+      const ws = new Date(w.start_time).getTime(), we = new Date(w.end_time).getTime();
+      const applies = w.applies_to === 'both' || w.applies_to === (HOURS_TABLE === 'vol_hours' ? 'volunteer' : 'staff');
+      if (applies && ws < et && we > st) return `${w.label} ${w.multiplier}x`;
+    }
+    return null;
+  }
+
+  function calcPoints(s, e) {
+    if (!s||!e) return 0;
+    const st = new Date(s).getTime(), et = new Date(e).getTime();
+    if (et <= st) return 0;
+    const type = HOURS_TABLE === 'vol_hours' ? 'volunteer' : 'staff';
+    const applicable = bonusWindows.filter(w => w.applies_to === 'both' || w.applies_to === type);
+    let total = 0, cursor = st;
+    for (const w of [...applicable].sort((a,b) => new Date(a.start_time)-new Date(b.start_time))) {
+      const ws = new Date(w.start_time).getTime(), we = new Date(w.end_time).getTime();
+      if (we <= cursor || ws >= et) continue;
+      if (cursor < ws) { total += ((Math.min(ws,et)-cursor)/3600000)*pointsPerHour; cursor = ws; }
+      const be = Math.min(we,et);
+      total += ((be-cursor)/3600000)*pointsPerHour*Number(w.multiplier);
+      cursor = be;
+    }
+    if (cursor < et) total += ((et-cursor)/3600000)*pointsPerHour;
+    return Math.round(total);
+  }
+
+  // ── Departments ────────────────────────────────────────────────────
+  async function loadDepartments() {
+    const { data } = await supabase.from('core_departments').select('id, name').eq('is_active', true).order('name');
+    departments = data || [];
+    deptSelect.innerHTML = '<option value="">— Select Department —</option>' +
+      departments.map(d => `<option value="${d.id}">${d.name}</option>`).join('');
+  }
+
+  // ── Clock UI ───────────────────────────────────────────────────────
+  function setClockUiActive(startTimeStr) {
+    startShiftBtn.disabled = true;
+    endShiftBtn.style.display = 'inline-block';
+    shiftPill.style.display = 'inline-block';
+    shiftPill.textContent = `Shift started: ${fmtLocal(startTimeStr)}`;
+    deptSelectWrap.style.display = 'none';
+  }
+
+  function setClockUiIdle() {
+    startShiftBtn.disabled = false;
+    endShiftBtn.style.display = 'none';
+    shiftPill.style.display = 'none';
+    shiftPill.textContent = 'Shift: —';
+    ACTIVE_SHIFT_ID = null;
+    deptSelectWrap.style.display = 'block';
+  }
+
+  // ── Active shift ───────────────────────────────────────────────────
+  async function loadActiveShift() {
+    if (!CURRENT_CORE_USER?.id) return;
+    const { data } = await supabase
+      .from(HOURS_TABLE)
+      .select('id, start_time')
+      .eq('user_id', CURRENT_CORE_USER.id)
+      .is('end_time', null)
+      .eq('status', 'pending')
+      .order('start_time', { ascending: false })
+      .limit(1);
+    const row = data?.[0] || null;
+    if (!row) { setClockUiIdle(); return; }
+    ACTIVE_SHIFT_ID = row.id;
+    setClockUiActive(row.start_time);
+  }
+
+  // ── Start shift ────────────────────────────────────────────────────
+  async function startShift() {
+    if (!CURRENT_CORE_USER?.id) return;
+    const dept = deptSelect.value;
+    if (!dept) { setStatus('Please select a department before starting.'); return; }
+    setStatus('Starting…');
+    const nowIso = new Date().toISOString();
+    const payload = { user_id: CURRENT_CORE_USER.id, department_id: dept, start_time: nowIso, status: 'pending' };
+    if (HOURS_TABLE === 'vol_hours') payload.badge_number = CURRENT_CORE_USER.badge_number || null;
+    const { data, error } = await supabase.from(HOURS_TABLE).insert([payload]).select('id, start_time').single();
+    if (error) throw error;
+    ACTIVE_SHIFT_ID = data.id;
+    setClockUiActive(data.start_time);
+    setStatus('Shift started.');
+    await loadMyHours();
+  }
+
+  // ── End shift ──────────────────────────────────────────────────────
+  async function endShift() {
+    if (!CURRENT_CORE_USER?.id || !ACTIVE_SHIFT_ID) return;
+    setStatus('Ending…');
+    const { data: startRow, error: startErr } = await supabase
+      .from(HOURS_TABLE).select('id, start_time')
+      .eq('id', ACTIVE_SHIFT_ID).eq('user_id', CURRENT_CORE_USER.id).maybeSingle();
+    if (startErr) throw startErr;
+    if (!startRow) throw new Error('Shift not found.');
+    const endIso = new Date().toISOString();
+    const totalHours = Math.max(0, (new Date(endIso) - new Date(startRow.start_time)) / 3600000);
+    const attentionChecked = document.getElementById('attentionCheck').checked;
+    const attentionNote    = (document.getElementById('attentionNote').value || '').trim();
+    if (attentionChecked && !attentionNote) {
+      setStatus('Please add a note explaining why you are flagging this shift.');
+      return;
+    }
+    const finalNotes = attentionChecked ? attentionNote : (notesEl.value||'').trim()||null;
+    const { error } = await supabase.from(HOURS_TABLE)
+      .update({ end_time: endIso, total_hours: totalHours, notes: finalNotes, attention_required: attentionChecked })
+      .eq('id', ACTIVE_SHIFT_ID).eq('user_id', CURRENT_CORE_USER.id);
+    if (error) throw error;
+    setStatus(`Shift ended (${totalHours.toFixed(2)} hrs) — waiting for approval.`);
+    notesEl.value = '';
+    document.getElementById('attentionCheck').checked = false;
+    document.getElementById('attentionNoteWrap').style.display = 'none';
+    document.getElementById('attentionNote').value = '';
+    setClockUiIdle();
+    await loadMyHours();
+    showPasskeyModal();
+  }
+
+  // ── Passkey approval modal ─────────────────────────────────────────
+  async function showPasskeyModal() {
+    passkeyApproverBadge.value = '';
+    passkeyApproverCode.value  = '';
+    passkeyError.textContent   = '';
+    passkeySuccess.textContent = '';
+    document.getElementById('passkeyAckBox').checked = false;
+    document.getElementById('passkeyNotesBox').style.display = 'none';
+    document.getElementById('passkeyAckWrap').style.display = 'none';
+    passkeyApproverBadge.disabled = false;
+    passkeyApproverCode.disabled  = false;
+    passkeySubmitBtn.disabled     = false;
+
+    const name  = displayName(CURRENT_CORE_USER);
+    const badge = CURRENT_CORE_USER?.badge_number ? ` (Badge #${CURRENT_CORE_USER.badge_number})` : '';
+    passkeyShiftInfo.textContent = `Shift for ${name}${badge} needs approval. A manager or admin for this department must enter their badge number and passkey.`;
+
+    // Check if this shift has attention_required and notes
+    const { data: shiftData } = await supabase
+      .from(HOURS_TABLE)
+      .select('attention_required, notes')
+      .eq('user_id', CURRENT_CORE_USER.id)
+      .eq('status', 'pending')
+      .not('end_time', 'is', null)
+      .order('end_time', { ascending: false })
+      .limit(1)
+      .single();
+
+    if (shiftData?.attention_required && shiftData?.notes) {
+      document.getElementById('passkeyNotesText').textContent = shiftData.notes;
+      document.getElementById('passkeyNotesBox').style.display = 'block';
+      document.getElementById('passkeyAckWrap').style.display = 'block';
+      // lock inputs until checkbox checked
+      passkeyApproverBadge.disabled = true;
+      passkeyApproverCode.disabled  = true;
+      passkeySubmitBtn.disabled     = true;
+    }
+
+    passkeyOverlay.classList.add('active');
+  }
+
+  async function checkPendingApproval() {
+    if (!CURRENT_CORE_USER?.id) return;
+    const todayStart = new Date(); todayStart.setHours(0,0,0,0);
+    const { data } = await supabase
+      .from(HOURS_TABLE).select('id')
+      .eq('user_id', CURRENT_CORE_USER.id)
+      .eq('status', 'pending')
+      .not('end_time', 'is', null)
+      .gte('end_time', todayStart.toISOString())
+      .limit(1);
+    if (data && data.length > 0) showPasskeyModal();
+  }
+
+  document.getElementById('passkeyAckBox').addEventListener('change', function() {
+    passkeyApproverBadge.disabled = !this.checked;
+    passkeyApproverCode.disabled  = !this.checked;
+    passkeySubmitBtn.disabled     = !this.checked;
+  });
+
+  passkeySubmitBtn.addEventListener('click', async () => {
+    const badge = (passkeyApproverBadge.value || '').trim();
+    const code  = (passkeyApproverCode.value  || '').trim();
+    passkeyError.textContent = ''; passkeySuccess.textContent = '';
+
+    if (!badge)                  { passkeyError.textContent = 'Please enter your badge number.'; return; }
+    if (!/^\d{6}$/.test(code))   { passkeyError.textContent = 'Please enter a 6-digit passkey.'; return; }
+
+    const { data: pendingRow } = await supabase
+      .from(HOURS_TABLE).select('id, user_id, total_hours, department_id')
+      .eq('user_id', CURRENT_CORE_USER.id).eq('status', 'pending')
+      .not('end_time', 'is', null)
+      .order('end_time', { ascending: false }).limit(1).maybeSingle();
+    if (!pendingRow) { passkeyOverlay.classList.remove('active'); return; }
+
+    passkeySubmitBtn.disabled = true; passkeySubmitBtn.textContent = 'Verifying…';
+    try {
+      const { data: approvers, error: apErr } = await supabase
+        .from('core_users').select('id, first_name, last_name, nickname, role')
+        .eq('badge_number', badge).eq('passkey', code).eq('is_active', true)
+        .in('role', ['admin', 'super_user', 'manager']);
+      if (apErr) throw apErr;
+      if (!approvers || approvers.length === 0) {
+        passkeyError.textContent = 'Badge number or passkey is incorrect.';
+        passkeySubmitBtn.disabled = false; passkeySubmitBtn.textContent = 'Approve Shift'; return;
+      }
+      const approver = approvers[0];
+      if (approver.role === 'manager') {
+        const { data: deptCheck } = await supabase
+          .from('core_user_departments').select('id')
+          .eq('user_id', approver.id).eq('department_id', pendingRow.department_id).limit(1);
+        if (!deptCheck || deptCheck.length === 0) {
+          passkeyError.textContent = 'You are not a manager for this department.';
+          passkeySubmitBtn.disabled = false; passkeySubmitBtn.textContent = 'Approve Shift'; return;
+        }
+      }
+
+      const { error: upErr } = await supabase.from(HOURS_TABLE)
+        .update({ status: 'approved', approved_by: approver.id, approved_at: new Date().toISOString() })
+        .eq('id', pendingRow.id);
+      if (upErr) throw upErr;
+
+      const { data: shiftRow } = await supabase.from(HOURS_TABLE).select('start_time, end_time').eq('id', pendingRow.id).single();
+      const pts = shiftRow ? calcPoints(shiftRow.start_time, shiftRow.end_time) : 0;
+      if (pts > 0) {
+        await supabase.from(HOURS_TABLE).update({ points_earned: pts }).eq('id', pendingRow.id);
+        await supabase.from('user_points_ledger').insert([{
+          user_id: pendingRow.user_id, source_type: HOURS_TABLE, source_id: pendingRow.id,
+          points: pts, created_by: approver.id, notes: 'Passkey-approved shift'
+        }]);
+      }
+      await supabase.from('hour_approval_log').insert([{
+        hour_type: HOURS_TABLE, hour_id: pendingRow.id, action: 'approved',
+        performed_by: approver.id, target_user_id: pendingRow.user_id,
+        previous_status: 'pending', new_status: 'approved',
+        description: `Passkey approved by ${displayName(approver)}`,
+        meta: { points_earned: pts, total_hours: pendingRow.total_hours }
+      }]);
+
+      passkeySuccess.textContent = `✅ Approved by ${displayName(approver)}!${pts > 0 ? ' ' + pts + ' points added.' : ''}`;
+      setTimeout(() => {
+        passkeyOverlay.classList.remove('active');
+        loadMyHours();
+        if (HOURS_TABLE === 'vol_hours') loadMyPoints();
+      }, 2500);
+    } catch(e) { passkeyError.textContent = e?.message || 'Approval failed.'; }
+    finally { passkeySubmitBtn.disabled = false; passkeySubmitBtn.textContent = 'Approve Shift'; }
+  });
+
+  // ── Hours table ────────────────────────────────────────────────────
+  async function loadMyHours() {
+    if (!CURRENT_CORE_USER?.id) return;
+    hoursTbody.innerHTML = `<tr><td colspan="9" class="muted" style="padding:12px 8px;">Loading…</td></tr>`;
+    const { data, error } = await supabase
+      .from(HOURS_TABLE)
+      .select('start_time, end_time, total_hours, points_earned, status, notes, department_id')
+      .eq('user_id', CURRENT_CORE_USER.id)
+      .order('start_time', { ascending: false });
+    if (error) throw error;
+    const rows = data || [];
+    if (!rows.length) {
+      hoursSummary.textContent = 'No submissions yet.';
+      hoursTbody.innerHTML = `<tr><td colspan="9" class="muted" style="padding:12px 8px;">No submissions yet.</td></tr>`;
+      return;
+    }
+    hoursSummary.textContent = `Showing ${rows.length} shift(s).`;
+    hoursTbody.innerHTML = rows.map(r => {
+      const status = String(r.status||'').toLowerCase();
+      const hrs    = roundUp(Number(r.total_hours||0), 0.25);
+      const bonus  = getBonusLabel(r.start_time, r.end_time);
+      const dept   = departments.find(d => d.id === r.department_id)?.name || '—';
+      const ptDisp = status === 'pending'
+        ? `<span style="color:rgba(255,255,255,0.6);font-size:12px;">~${calcPoints(r.start_time,r.end_time)} est.</span>`
+        : (r.points_earned == null ? '—' : Math.round(Number(r.points_earned)));
+      const stColor = status==='approved'?'#7CFC90':status==='rejected'?'#ff6b6b':'inherit';
+      return `<tr style="border-bottom:1px solid rgba(255,255,255,0.08);">
+        <td style="padding:8px 6px;">${fmtDate(r.start_time)}</td>
+        <td style="padding:8px 6px;">${dept}</td>
+        <td style="padding:8px 6px;">${fmtTime(r.start_time)}</td>
+        <td style="padding:8px 6px;">${fmtTime(r.end_time)}</td>
+        <td style="padding:8px 6px;">${hrs>0?hrs.toFixed(2):'—'}</td>
+        <td style="padding:8px 6px;">${bonus?`<span style="color:#FFD700;font-size:12px;">⭐ ${bonus}</span>`:'—'}</td>
+        <td style="padding:8px 6px;">${ptDisp}</td>
+        <td style="padding:8px 6px;color:${stColor};">${status}</td>
+        <td style="padding:8px 6px;">${r.notes||'—'}</td>
+      </tr>`;
+    }).join('');
+  }
+
+  // ── Points ─────────────────────────────────────────────────────────
+  async function loadMyPoints() {
+    if (!CURRENT_CORE_USER?.id) return;
+    const { data } = await supabase.from('user_points_ledger').select('points').eq('user_id', CURRENT_CORE_USER.id);
+    const total = Math.round((data||[]).reduce((s,r) => s + Number(r.points||0), 0));
+    pointsSummary.textContent = `Balance: ${total} points`;
+    pointsTbody.innerHTML = `<tr><td style="padding:10px 8px;">${total}</td></tr>`;
+  }
+
+  // ── Guard / init ───────────────────────────────────────────────────
+  async function guard() {
+    const { data: sessData, error: sessErr } = await supabase.auth.getSession();
+    if (sessErr) throw sessErr;
+    const session = sessData?.session;
+    if (!session?.user?.id) return goLogin();
+
+    const { data: coreUser, error: cuErr } = await supabase
+      .from('core_users').select('*').eq('auth_id', session.user.id).maybeSingle();
+    if (cuErr) throw cuErr;
+    if (!coreUser || !coreUser.is_active) return goLogin();
+
+    const role = (coreUser.role || '').toLowerCase().trim();
+    const allowed = ['volunteer','staff','volunteer_head','manager','admin','super_user'];
+    if (!allowed.includes(role)) return goLogin();
+
+    localStorage.setItem('core_user_profile', JSON.stringify(coreUser));
+    CURRENT_CORE_USER = coreUser;
+    USER_ROLE = role;
+
+    // Set hours table based on role
+    HOURS_TABLE = role === 'volunteer' ? 'vol_hours' : 'staff_hours';
+
+    // Dashboard title
+    const titleMap = { volunteer:'Volunteer Dashboard', staff:'Staff Dashboard', volunteer_head:'Staff Dashboard', manager:'Manager Dashboard', admin:'Admin Dashboard', super_user:'Admin Dashboard' };
+    dashTitle.textContent  = titleMap[role] || 'Dashboard';
+    clockTitle.textContent = role === 'volunteer' ? 'Volunteer Time Clock' : 'Staff Time Clock';
+    welcomeLine.textContent = `Welcome, ${displayName(coreUser)}`;
+
+    // Admin panel link
+    if (role === 'admin' || role === 'super_user') adminBtn.style.display = 'inline-block';
+
+    // Profile box
+    const PLAN = (coreUser.plan || 'basic').toLowerCase();
+    const photoHtml = PLAN === 'basic' ? `<div style="width:64px;height:64px;border-radius:50%;background:rgba(255,255,255,0.08);border:2px solid rgba(255,255,255,0.14);display:flex;align-items:center;justify-content:center;margin-bottom:10px;font-size:26px;">&#128100;</div>` :
+      coreUser.profile_image_url
+        ? `<img src="${coreUser.profile_image_url}" alt="Photo" style="width:64px;height:64px;border-radius:50%;object-fit:cover;border:2px solid rgba(255,255,255,0.18);margin-bottom:10px;display:block;" />`
+        : `<div style="width:64px;height:64px;border-radius:50%;background:rgba(255,255,255,0.08);border:2px solid rgba(255,255,255,0.14);display:flex;align-items:center;justify-content:center;margin-bottom:10px;font-size:26px;">&#128100;</div>`;
+
+    profileBox.innerHTML = `
+      ${photoHtml}
+      <div style="font-size:16px;font-weight:bold;margin-bottom:6px;">${displayName(coreUser)}</div>
+      <div class="pill" style="margin-bottom:8px;">Role: <b>${coreUser.role}</b></div>
+      <div class="muted" style="font-size:13px;margin-top:4px;"><b>Badge #:</b> ${coreUser.badge_number || '--'}</div>
+    `;
+
+    if (PLAN !== 'basic') document.getElementById('editProfileBtn').style.display = 'inline-block';
+
+    // Show passkey section for admin and manager only
+    if (['admin','super_user','manager'].includes(role)) {
+      passkeySection.style.display = 'block';
+    }
+
+    // Hide points card for staff/manager/admin (they don't earn points the same way)
+    if (role !== 'volunteer') {
+      document.getElementById('pointsCard').style.display = 'none';
+    }
+
+    await loadPointsSettings();
+    await loadBonusWindows();
+    await loadDepartments();
+    await loadActiveShift();
+    await loadMyHours();
+    if (role === 'volunteer') await loadMyPoints();
+    await checkPendingApproval();
+
+    document.getElementById('approvedContent').style.display = 'block';
+    document.getElementById('pendingCard').style.display = 'none';
+  }
+
+  // ── Event listeners ────────────────────────────────────────────────
+  startShiftBtn.addEventListener('click', async () => {
+    try { if (ACTIVE_SHIFT_ID) return; await startShift(); }
+    catch(e) { console.error(e); setStatus(e?.message||'Failed to start shift.'); }
+  });
+
+  endShiftBtn.addEventListener('click', async () => {
+    try { if (!ACTIVE_SHIFT_ID) return; await endShift(); }
+    catch(e) { console.error(e); setStatus(e?.message||'Failed to end shift.'); }
+  });
+
+  refreshHoursBtn.addEventListener('click',  async () => { try { await loadMyHours();  } catch(e){} });
+  refreshPointsBtn.addEventListener('click', async () => { try { await loadMyPoints(); } catch(e){} });
+
+  logoutBtn.addEventListener('click', async () => {
+    localStorage.removeItem('core_user_profile');
+    await supabase.auth.signOut();
+    goLogin();
+  });
+
+  document.getElementById('resetPwBtn').addEventListener('click', async () => {
+    const btn = document.getElementById('resetPwBtn');
+    const msg = document.getElementById('resetPwMsg');
+    btn.disabled = true; btn.textContent = 'Sending...';
+    try {
+      const { data: s } = await supabase.auth.getSession();
+      const email = s?.session?.user?.email;
+      if (!email) throw new Error('Could not find your email.');
+      const { error } = await supabase.auth.resetPasswordForEmail(email);
+      if (error) throw error;
+      msg.style.display = 'block'; msg.style.color = '#7CFC90';
+      msg.textContent = 'Reset link sent! Check your email.';
+    } catch(e) {
+      msg.style.display = 'block'; msg.style.color = '#ff6b6b';
+      msg.textContent = e?.message || 'Failed to send reset email.';
+    } finally { btn.disabled = false; btn.textContent = 'Reset Password'; }
+  });
+
+  guard().catch(e => { console.error(e); goLogin(); });
+</script>
+</body>
+</html>
