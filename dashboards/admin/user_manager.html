@@ -473,14 +473,7 @@
           <input id="editBadge" type="text" placeholder="Badge number" />
         </div>
 
-        <div>
-          <label for="editPlan">Plan</label>
-          <select id="editPlan">
-            <option value="basic">Basic</option>
-            <option value="standard">Standard</option>
-            <option value="full">Full</option>
-          </select>
-        </div>
+        
       </div>
 
       <label for="deptSelect">Departments</label>
@@ -683,22 +676,7 @@
 
     const PROFILE_BUCKET = 'core-user-profile';
 
-    // Plan control
-    let PLAN = 'basic'; // set from logged-in user's profile
     let myCoreUserId = null;
-
-    function applyPlanUi() {
-      // Hide photo column header and cells if basic
-      const photoHeader = document.querySelector('th:first-child');
-      if (PLAN === 'basic') {
-        if (photoHeader) photoHeader.style.display = 'none';
-        document.getElementById('editImgWrap').style.display = 'none';
-        document.getElementById('editImgBtns').style.display = 'none';
-        document.querySelector('#editImgBtns + p')?.style && (document.querySelector('#editImgBtns + p').style.display = 'none');
-        document.getElementById('addImgWrap').style.display = 'none';
-        document.getElementById('addImgBtns').style.display = 'none';
-      }
-    }
 
     // local state
     let pendingAddImageFile = null;
@@ -901,7 +879,7 @@ function updateActiveBtnUi() {
       const rows = allUsers.filter(matchesFilters);
 
       if (rows.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="${PLAN === 'basic' ? 8 : 9}" style="color:rgba(255,255,255,0.7);padding:16px;">No users match your filters.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="9" style="color:rgba(255,255,255,0.7);padding:16px;">No users match your filters.</td></tr>`;
         return;
       }
 
@@ -920,7 +898,7 @@ function updateActiveBtnUi() {
 
         return `
           <tr>
-            ${PLAN === 'basic' ? '' : `<td>${photoCell}</td>`}
+            <td>${photoCell}</td>
             <td>${escapeHtml(safe(displayName(u)))}</td>
             <td style="font-size:12px; color:var(--muted);">${escapeHtml(safe(u.email))}</td>
             <td>${escapeHtml(safe(u.nickname))}</td>
@@ -1239,14 +1217,7 @@ function updateActiveBtnUi() {
 updateActiveBtnUi();
       editNickname.value = u.nickname || '';
       editBadge.value = u.badge_number || '';
-      document.getElementById('editPlan').value = u.plan || 'basic';
-
-      if (PLAN === 'basic') {
-        document.getElementById('editImgWrap').style.display = 'none';
-        document.getElementById('editImgBtns').style.display = 'none';
-      } else {
-        setEditImageUi(editingUser.profile_image_url);
-      }
+      setEditImageUi(editingUser.profile_image_url);
 
       overlay.style.display = 'flex';
 
@@ -1276,8 +1247,6 @@ updateActiveBtnUi();
       const newBadge = (editBadge.value || '').trim();
 
       try {
-        const newPlan = (document.getElementById('editPlan').value || 'basic').trim();
-
         const { error } = await supabase
           .from('core_users')
           .update({
@@ -1285,21 +1254,12 @@ updateActiveBtnUi();
             is_active: newActive,
             nickname: newNick || null,
             badge_number: newBadge || null,
-            plan: newPlan
           })
           .eq('id', editingUser.id);
 
         if (error) throw error;
 
-        // Send activation email if user was just activated (Full plan only)
-        const { data: planRow } = await supabase
-          .from('core_users')
-          .select('plan')
-          .eq('id', editingUser.id)
-          .single()
-        const activePlan = (planRow?.plan || 'basic').toLowerCase()
-
-        if (activePlan === 'full' && newActive === true && editingUser.is_active === false) {
+        if (newActive === true && editingUser.is_active === false) {
           try {
             const { data: userData } = await supabase
               .from('core_users')
@@ -1535,9 +1495,7 @@ updateActiveBtnUi();
 
       localStorage.setItem('core_user_profile', JSON.stringify(profile));
       rolePill.textContent = profile.role === 'super_user' ? 'Role: Super User' : 'Role: Admin';
-      PLAN = (profile.plan || 'basic').toLowerCase();
       myCoreUserId = profile.id;
-      applyPlanUi();
     }
 
     // Events
@@ -1705,12 +1663,7 @@ updateActiveBtnUi();
 
     addRemoveImgBtn?.addEventListener('click', () => {
       pendingAddImageFile = null;
-      if (PLAN === 'basic') {
-        document.getElementById('addImgWrap').style.display = 'none';
-        document.getElementById('addImgBtns').style.display = 'none';
-      } else {
-        setAddImageUi(null);
-      }
+      setAddImageUi(null);
     });
 
     // Start

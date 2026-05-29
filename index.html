@@ -160,32 +160,8 @@ body {
       color: var(--muted);
     }
 
-    .plan-card {
-      width: 100%;
-      background: var(--card);
-      border: 1px solid var(--card-border);
-      border-radius: 16px;
-      padding: 18px 20px;
-      text-align: left;
-      cursor: pointer;
-      color: var(--text);
-      transition: border-color 0.15s, background 0.15s;
-    }
-    .plan-card:hover {
-      border-color: rgba(255,255,255,0.30);
-      background: rgba(255,255,255,0.10);
-    }
-    .plan-card:disabled { opacity: 0.55; cursor: not-allowed; }
-    .plan-title {
-      font-size: 17px;
-      font-weight: 900;
-      margin-bottom: 6px;
-    }
-    .plan-desc {
-      font-size: 13px;
-      color: var(--muted);
-      line-height: 1.5;
-    }
+    
+   
 
   </style>
 </head>
@@ -225,35 +201,7 @@ body {
       </div>
     </div>
 
-    <!-- Plan Selector (shown after login) -->
-    <div id="planSelector" style="display:none; width:100%; max-width:520px;">
-      <div class="header">
-        <h1 class="title">AnimeIowa</h1>
-        <p class="subtitle">Choose a plan to preview</p>
-      </div>
-      <div id="planName" style="text-align:center; font-size:13px; color:var(--muted); margin-bottom:16px;"></div>
-
-      <div style="display:flex; flex-direction:column; gap:12px;">
-
-        <button class="plan-card" data-plan="basic" type="button">
-          <div class="plan-title">Basic</div>
-          <div class="plan-desc">Core time clock, hour submissions, points tracking, and admin approvals. No photos, no department management.</div>
-        </button>
-
-        <button class="plan-card" data-plan="standard" type="button">
-          <div class="plan-title">Standard</div>
-          <div class="plan-desc">Everything in Basic plus profile photos, department management, edit profile, and CSV + PDF export on reports.</div>
-        </button>
-
-        <button class="plan-card" data-plan="full" type="button">
-          <div class="plan-title">Full</div>
-          <div class="plan-desc">Everything in Standard plus email notifications, custom branding, activity history, and advanced reports.</div>
-        </button>
-
-      </div>
-
-      <div id="planMsg" class="msg" style="margin-top:14px;"></div>
-    </div>
+    
 
   </div>
 
@@ -335,52 +283,12 @@ if (!profile?.is_active) {
   return
 }
 
-// Show plan selector instead of redirecting directly
-    showPlanSelector(profile)
+localStorage.setItem('core_user_profile', JSON.stringify(profile))
+const dest = roleToDashboard(profile.role) || 'dashboards/volunteer.html'
+window.location.href = dest
   }
 
-  function showPlanSelector(profile) {
-    document.querySelector('.card').style.display = 'none'
-    document.querySelector('.header').style.display = 'none'
-    const selector = document.getElementById('planSelector')
-    selector.style.display = 'block'
-
-    const nick = (profile.nickname || '').trim()
-    const full = ([profile.first_name, profile.last_name].filter(Boolean).join(' ')).trim()
-    const name = nick || full || 'there'
-    document.getElementById('planName').textContent = `Welcome, ${name} — pick a plan to continue`
-
-    const planMsg = document.getElementById('planMsg')
-
-    selector.querySelectorAll('.plan-card').forEach(btn => {
-      btn.addEventListener('click', async () => {
-        const plan = btn.getAttribute('data-plan')
-
-        selector.querySelectorAll('.plan-card').forEach(b => b.disabled = true)
-        planMsg.className = 'msg'
-        planMsg.textContent = 'Saving...'
-        planMsg.style.display = 'block'
-
-        try {
-          const { error } = await supabase
-            .from('core_users')
-            .update({ plan })
-            .eq('id', profile.id)
-
-          if (error) throw error
-
-          localStorage.setItem('core_user_profile', JSON.stringify({ ...profile, plan }))
-
-          const dest = roleToDashboard(profile.role) || 'dashboards/volunteer.html'
-          window.location.href = dest
-        } catch (e) {
-          planMsg.className = 'msg error'
-          planMsg.textContent = e?.message || 'Failed to save plan.'
-          selector.querySelectorAll('.plan-card').forEach(b => b.disabled = false)
-        }
-      })
-    })
-  }
+  
 
   ;(async () => {
     try {

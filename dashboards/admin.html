@@ -277,7 +277,7 @@
           </button>
         </div>
       </div>
-<div class="card" id="activityLogCard" style="display:none;">
+<div class="card" id="activityLogCard">
   <h2>Activity Log</h2>
   <p class="muted">Full audit trail of every action taken in the system.</p>
   <button class="btn" type="button" onclick="window.location.href='admin/activity_log.html'">
@@ -298,16 +298,6 @@
         <h2>Review Hours</h2>
         <p>Review and approve both Staff and Volunteer hour submissions.</p>
         <div class="stack" id="reviewHoursStack">
-          <!-- Basic: one combined button -->
-          <button id="reviewAllBtn" class="btn" type="button" onclick="window.location.href='admin/staff_approvals.html'" style="position:relative; display:none;">
-            Review Staff Hours
-            <span id="allDot" style="display:none; position:absolute; top:-5px; right:-5px; width:12px; height:12px; background:#ff4444; border-radius:50%; border:2px solid #000;"></span>
-          </button>
-          <button id="reviewAllVolBtn" class="btn" type="button" onclick="window.location.href='admin/volunteer_approvals.html'" style="position:relative; display:none;">
-            Review Volunteer Hours
-            <span id="allVolDot" style="display:none; position:absolute; top:-5px; right:-5px; width:12px; height:12px; background:#ff4444; border-radius:50%; border:2px solid #000;"></span>
-          </button>
-          <!-- Standard/Full: two separate buttons -->
           <button id="staffBtn" class="btn" type="button" onclick="window.location.href='admin/staff_approvals.html'" style="position:relative; display:none;">
             Review Staff Hours
             <span id="staffDot" style="display:none; position:absolute; top:-5px; right:-5px; width:12px; height:12px; background:#ff4444; border-radius:50%; border:2px solid #000;"></span>
@@ -487,7 +477,7 @@
 
       localStorage.setItem('core_user_profile', JSON.stringify(profile));
 
-      const PLAN = (profile.plan || 'basic').toLowerCase();
+      
 
       const roleLabel = profile.role === 'super_user' ? 'Super User' : profile.role === 'manager' ? 'Manager' : profile.role === 'volunteer_head' ? 'Volunteer Head' : 'Admin';
       rolePill.textContent = `Role: ${roleLabel}`;
@@ -497,19 +487,10 @@
       // Admin profile card
       
 
-      // Apply plan UI
-      if (PLAN === 'basic') {
-        document.getElementById('departmentsCard').style.display = 'none';
-        document.getElementById('reviewAllBtn').style.display = 'block';
-        document.getElementById('reviewAllVolBtn').style.display = 'block';
-      } else {
-        document.getElementById('departmentsCard').style.display = 'block';
-        document.getElementById('staffBtn').style.display = 'block';
-        document.getElementById('volunteerBtn').style.display = 'block';
-      }
-      if (PLAN === 'full') {
-        document.getElementById('activityLogCard').style.display = 'block';
-      }
+      document.getElementById('departmentsCard').style.display = 'block';
+      document.getElementById('staffBtn').style.display = 'block';
+      document.getElementById('volunteerBtn').style.display = 'block';
+      document.getElementById('activityLogCard').style.display = 'block';
 
       // Managers can only see approvals — hide user manager and departments
       if (profile.role === 'manager' || profile.role === 'volunteer_head') {

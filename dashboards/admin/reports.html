@@ -197,8 +197,7 @@
       </p>
     </section>
 
-    <!-- Report Templates (Standard + Full only) -->
-    <div id="templatesCard" class="card" style="display:none; margin-top:10px;">
+    <div id="templatesCard" class="card" style="margin-top:10px;">
       <h2>Quick Report Templates</h2>
       <p>Pick a template to auto-fill the filters and run the report instantly.</p>
       <div class="field" style="max-width:360px;">
@@ -224,7 +223,7 @@
     <!-- Filters + table -->
     <section class="card">
       <h2>Filters</h2>
-      <p>Run a report to see all shifts. Export is available on Standard and Full plans.</p>
+      <p>Run a report to see all shifts. Export is available as CSV and PDF.</p>
 
       <div class="filters-grid">
         <div class="field">
@@ -328,7 +327,6 @@
     const kpiRows     = document.getElementById('kpiRows');
 
     let rows = [];
-    let PLAN = 'basic';
 
     // -- Helpers ----------------------------------------------
     function setMsg(type, text) {
@@ -398,7 +396,6 @@
         return;
       }
 
-      PLAN = (p.plan || 'basic').toLowerCase();
       localStorage.setItem('core_user_profile', JSON.stringify(p));
       rolePill.textContent = role === 'manager' ? 'Role: Manager' : role === 'super_user' ? 'Role: Super User' : 'Role: Admin';
 
@@ -411,11 +408,9 @@
         MANAGER_DEPT_IDS = (deptRows || []).map(d => d.department_id);
       }
 
-      if (PLAN !== 'basic') {
-        csvBtn.style.display = 'inline-block';
-        pdfBtn.style.display = 'inline-block';
-        document.getElementById('templatesCard').style.display = 'block';
-      }
+      csvBtn.style.display = 'inline-block';
+      pdfBtn.style.display = 'inline-block';
+      document.getElementById('templatesCard').style.display = 'block';
     }
 
     // -- Departments dropdown ----------------------------------
@@ -746,7 +741,7 @@
       try {
         await guardAdmin();
         await loadDepts();
-        if (PLAN !== 'basic') await loadTemplates();
+        await loadTemplates();
       } catch (e) {
         setMsg('error', e?.message || 'Failed to load Reports.');
       }
