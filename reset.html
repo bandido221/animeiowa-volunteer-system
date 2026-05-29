@@ -7,125 +7,44 @@
   <title>AnimeIowa | Reset Password</title>
 
   <style>
-    :root{
-      --bg:#000;
-      --card: rgba(255,255,255,0.06);
-      --card-border: rgba(255,255,255,0.10);
-
-      --text: rgba(255,255,255,0.92);
-      --muted: rgba(255,255,255,0.70);
-
-      --danger:#ff6b6b;
-      --ok:#7CFC90;
-
-      --btn:#ffffff;
-      --btnText:#000000;
-
-      --inputBg: rgba(255,255,255,0.08);
-      --inputBorder: rgba(255,255,255,0.14);
-      --focus: rgba(255,255,255,0.28);
+    body {
+      display: grid;
+      place-items: center;
+      padding: 20px;
+      min-height: 100vh;
     }
 
-    *{ box-sizing:border-box; }
-    html,body{ height:100%; }
-    body{
-      margin:0;
-      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      display:grid;
-      place-items:center;
-      padding:20px;
+    .wrap { width: 100%; max-width: 420px; }
+    .header { text-align: center; margin-bottom: 16px; }
+
+    .title {
+      margin: 0;
+      font-size: 22px;
+      letter-spacing: 2px;
+      color: #fff;
+      text-shadow: 0 0 20px rgba(180,100,255,0.6);
     }
 
-    .wrap{ width:100%; max-width: 420px; }
-    .header{ text-align:center; margin-bottom: 16px; }
-    .title{ margin:0; font-size: 26px; font-weight: 900; }
-    .subtitle{ margin:8px 0 0; color: var(--muted); font-size: 14px; line-height: 1.4; }
+    .subtitle { margin: 8px 0 0; color: var(--muted); font-size: 14px; line-height: 1.4; }
 
-    .card{
-      background: var(--card);
-      border: 1px solid var(--card-border);
-      border-radius: 16px;
-      padding: 18px;
-      backdrop-filter: blur(10px);
-    }
-
-    label{
-      display:block;
-      font-size: 13px;
-      color: var(--muted);
-      margin: 12px 0 6px;
-    }
-
-    input{
-      width:100%;
-      padding: 14px 12px;
-      border-radius: 12px;
-      border: 1px solid var(--inputBorder);
-      background: var(--inputBg);
-      color: var(--text);
-      outline:none;
-      font-size: 16px;
-    }
-    input:focus{
-      border-color: var(--focus);
-      box-shadow: 0 0 0 3px rgba(255,255,255,0.08);
-    }
-
-    .btn{
-      width:100%;
-      margin-top: 14px;
-      padding: 14px 12px;
-      border-radius: 12px;
-      border:none;
-      background: var(--btn);
-      color: var(--btnText);
-      font-size: 16px;
-      font-weight: 900;
-      cursor:pointer;
-    }
-    .btn:disabled{ opacity:0.6; cursor:not-allowed; }
-
-    .row{
-      display:flex;
+    .row {
+      display: flex;
       justify-content: space-between;
-      align-items:center;
+      align-items: center;
       gap: 10px;
       margin-top: 12px;
       flex-wrap: wrap;
     }
 
-    .link{
-      color: var(--text);
-      text-decoration:none;
+    .link {
+      color: rgba(200,160,255,0.8);
+      text-decoration: none;
       font-size: 14px;
-      opacity: 0.95;
-      border-bottom: 1px dashed rgba(255,255,255,0.35);
+      border-bottom: 1px dashed rgba(160,80,255,0.4);
       padding-bottom: 2px;
     }
 
-    .msg{
-      margin-top: 12px;
-      font-size: 14px;
-      line-height: 1.35;
-      padding: 10px 12px;
-      border-radius: 12px;
-      border: 1px solid rgba(255,255,255,0.12);
-      background: rgba(255,255,255,0.05);
-      display:none;
-      word-break: break-word;
-    }
-    .msg.error{ color: var(--danger); display:block; }
-    .msg.ok{ color: var(--ok); display:block; }
-
-    .tiny{
-      margin-top: 12px;
-      color: var(--muted);
-      font-size: 12px;
-      line-height: 1.4;
-      text-align:center;
-    }
+    .btn { width: 100%; margin-top: 14px; }
   </style>
 </head>
 

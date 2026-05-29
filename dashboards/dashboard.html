@@ -5,93 +5,26 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1" />
   <title>Dashboard | AnimeIowa</title>
-  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500&family=Domine&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { box-sizing: border-box; }
     html, body { overflow-x: hidden; max-width: 100%; }
-    body {
-      font-family: 'Domine', serif;
-      background: #000;
-      color: #f0e6d2;
-      margin: 0;
-      padding: 12px;
-      text-align: center;
-    }
-    h1 { font-family: 'Cinzel', serif; margin: 0 0 6px; font-size: clamp(20px, 6vw, 36px); }
-    h2 { font-family: 'Cinzel', serif; margin: 0 0 10px; font-size: clamp(16px, 4vw, 24px); }
-    .wrap { max-width: 920px; margin: 0 auto; width: 100%; }
-    .card {
-      background: rgba(255,255,255,0.06);
-      border: 1px solid rgba(255,255,255,0.12);
-      border-radius: 14px;
-      padding: 14px;
-      margin: 10px 0;
-      text-align: left;
-      width: 100%;
-    }
+    body { padding: 0; text-align: center; }
+
+    .wrap { max-width: 920px; margin: 0 auto; width: 100%; padding: 12px; text-align: left; }
     .row { display: flex; gap: 8px; flex-wrap: wrap; }
-    .btn {
-      display: inline-block;
-      padding: 10px 14px;
-      border-radius: 12px;
-      border: 1px solid rgba(255,255,255,0.18);
-      background: rgba(170,132,82,0.20);
-      color: #f0e6d2;
-      text-decoration: none;
-      cursor: pointer;
-      font-family: 'Cinzel', serif;
-      letter-spacing: 0.5px;
-      font-size: 14px;
-      white-space: nowrap;
-    }
-    .btn:hover { background: rgba(170,132,82,0.30); }
-    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
-    .btn.secondary { background: rgba(255,255,255,0.08); }
-    .muted { opacity: 0.85; }
-    .topbar {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      gap: 8px;
-      margin-bottom: 12px;
-      flex-wrap: wrap;
-    }
-    .pill {
-      display: inline-block;
-      padding: 5px 8px;
-      border-radius: 999px;
-      border: 1px solid rgba(255,255,255,0.18);
-      background: rgba(255,255,255,0.06);
-      font-size: 13px;
-    }
-    input, select {
-      width: 100%;
-      box-sizing: border-box;
-      background: rgba(255,255,255,0.08);
-      border: 1px solid rgba(255,255,255,0.18);
-      border-radius: 10px;
-      color: #f0e6d2;
-      font-family: 'Domine', serif;
-      font-size: 14px;
-      padding: 10px 12px;
-      outline: none;
-    }
-    select option { background: #111; color: #f0e6d2; }
-    table { width: 100%; border-collapse: collapse; font-size: 13px; }
-    th, td { padding: 8px 6px; }
-    thead tr { text-align: left; border-bottom: 1px solid rgba(255,255,255,0.14); }
 
     /* Passkey toggle */
     .passkey-row { display: flex; gap: 8px; align-items: center; }
-    .passkey-row input { flex: 1; letter-spacing: 0.2em; }
+    .passkey-row input { flex: 1; letter-spacing: 0.2em; margin-bottom: 0; }
     .passkey-toggle {
-      background: rgba(255,255,255,0.08);
-      border: 1px solid rgba(255,255,255,0.18);
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(160,80,255,0.3);
       border-radius: 10px;
-      color: #f0e6d2;
-      font-size: 13px;
-      font-family: 'Domine', serif;
-      padding: 10px 12px;
+      color: rgba(200,160,255,0.9);
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 14px;
+      padding: 11px 14px;
       cursor: pointer;
       white-space: nowrap;
       flex-shrink: 0;
@@ -100,19 +33,50 @@
     /* Passkey approval modal */
     #passkeyOverlay {
       display: none; position: fixed; inset: 0;
-      background: rgba(0,0,0,0.88); z-index: 1000;
+      background: rgba(0,0,0,0.92); z-index: 1000;
       align-items: center; justify-content: center;
     }
     #passkeyOverlay.active { display: flex !important; }
     .pk-modal {
-      background: #111; border: 1px solid rgba(255,255,255,0.18);
+      background: #05040f;
+      border: 1px solid rgba(160,80,255,0.4);
       border-radius: 18px; padding: 28px 24px;
       width: 100%; max-width: 380px; margin: 16px; text-align: center;
+      position: relative;
     }
-    .pk-modal h3 { font-family: 'Cinzel', serif; font-size: 18px; margin: 0 0 10px; color: #f0e6d2; }
-    .pk-modal p  { font-size: 13px; color: rgba(240,230,210,0.75); margin: 0 0 14px; line-height: 1.5; }
-    #passkeyError   { color: #ff6b6b; font-size: 13px; margin-top: 6px; min-height: 18px; }
-    #passkeySuccess { color: #7CFC90; font-size: 13px; margin-top: 6px; min-height: 18px; }
+    .pk-modal::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0; height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(200,100,255,0.7), rgba(100,200,255,0.5), transparent);
+      border-radius: 18px 18px 0 0;
+    }
+    .pk-modal h3 {
+      font-family: 'Orbitron', monospace;
+      font-size: 16px; font-weight: 900;
+      margin: 0 0 10px; color: #fff;
+      letter-spacing: 1px;
+      text-shadow: 0 0 15px rgba(160,80,255,0.5);
+    }
+    .pk-modal p { font-size: 13px; color: rgba(200,160,255,0.7); margin: 0 0 14px; line-height: 1.5; }
+    #passkeyError   { color: #ff3c6e; font-size: 13px; margin-top: 6px; min-height: 18px; }
+    #passkeySuccess { color: #00d4aa; font-size: 13px; margin-top: 6px; min-height: 18px; }
+
+    /* Topbar override for dashboard layout */
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 8px;
+      margin-bottom: 0;
+      flex-wrap: wrap;
+      padding: 14px 16px;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    thead tr { text-align: left; }
   </style>
 </head>
 <body>

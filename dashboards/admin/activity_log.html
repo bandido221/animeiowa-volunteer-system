@@ -6,45 +6,14 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1" />
   <title>AnimeIowa | Activity Log</title>
   <style>
-    :root{
-      --bg:#000;--card:rgba(255,255,255,0.06);--card-border:rgba(255,255,255,0.10);
-      --text:rgba(255,255,255,0.92);--muted:rgba(255,255,255,0.70);
-      --danger:#ff6b6b;--ok:#7CFC90;--btn:#ffffff;--btnText:#000000;
-      --btn2-bg:rgba(255,255,255,0.10);--btn2-border:rgba(255,255,255,0.16);
-      --inputBg:rgba(255,255,255,0.08);--inputBorder:rgba(255,255,255,0.14);
-      --focus:rgba(255,255,255,0.28);
-    }
-    *{box-sizing:border-box;}
-    html,body{height:100%;margin:0;}
-    body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:var(--bg);color:var(--text);}
-    .topbar{position:sticky;top:0;z-index:10;background:rgba(0,0,0,0.85);backdrop-filter:blur(10px);border-bottom:1px solid rgba(255,255,255,0.10);}
-    .topbar-inner{max-width:1200px;margin:0 auto;padding:10px 12px;display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;}
-    .brand{display:flex;flex-direction:column;gap:2px;min-width:0;}
-    .brand h1{margin:0;font-size:18px;font-weight:900;line-height:1.1;white-space:nowrap;}
-    .brand .sub{margin:0;font-size:12px;color:var(--muted);}
-    .actions{display:flex;gap:6px;align-items:center;flex-wrap:wrap;}
-    .btn{appearance:none;border:none;border-radius:12px;padding:12px 14px;font-weight:900;font-size:14px;cursor:pointer;background:var(--btn);color:var(--btnText);line-height:1;white-space:nowrap;}
-    .btn.secondary{background:var(--btn2-bg);color:var(--text);border:1px solid var(--btn2-border);font-weight:800;}
-    .btn:disabled{opacity:0.55;cursor:not-allowed;}
-    .pill{display:inline-flex;align-items:center;gap:8px;padding:8px 10px;border-radius:999px;border:1px solid rgba(255,255,255,0.12);background:rgba(255,255,255,0.05);color:var(--muted);font-size:12px;white-space:nowrap;}
-    .container{max-width:1200px;margin:0 auto;padding:16px;}
-    .card{background:var(--card);border:1px solid var(--card-border);border-radius:16px;padding:16px;margin-bottom:14px;}
-    .card h2{margin:0 0 6px;font-size:16px;font-weight:950;}
-    .msg{margin-top:12px;font-size:14px;line-height:1.35;padding:10px 12px;border-radius:12px;border:1px solid rgba(255,255,255,0.12);background:rgba(255,255,255,0.05);display:none;word-break:break-word;}
-    .msg.error{color:var(--danger);display:block;}
-    .msg.ok{color:var(--ok);display:block;}
-    .field label{display:block;font-size:12px;color:var(--muted);margin-bottom:5px;}
-    .field input,.field select{width:100%;padding:10px 12px;border-radius:12px;border:1px solid var(--inputBorder);background:var(--inputBg);color:var(--text);font-size:14px;outline:none;-webkit-appearance:none;appearance:none;}
-    .field select{background:#fff;color:#000;}
-    .field input:focus,.field select:focus{border-color:var(--focus);box-shadow:0 0 0 3px rgba(255,255,255,0.08);}
     .filters-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
     @media(min-width:600px){.filters-grid{grid-template-columns:repeat(3,1fr);}}
     @media(min-width:900px){.filters-grid{grid-template-columns:repeat(5,1fr);}}
     .bar{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;align-items:center;}
-    .table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;border-radius:14px;border:1px solid rgba(255,255,255,0.10);margin-top:12px;}
-    table{width:100%;border-collapse:collapse;min-width:900px;background:rgba(0,0,0,0.15);}
-    th,td{padding:11px 10px;border-bottom:1px solid rgba(255,255,255,0.08);text-align:left;font-size:13px;vertical-align:middle;}
-    th{color:var(--muted);font-weight:900;font-size:12px;position:sticky;top:0;background:rgba(0,0,0,0.65);backdrop-filter:blur(10px);white-space:nowrap;z-index:1;}
+    .field label{display:block;font-size:12px;color:var(--muted);margin-bottom:5px;}
+    .field input,.field select{width:100%;padding:10px 12px;border-radius:10px;border:1px solid var(--input-border);background:var(--input-bg);color:var(--text);font-size:14px;outline:none;-webkit-appearance:none;appearance:none;}
+    .field select{background:#150d2e;color:var(--text);}
+    .field input:focus,.field select:focus{border-color:var(--focus);box-shadow:0 0 0 3px rgba(160,80,255,0.12);}
     .a-approved{color:var(--ok);}
     .a-rejected{color:var(--danger);}
     .a-edited{color:#7fc8ff;}
@@ -56,7 +25,6 @@
     .a-profile_updated{color:var(--muted);}
     .a-other{color:var(--muted);}
     .footer{margin:18px 0 40px;color:var(--muted);font-size:12px;text-align:center;}
-    @media(max-width:480px){.btn{padding:8px 10px;font-size:12px;}.pill{font-size:11px;padding:6px 8px;}}
   </style>
 </head>
 <body>
@@ -159,7 +127,7 @@
       <p style="margin:10px 0 0;font-size:12px;color:var(--muted);">Showing most recent first. Max 1000 entries per load.</p>
     </section>
 
-    <div class="footer">Admin access required -- Full plan only.</div>
+    <div class="footer">Admin access required.</div>
   </main>
 
   <script type="module">

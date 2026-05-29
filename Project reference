@@ -13,13 +13,14 @@ ANIMEIOWA-VOLU.../
 ├── signup.html                 ← Sign up
 └── dashboards/
     ├── admin.html              ← Admin/Manager panel
-    ├── animeiowa.css           ← Shared styles
+    ├── animeiowa.css           ← Shared styles (anime/sci-fi theme)
     ├── dashboard.html          ← Single dashboard for all roles (volunteer/staff/manager/admin)
     ├── profile_edit.html       ← Edit profile
     ├── profile_setup.html      ← First-time profile setup
     └── admin/
         ├── activity_log.html
         ├── departments.html
+        ├── points_redemption.html
         ├── reports.html
         ├── staff_approvals.html
         ├── user_manager.html
@@ -121,15 +122,15 @@ ANIMEIOWA-VOLU.../
 | role | text | default 'volunteer' |
 | is_active | boolean | default true |
 | created_at | timestamptz | |
-| phone | text | ⚠️ TO BE REMOVED from UI (minor protection) |
-| address | text | ⚠️ TO BE REMOVED from UI (minor protection) |
-| city | text | ⚠️ TO BE REMOVED from UI (minor protection) |
-| state | text | ⚠️ TO BE REMOVED from UI (minor protection) |
-| zip | text | ⚠️ TO BE REMOVED from UI (minor protection) |
+| phone | text | ⚠️ Removed from UI (minor protection) |
+| address | text | ⚠️ Removed from UI (minor protection) |
+| city | text | ⚠️ Removed from UI (minor protection) |
+| state | text | ⚠️ Removed from UI (minor protection) |
+| zip | text | ⚠️ Removed from UI (minor protection) |
 | email | text | |
-| profile_image_url | text | ⚠️ Image upload removed for now — placeholder only |
-| plan | text | 'basic' or 'full' |
-| passkey | text | 🆕 TO ADD — 6-digit numeric, set by user, used for shift approval |
+| profile_image_url | text | Image upload removed — placeholder only |
+| plan | text | ⚠️ Column remains in DB but no longer used in UI — all users get full access |
+| passkey | text | ✅ Added — 6-digit numeric, set by user, used for shift approval |
 
 ---
 
@@ -196,7 +197,7 @@ ANIMEIOWA-VOLU.../
 | rejection_reason | text | |
 | multiplier | numeric | default 1 |
 | points_earned | numeric | |
-| attention_required | boolean | 🆕 TO ADD — flags that approver must read notes first |
+| attention_required | boolean | ✅ Added — flags that approver must read notes first |
 
 ---
 
@@ -233,13 +234,13 @@ ANIMEIOWA-VOLU.../
 | rejection_reason | text | |
 | multiplier | numeric | default 1 |
 | points_earned | numeric | |
-| attention_required | boolean | default false — flags approver must read notes first |
+| attention_required | boolean | ✅ Added — default false, flags approver must read notes first |
 
 ---
 
 ## SQL Migrations
 
-All 3 migrations run ✅
+All migrations run ✅
 
 ```sql
 -- 1. Add passkey to core_users (6-digit, set by the user themselves)
@@ -256,9 +257,28 @@ ALTER TABLE staff_hours ADD COLUMN IF NOT EXISTS attention_required BOOLEAN DEFA
 
 ## Completed Changes
 
+### Plan system removed ✅ (May 2026)
+- Removed plan selector from login flow (index.html)
+- Removed all `PLAN` variable checks from every file
+- All users now have full access to all features automatically
+- `plan` column remains in DB but is ignored by the UI
+- Files changed: index.html, admin.html, activity_log.html, reports.html, user_manager.html
+
+### UI Theme updated ✅ (May 2026)
+- New anime/sci-fi theme applied across all pages via animeiowa.css
+- Fonts: Orbitron (headings) + Rajdhani (body) from Google Fonts
+- Color palette: deep purple/violet (#05040f bg, #9b4dff accent, #00d4aa ok/teal)
+- Background: animated grid pattern + top radial glow
+- Cards: subtle purple border with top gradient line
+- Buttons: gradient purple primary, dark secondary
+- Inputs/selects: dark purple background (#150d2e) with purple border
+- Topbar: gradient accent line at bottom
+- Mobile responsive — all pages work on phone
+
 ### profile_setup.html ✅
 - Removed: phone, address, city, state, zip fields
 - Removed: profile image upload
+- Removed: plan check before sending admin notification email
 - Added: badge number field (user can self-enter; admin confirms/overrides)
 - Added: placeholder avatar (emoji only, no upload)
 
@@ -266,10 +286,10 @@ ALTER TABLE staff_hours ADD COLUMN IF NOT EXISTS attention_required BOOLEAN DEFA
 - All fields now editable (first name, last name, badge number, nickname)
 - Removed: phone, address, city, state, zip
 - Placeholder avatar only (no upload)
-- Passkey section shown only for admin/manager — hidden behind Reset Passkey button
-- New/confirm passkey fields hidden until Reset Passkey clicked, hide again after save
+- Passkey section shown only for admin/manager
+- New/confirm passkey fields with show/hide toggle
 
-### dashboard.html ✅ (NEW — replaces volunteer.html and staff.html)
+### dashboard.html ✅
 - Single dashboard for all roles: volunteer, staff, manager, admin/super_user
 - Title and clock table adapt based on role
 - Department selector on clock-in (all active departments)
@@ -286,14 +306,25 @@ ALTER TABLE staff_hours ADD COLUMN IF NOT EXISTS attention_required BOOLEAN DEFA
 - Manager role can now access (isAdminRole includes manager)
 - Manager sees only approvals — user manager, departments, activity log hidden
 - My Dashboard button links to dashboard.html
-- Profile card removed (use dashboard instead)
-- Passkey reset added (in dashboard, not admin)
+- All plan-gated UI removed — departments, approvals, activity log always visible
 
 ### activity_log.html ✅
 - Badge number shown next to name for performed_by and target_user
 - Edit entries show clean "Volunteer/Staff shift updated" instead of raw SQL
 - Approved entries show target user, hours, and points
 - Action filter fixed (points_add, edit)
+- Removed full-plan guard — accessible to all admins
+
+### reports.html ✅
+- All plan checks removed — export CSV/PDF always available
+- Report templates always shown
+- points_redemption.html ✅ — completed and live
+
+### user_manager.html ✅
+- Plan dropdown removed from edit modal
+- Photo column always shown
+- Plan checks removed from all UI logic
+- Activation email now sends for all users (not full-plan only)
 
 ### Supabase triggers updated ✅
 - vol_hours_enforce_and_points: now allows passkey approvals, logs target_user_id + description + meta
@@ -307,13 +338,6 @@ ALTER TABLE staff_hours ADD COLUMN IF NOT EXISTS attention_required BOOLEAN DEFA
 ### reports.html
 - [ ] Manager role: see only their own department's data
 
-### New page: points_redemption.html (Volunteer Head)
-- [ ] Search volunteer by badge number
-- [ ] Show volunteer info + total points
-- [ ] Remove points only (NO add, NO + button anywhere)
-- [ ] Reason/note required for every redemption
-- [ ] All redemptions logged to hour_approval_log
-
 ---
 
 ## Roles in the System
@@ -322,7 +346,7 @@ ALTER TABLE staff_hours ADD COLUMN IF NOT EXISTS attention_required BOOLEAN DEFA
 - `manager` — can approve shifts for their department, access admin panel
 - `admin` — full access
 - `super_user` — full access
-- Volunteer Head — role name TBD (for points redemption page)
+- `volunteer_head` — access to points redemption page
 
 ---
 
@@ -331,5 +355,6 @@ ALTER TABLE staff_hours ADD COLUMN IF NOT EXISTS attention_required BOOLEAN DEFA
 - Passkey: 6-digit numeric, per-user, stored in core_users.passkey — only admin/manager have one
 - No image uploads for now; gallery picker may be added later
 - volunteer.html and staff.html replaced by dashboard.html
-- Points per hour hardcoded at 60 in trigger — should eventually use points_settings table
+- Points per hour set via Points Settings card in admin panel (uses points_settings table)
 - Trigger uses auth.uid() for approver detection — passkey flow uses approved_by field instead
+- plan column remains in DB but is no longer read or written by any UI code
