@@ -703,7 +703,15 @@
     const { data: coreUser, error: cuErr } = await supabase
       .from('core_users').select('*').eq('auth_id', session.user.id).maybeSingle();
     if (cuErr) throw cuErr;
-    if (!coreUser || !coreUser.is_active) return goLogin();
+    if (!coreUser) return goLogin();
+
+    if (!coreUser.is_active) {
+      document.getElementById('approvedContent').style.display = 'none';
+      document.getElementById('pendingCard').style.display = 'block';
+      dashTitle.textContent = 'Account Pending';
+      welcomeLine.textContent = `Welcome, ${displayName(coreUser)}`;
+      return;
+    }
 
     const role = (coreUser.role || '').toLowerCase().trim();
     const allowed = ['volunteer','staff','volunteer_head','manager','admin','super_user'];

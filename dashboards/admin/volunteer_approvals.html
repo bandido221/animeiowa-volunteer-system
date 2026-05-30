@@ -325,7 +325,8 @@
             <div class="sc-header">
               <span class="sc-name">${escapeHtml(r.user_name || '—')}</span>
               <span class="sc-badge-num">Badge: ${escapeHtml(r.badge_number || '—')}</span>
-              ${badgeStatus(r.status)}
+            ${r.was_edited === true ? `<span title="This shift was edited after submission" style="cursor:pointer; font-size:13px; color:#FFD700; border:1px solid rgba(255,215,0,0.3); background:rgba(255,215,0,0.08); padding:2px 8px; border-radius:999px;" data-history="${escapeHtml(r.id)}">✎ edited</span>` : ''}
+            ${badgeStatus(r.status)}
             </div>
             ${r.user_email || r.user_role ? `
             <div class="sc-subheader">
@@ -446,7 +447,7 @@
       const { data, error } = await supabase
         .from('vol_hours')
         .select(`
-          id, user_id, department_id, start_time, end_time, total_hours, points_earned, status, notes, approved_by, created_at,
+          id, user_id, department_id, start_time, end_time, total_hours, points_earned, status, notes, approved_by, created_at, was_edited,
           user:core_users!vol_hours_user_id_fkey ( first_name, last_name, nickname, badge_number, email, role ),
           dept:core_departments!vol_hours_department_id_fkey ( name )
         `)
@@ -527,12 +528,16 @@
         }
       }
 
+      
+
       setMsg('ok', `Updated: ${status}${status === 'approved' ? ` — ${pointsEarned} points awarded` : ''}`);
       await loadVolunteerHours();
     }
 
     async function updateRowEdits(id, patch) {
       setMsg('', '');
+
+      const row = rows.find(r => r.id === id);
 
       let total_hours = null;
       if (patch.start_time && patch.end_time) {
@@ -546,7 +551,8 @@
 
       const updatePayload = {
         ...patch,
-        ...(total_hours != null ? { total_hours } : {})
+        ...(total_hours != null ? { total_hours } : {}),
+        was_edited: true
       };
 
       const { error } = await supabase
@@ -559,10 +565,62 @@
         return false;
       }
 
+      // If already approved, recalculate and update points
+      if (row?.status === 'approved' && patch.start_time && patch.end_time) {
+        const newPts = calcPointsWithBonus(patch.start_time, patch.end_time, 'vol_hours');
+        const oldPts = Number(row.points_earned || 0);
+        const diff = newPts - oldPts;
+
+        await supabase.from('vol_hours').update({ points_earned: newPts }).eq('id', id);
+
+        if (diff !== 0) {
+          await supabase.from('user_points_ledger').insert([{
+            user_id: row.user_id,
+            source_type: 'vol_hours',
+            source_id: id,
+            points: diff,
+            created_by: myCoreUserId,
+            notes: `Points adjusted after shift edit — was ${oldPts}, now ${newPts}`
+          }]);
+        }
+      }
+
+      
+
       setMsg('ok', 'Saved edits.');
       return true;
     }
+async function showEditHistory(id) {
+      const { data, error } = await supabase
+        .from('hour_approval_log')
+        .select('action, performed_by, created_at, description, meta, core_users:core_users!hour_approval_log_performed_by_fkey(first_name, last_name, nickname)')
+        .eq('hour_id', id)
+        .eq('action', 'edited')
+        .order('created_at', { ascending: false });
 
+      if (error || !data?.length) {
+        setMsg('error', 'No edit history found.');
+        return;
+      }
+
+      const lines = data.map(e => {
+        const who = (e.core_users?.nickname || [e.core_users?.first_name, e.core_users?.last_name].filter(Boolean).join(' ') || 'Unknown');
+        const when = new Date(e.created_at).toLocaleString();
+        const m = e.meta || {};
+        const parts = [];
+        if (m.old_start && m.new_start && m.old_start !== m.new_start)
+          parts.push(`Start: ${fmtShort(m.old_start)} → ${fmtShort(m.new_start)}`);
+        if (m.old_end && m.new_end && m.old_end !== m.new_end)
+          parts.push(`End: ${fmtShort(m.old_end)} → ${fmtShort(m.new_end)}`);
+        if (m.old_hours != null && m.new_hours != null && m.old_hours !== m.new_hours)
+          parts.push(`Hours: ${m.old_hours} → ${m.new_hours}`);
+        if (m.old_notes !== m.new_notes)
+          parts.push(`Notes changed`);
+        return `• ${when} by ${who}\n  ${parts.join(' | ') || 'Details saved in log'}`;
+      }).join('\n\n');
+
+      alert(`Edit History:\n\n${lines}`);
+    }
     async function guardAdmin() {
       setMsg('', '');
 
@@ -618,7 +676,12 @@
       const cancelBtn = e.target.closest('button[data-cancel]');
       const approveBtn = e.target.closest('button[data-approve]');
       const rejectBtn = e.target.closest('button[data-reject]');
-
+const historyBtn = e.target.closest('[data-history]');
+      if (historyBtn) {
+        const id = historyBtn.getAttribute('data-history');
+        await showEditHistory(id);
+        return;
+      }
       if (editBtn) {
         const id = editBtn.getAttribute('data-edit');
         setEditing(id, true);
