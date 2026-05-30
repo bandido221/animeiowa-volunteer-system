@@ -509,7 +509,9 @@
     document.getElementById('attentionNote').value = '';
     setClockUiIdle();
     await loadMyHours();
-    showPasskeyModal();
+    if (USER_ROLE === 'volunteer') {
+      showPasskeyModal();
+    }
   }
 
   // ── Passkey approval modal ─────────────────────────────────────────
@@ -555,6 +557,7 @@
 
   async function checkPendingApproval() {
     if (!CURRENT_CORE_USER?.id) return;
+    if (USER_ROLE !== 'volunteer') return;
     const todayStart = new Date(); todayStart.setHours(0,0,0,0);
     const { data } = await supabase
       .from(HOURS_TABLE).select('id')
