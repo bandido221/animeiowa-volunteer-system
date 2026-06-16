@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <script>
+    // GitHub Pages strips the hash on redirect — this page catches the hash and passes it to reset.html
+    const hash = window.location.hash;
+    if (hash) {
+      window.location.replace('./reset.html' + hash);
+    } else {
+      window.location.replace('./reset.html');
+    }
+  </script>
+</head>
+<body></body>
+</html>
