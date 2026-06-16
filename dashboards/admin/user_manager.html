@@ -108,39 +108,7 @@
       <div id="message" class="msg" aria-live="polite"></div>
     </div>
 
-    <div class="card" style="margin-top:16px;">
-      <div class="toolbar">
-        <div class="search">
-          <div style="display:flex;flex-direction:column;gap:2px;">
-        <div style="font-weight:900;">New Sign-Ups Waiting for Setup</div>
-<div style="color:var(--muted);font-size:12px;">
-  These people have created an account but are not active yet. Click Add to complete their profile and give them access.
-</div>
-          </div>
-        </div>
-
-        <div class="row-actions">
-          <button id="refreshUnlinkedBtn" class="btn" type="button">Refresh</button>
-        </div>
-      </div>
-
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>Email</th>
-              <th>Confirmed</th>
-              <th>Action</th>
-            </tr>
-          </thead>
-          <tbody id="unlinkedTbody">
-            <tr><td colspan="3" style="color:rgba(255,255,255,0.7);padding:16px;">Loading…</td></tr>
-          </tbody>
-        </table>
-      </div>
-
-      <div id="unlinkedMsg" class="msg" aria-live="polite"></div>
-    </div>
+  
   </main>
 
   <!-- Edit Modal -->
@@ -361,10 +329,7 @@
     const deptList = document.getElementById('deptList');
     const addDeptBtn = document.getElementById('addDeptBtn');
 
-    // Unlinked Auth Users card (2nd card)
-    const unlinkedTbody = document.getElementById('unlinkedTbody');
-    const unlinkedMsgEl = document.getElementById('unlinkedMsg');
-    const refreshUnlinkedBtn = document.getElementById('refreshUnlinkedBtn');
+
 
     // Add Auth User modal
     const addOverlay = document.getElementById('addOverlay');
@@ -436,11 +401,7 @@
       editMsg.style.display = text ? 'block' : 'none';
     }
 
-    function setUnlinkedMsg(type, text) {
-      unlinkedMsgEl.className = 'msg ' + (type || '');
-      unlinkedMsgEl.textContent = text || '';
-      unlinkedMsgEl.style.display = text ? 'block' : 'none';
-    }
+
 
     function setAddMsg(type, text) {
       addMsg.className = 'msg ' + (type || '');
@@ -1271,30 +1232,7 @@ updateActiveBtnUi();
       renderDeptChips();
     });
 
-    // Second card events
-    refreshUnlinkedBtn.addEventListener('click', loadUnlinkedAuthUsers);
 
-    unlinkedTbody.addEventListener('click', (e) => {
-      const btn = e.target.closest('button[data-add-auth]');
-      if (!btn) return;
-      openAddModalByAuthId(btn.getAttribute('data-add-auth'));
-    });
-
-    addCancelBtn.addEventListener('click', closeAddModal);
-    addOverlay.addEventListener('click', (e) => {
-      if (e.target === addOverlay) closeAddModal();
-    });
-    addSaveBtn.addEventListener('click', createCoreUserFromAddModal);
-
-    addDeptAddBtn?.addEventListener('click', addModalAddSelectedDepartment);
-    addDeptList?.addEventListener('click', (e) => {
-      const btn = e.target.closest('button[data-add-dept-remove]');
-      if (!btn) return;
-      const id = btn.getAttribute('data-add-dept-remove');
-      if (!id) return;
-      addSelectedDeptIds.delete(id);
-      renderAddDeptChips();
-    });
 
     // ===== Edit modal image events =====
     editTakePhotoBtn?.addEventListener('click', () => editCameraInput?.click());
@@ -1402,7 +1340,6 @@ updateActiveBtnUi();
       try {
         await guardAdmin();
         await loadUsers();
-        await loadUnlinkedAuthUsers();
       } catch (e) {
         setMsg('error', e?.message || 'Failed to load User Manager.');
       }

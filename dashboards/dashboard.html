@@ -104,6 +104,39 @@
         <button id="resetPwBtn" class="btn secondary" type="button">Reset Password</button>
       </div>
       <div id="resetPwMsg" style="margin-top:10px; font-size:13px; display:none;"></div>
+    </div>
+  </div>
+
+  <!-- Reset Password Modal -->
+  <div id="resetPwOverlay" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.92); z-index:1000; align-items:center; justify-content:center;">
+    <div class="pk-modal">
+      <h3>🔒 Reset Password</h3>
+      <p>Enter and confirm your new password.</p>
+
+      <div style="text-align:left; margin-bottom:10px;">
+        <label style="font-size:12px; color:rgba(200,160,255,0.7); display:block; margin-bottom:4px;">New Password</label>
+        <div style="position:relative;">
+          <input id="rwNewPw" type="password" placeholder="New password" style="padding-right:54px;" />
+          <button type="button" id="rwToggleNew" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:rgba(200,160,255,0.8);font-size:13px;font-family:'Rajdhani',sans-serif;">Show</button>
+        </div>
+      </div>
+
+      <div style="text-align:left; margin-bottom:14px;">
+        <label style="font-size:12px; color:rgba(200,160,255,0.7); display:block; margin-bottom:4px;">Confirm Password</label>
+        <div style="position:relative;">
+          <input id="rwConfirmPw" type="password" placeholder="Confirm password" style="padding-right:54px;" />
+          <button type="button" id="rwToggleConfirm" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:rgba(200,160,255,0.8);font-size:13px;font-family:'Rajdhani',sans-serif;">Show</button>
+        </div>
+      </div>
+
+      <div id="rwMsg" style="font-size:13px; min-height:18px; margin-bottom:10px;"></div>
+
+      <div style="display:flex; gap:10px;">
+        <button type="button" id="rwCancelBtn" class="btn secondary" style="flex:1;">Cancel</button>
+        <button type="button" id="rwSaveBtn" class="btn" style="flex:1;">Update Password</button>
+      </div>
+    </div>
+  </div>
 
       <!-- Passkey section — only for admin/manager -->
       <div id="passkeySection" style="display:none; margin-top:16px; border-top:1px solid rgba(255,255,255,0.10); padding-top:14px;">
@@ -791,22 +824,51 @@
     goLogin();
   });
 
-  document.getElementById('resetPwBtn').addEventListener('click', async () => {
-    const btn = document.getElementById('resetPwBtn');
-    const msg = document.getElementById('resetPwMsg');
-    btn.disabled = true; btn.textContent = 'Sending...';
+  // Reset password modal
+  const resetPwOverlay  = document.getElementById('resetPwOverlay');
+  const rwNewPw         = document.getElementById('rwNewPw');
+  const rwConfirmPw     = document.getElementById('rwConfirmPw');
+  const rwMsg           = document.getElementById('rwMsg');
+  const rwSaveBtn       = document.getElementById('rwSaveBtn');
+
+  document.getElementById('resetPwBtn').addEventListener('click', () => {
+    rwNewPw.value = ''; rwConfirmPw.value = ''; rwMsg.textContent = '';
+    resetPwOverlay.style.display = 'flex';
+  });
+
+  document.getElementById('rwCancelBtn').addEventListener('click', () => {
+    resetPwOverlay.style.display = 'none';
+  });
+
+  document.getElementById('rwToggleNew').addEventListener('click', () => {
+    const show = rwNewPw.type === 'password';
+    rwNewPw.type = show ? 'text' : 'password';
+    document.getElementById('rwToggleNew').textContent = show ? 'Hide' : 'Show';
+  });
+
+  document.getElementById('rwToggleConfirm').addEventListener('click', () => {
+    const show = rwConfirmPw.type === 'password';
+    rwConfirmPw.type = show ? 'text' : 'password';
+    document.getElementById('rwToggleConfirm').textContent = show ? 'Hide' : 'Show';
+  });
+
+  rwSaveBtn.addEventListener('click', async () => {
+    rwMsg.textContent = '';
+    const p1 = rwNewPw.value;
+    const p2 = rwConfirmPw.value;
+    if (!p1 || p1.length < 8) { rwMsg.style.color = '#ff6b6b'; rwMsg.textContent = 'Password must be at least 8 characters.'; return; }
+    if (p1 !== p2)             { rwMsg.style.color = '#ff6b6b'; rwMsg.textContent = 'Passwords do not match.'; return; }
+    rwSaveBtn.disabled = true; rwSaveBtn.textContent = 'Saving…';
     try {
-      const { data: s } = await supabase.auth.getSession();
-      const email = s?.session?.user?.email;
-      if (!email) throw new Error('Could not find your email.');
-      const { error } = await supabase.auth.resetPasswordForEmail(email);
+      const { error } = await supabase.auth.updateUser({ password: p1 });
       if (error) throw error;
-      msg.style.display = 'block'; msg.style.color = '#7CFC90';
-      msg.textContent = 'Reset link sent! Check your email.';
+      rwMsg.style.color = '#00d4aa'; rwMsg.textContent = '✅ Password updated!';
+      setTimeout(() => { resetPwOverlay.style.display = 'none'; }, 2000);
     } catch(e) {
-      msg.style.display = 'block'; msg.style.color = '#ff6b6b';
-      msg.textContent = e?.message || 'Failed to send reset email.';
-    } finally { btn.disabled = false; btn.textContent = 'Reset Password'; }
+      rwMsg.style.color = '#ff6b6b'; rwMsg.textContent = e?.message || 'Failed to update password.';
+    } finally {
+      rwSaveBtn.disabled = false; rwSaveBtn.textContent = 'Update Password';
+    }
   });
 
   guard().catch(e => { console.error(e); goLogin(); });
