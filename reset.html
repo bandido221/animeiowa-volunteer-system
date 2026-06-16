@@ -128,19 +128,41 @@
 
     // If Supabase sends a "code" in the URL, exchange it for a session so updateUser works.
     async function tryEnterRecoveryMode() {
-      const url = new URL(window.location.href);
-      const code = url.searchParams.get('code');
-
-      if (!code) return false;
-
-      // Exchange code for session (PKCE flow)
-      const { error } = await supabase.auth.exchangeCodeForSession(code);
-      if (error) {
-        setMsg(msgEl, 'error', error.message || 'Invalid or expired recovery link.');
+      const hash = new URLSearchParams(window.location.hash.replace('#',''));
+      const errorCode = hash.get('error_code') || new URLSearchParams(window.location.search).get('error_code');
+      if (errorCode) {
+        setMsg(msgEl, 'error', 'This reset link has expired. Please request a new one.');
         return false;
       }
 
-      // Show new password form
+      // Handle implicit flow (#access_token=...)
+      const accessToken = hash.get('access_token');
+      const type = hash.get('type');
+      if (accessToken && type === 'recovery') {
+        const { error } = await supabase.auth.setSession({
+          access_token: accessToken,
+          refresh_token: hash.get('refresh_token') || ''
+        });
+        if (error) {
+          setMsg(msgEl, 'error', 'Reset link is invalid or expired. Please request a new one.');
+          return false;
+        }
+        requestForm.style.display = 'none';
+        newPassForm.style.display = 'block';
+        subtitleEl.textContent = 'Enter your new password.';
+        return true;
+      }
+
+      // Handle PKCE flow (?code=...)
+      const code = new URL(window.location.href).searchParams.get('code');
+      if (!code) return false;
+
+      const { error } = await supabase.auth.exchangeCodeForSession(code);
+      if (error) {
+        setMsg(msgEl, 'error', 'Reset link is invalid or expired. Please request a new one.');
+        return false;
+      }
+
       requestForm.style.display = 'none';
       newPassForm.style.display = 'block';
       subtitleEl.textContent = 'Enter your new password.';
