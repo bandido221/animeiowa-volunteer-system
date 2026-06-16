@@ -166,7 +166,7 @@
       try {
         // IMPORTANT: Must be hosted (http://localhost or real domain). file:// will NOT work.
         // Redirect back to this same page to set a new password.
-        const redirectTo = window.location.origin + '/reset.html';
+        const redirectTo = 'https://bandido221.github.io/animeiowa-volunteer-system/reset.html';
 
         const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo });
         if (error) throw error;
