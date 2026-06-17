@@ -635,15 +635,6 @@
         passkeySubmitBtn.disabled = false; passkeySubmitBtn.textContent = 'Approve Shift'; return;
       }
       const approver = approvers[0];
-      if (approver.role === 'manager') {
-        const { data: deptCheck } = await supabase
-          .from('core_user_departments').select('id')
-          .eq('user_id', approver.id).eq('department_id', pendingRow.department_id).limit(1);
-        if (!deptCheck || deptCheck.length === 0) {
-          passkeyError.textContent = 'You are not a manager for this department.';
-          passkeySubmitBtn.disabled = false; passkeySubmitBtn.textContent = 'Approve Shift'; return;
-        }
-      }
 
       const { error: upErr } = await supabase.from(HOURS_TABLE)
         .update({ status: 'approved', approved_by: approver.id, approved_at: new Date().toISOString() })
