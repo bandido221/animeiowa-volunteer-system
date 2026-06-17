@@ -128,7 +128,8 @@
     let departments = [];
     let pointsPerHour = 1;
     let bonusWindows = [];
-    let PLAN = 'basic';
+let PLAN = 'basic';
+    let isAdmin = false;
 
     function setMsg(type, text) {
       msgEl.className = 'msg ' + (type || '');
@@ -272,9 +273,9 @@
 
       tbody.innerHTML = filtered.map(r => {
         const missingEndTime = !r.end_time;
-        const approveDisabled = (r.user_id === myCoreUserId) || missingEndTime;
-        const rejectDisabled = (r.user_id === myCoreUserId) || missingEndTime;
-        const disabledTitle = missingEndTime ? 'No end time — use Edit to add it first' : '';
+        const approveDisabled = (r.user_id === myCoreUserId && !isAdmin) || missingEndTime;
+        const rejectDisabled = (r.user_id === myCoreUserId && !isAdmin) || missingEndTime;
+        const disabledTitle = '';
 
         if (r._editing) {
           const draft = r._draft || {};
@@ -652,6 +653,7 @@ async function showEditHistory(id) {
       }
 
       myCoreUserId = profile.id;
+      isAdmin = isAdminRole(profile.role);
       localStorage.setItem('core_user_profile', JSON.stringify(profile));
       rolePill.textContent = profile.role === 'super_user' ? 'Role: Super User' : 'Role: Admin';
       
@@ -732,6 +734,11 @@ const historyBtn = e.target.closest('[data-history]');
 
       if (approveBtn) {
         const id = approveBtn.getAttribute('data-approve');
+        const row = rows.find(r => r.id === id);
+        if (!row?.end_time) {
+          setMsg('error', '⚠️ This volunteer has not clocked out yet. Use Edit to add an end time before approving.');
+          return;
+        }
         approveBtn.disabled = true;
         try {
           await updateStatus(id, 'approved');
@@ -743,6 +750,11 @@ const historyBtn = e.target.closest('[data-history]');
 
       if (rejectBtn) {
         const id = rejectBtn.getAttribute('data-reject');
+        const row = rows.find(r => r.id === id);
+        if (!row?.end_time) {
+          setMsg('error', '⚠️ This volunteer has not clocked out yet. Use Edit to add an end time before rejecting.');
+          return;
+        }
         rejectBtn.disabled = true;
         try {
           await updateStatus(id, 'rejected');
