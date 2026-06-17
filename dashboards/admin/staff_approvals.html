@@ -107,7 +107,7 @@
 
       <div id="message" class="msg" aria-live="polite"></div>
       <p class="mini" style="margin:10px 0 0 0;">
-        Note: Staff cannot approve their own hours. Admins can approve/reject any staff hour record.
+        Note: Admins can approve/reject any staff hour record, including their own.
       </p>
     </div>
   </main>
@@ -289,8 +289,8 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 
       tbody.innerHTML = filtered.map(r => {
         const missingEndTime = !r.end_time;
-        const approveDisabled = (r.user_id === myCoreUserId) || missingEndTime;
-        const rejectDisabled = (r.user_id === myCoreUserId) || missingEndTime;
+        const approveDisabled = missingEndTime;
+        const rejectDisabled = missingEndTime;
         const disabledTitle = missingEndTime ? 'No end time — use Edit to add it first' : '';
 
         if (r._editing) {
