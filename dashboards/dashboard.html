@@ -643,7 +643,7 @@
       if (upErr) throw upErr;
 
       const { data: shiftRow } = await supabase.from(HOURS_TABLE).select('start_time, end_time').eq('id', pendingRow.id).single();
-      const pts = shiftRow ? calcPoints(shiftRow.start_time, shiftRow.end_time) : 0;
+      const pts = (HOURS_TABLE === 'vol_hours' && shiftRow) ? calcPoints(shiftRow.start_time, shiftRow.end_time) : 0;
       if (pts > 0) {
         await supabase.from(HOURS_TABLE).update({ points_earned: pts }).eq('id', pendingRow.id);
         await supabase.from('user_points_ledger').insert([{
