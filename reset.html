@@ -53,7 +53,7 @@
    <div class="header">
       <img src="./images/3-color.png" alt="AnimeIowa Logo" style="height:48px; width:auto; object-fit:contain; margin-bottom:12px;" />
       <h1 class="title">Reset Password</h1>
-      <p id="subtitle" class="subtitle">Enter your email and we'll send a reset link.</p>
+      <p id="subtitle" class="subtitle">Enter your email and we'll send you a code.</p>
     </div>
 
     <div class="card">
@@ -62,7 +62,7 @@
         <label for="email">Email</label>
         <input id="email" type="email" placeholder="you@example.com" required />
 
-        <button id="sendBtn" class="btn" type="submit">Send Reset Link</button>
+        <button id="sendBtn" class="btn" type="submit">Send Reset Code</button>
 
         <div id="message" class="msg" aria-live="polite"></div>
 
@@ -74,9 +74,23 @@
         <div class="tiny">
           If you don’t see the email, check your spam folder.
         </div>
+     </form>
+
+      <!-- ENTER RESET CODE -->
+      <form id="codeForm" style="display:none;">
+        <label for="resetCode">Reset code</label>
+        <input id="resetCode" type="text" inputmode="numeric" placeholder="Enter the code from your email" required />
+
+        <button id="verifyBtn" class="btn" type="submit">Verify Code</button>
+
+        <div id="message3" class="msg" aria-live="polite"></div>
+
+        <div class="row">
+          <a class="link" href="index.html">Back to login</a>
+        </div>
       </form>
 
-      <!-- SET NEW PASSWORD (shown only after user clicks email link) -->
+      <!-- SET NEW PASSWORD (shown only after code is verified) -->
       <form id="newPassForm" style="display:none;">
         <label for="newPassword">New password</label>
         <input id="newPassword" type="password" placeholder="New password" required />
@@ -110,13 +124,20 @@
 });
 
     const requestForm = document.getElementById('requestForm');
+    const codeForm = document.getElementById('codeForm');
     const newPassForm = document.getElementById('newPassForm');
+
+    let pendingEmail = '';
 
     const emailEl = document.getElementById('email');
     const sendBtn = document.getElementById('sendBtn');
     const msgEl = document.getElementById('message');
 
     const subtitleEl = document.getElementById('subtitle');
+
+    const resetCodeEl = document.getElementById('resetCode');
+    const verifyBtn = document.getElementById('verifyBtn');
+    const msg3El = document.getElementById('message3');
 
     const newPasswordEl = document.getElementById('newPassword');
     const confirmPasswordEl = document.getElementById('confirmPassword');
@@ -177,16 +198,52 @@
         const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo });
         if (error) throw error;
 
-        setMsg(msgEl, 'ok', 'Reset link sent. Check your email.');
+        pendingEmail = email;
+        requestForm.style.display = 'none';
+        codeForm.style.display = 'block';
+        subtitleEl.textContent = 'Enter the code we emailed you.';
       } catch (err) {
-        setMsg(msgEl, 'error', err?.message || 'Failed to send reset link.');
+        setMsg(msgEl, 'error', err?.message || 'Failed to send reset code.');
       } finally {
         sendBtn.disabled = false;
-        sendBtn.textContent = 'Send Reset Link';
+        sendBtn.textContent = 'Send Reset Code';
       }
     });
 
-    // 2) Update password after recovery link
+    // 2) Verify the code from the email
+    codeForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      setMsg(msg3El, '', '');
+
+      const code = (resetCodeEl.value || '').trim();
+      if (!code) {
+        setMsg(msg3El, 'error', 'Please enter the code from your email.');
+        return;
+      }
+
+      verifyBtn.disabled = true;
+      verifyBtn.textContent = 'Verifying…';
+
+      try {
+        const { error } = await supabase.auth.verifyOtp({
+          email: pendingEmail,
+          token: code,
+          type: 'recovery'
+        });
+        if (error) throw error;
+
+        codeForm.style.display = 'none';
+        newPassForm.style.display = 'block';
+        subtitleEl.textContent = 'Enter your new password.';
+      } catch (err) {
+        setMsg(msg3El, 'error', err?.message || 'Invalid code. Please try again.');
+      } finally {
+        verifyBtn.disabled = false;
+        verifyBtn.textContent = 'Verify Code';
+      }
+    });
+
+    // 3) Update password after recovery link
     newPassForm.addEventListener('submit', async (e) => {
       e.preventDefault();
       setMsg(msg2El, '', '');
@@ -210,9 +267,8 @@
         const { error } = await supabase.auth.updateUser({ password: p1 });
         if (error) throw error;
 
-        setMsg(msg2El, 'ok', 'Password updated. You can now return to login.');
-        // Optional: sign out recovery session
-        await supabase.auth.signOut();
+        setMsg(msg2El, 'ok', 'Password updated. Redirecting…');
+        window.location.href = 'index.html';
       } catch (err) {
         setMsg(msg2El, 'error', err?.message || 'Failed to update password.');
       } finally {
