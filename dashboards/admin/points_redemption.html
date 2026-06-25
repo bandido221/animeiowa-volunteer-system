@@ -51,9 +51,21 @@
         <label>Badge Number</label>
         <input id="badgeInput" type="text" placeholder="e.g. V-1042" />
       </div>
+      <div class="field">
+        <label>Or Name</label>
+        <input id="nameInput" type="text" placeholder="e.g. Jane Smith" />
+      </div>
       <button class="btn" id="searchBtn" type="button">Search</button>
+      <button class="btn secondary" id="showAllBtn" type="button">Show All Volunteers</button>
     </div>
     <div id="searchMsg" class="msg"></div>
+  </div>
+
+  <!-- Multiple name matches — hidden unless more than one result -->
+  <div id="matchesCard" class="card" style="display:none;">
+    <h2>Multiple Matches</h2>
+    <p>Select the correct volunteer:</p>
+    <div id="matchesList"></div>
   </div>
 
   <!-- Volunteer profile — hidden until found -->
@@ -140,9 +152,13 @@
   const backBtn         = document.getElementById('backBtn');
   const logoutBtn       = document.getElementById('logoutBtn');
   const badgeInput      = document.getElementById('badgeInput');
+  const nameInput       = document.getElementById('nameInput');
   const searchBtn       = document.getElementById('searchBtn');
+  const showAllBtn      = document.getElementById('showAllBtn');
   const searchMsg       = document.getElementById('searchMsg');
   const volCard         = document.getElementById('volCard');
+  const matchesCard     = document.getElementById('matchesCard');
+  const matchesList     = document.getElementById('matchesList');
   const historyCard     = document.getElementById('historyCard');
   const redeemBtn       = document.getElementById('redeemBtn');
   const redeemForm      = document.getElementById('redeemForm');
@@ -156,6 +172,8 @@
   let CURRENT_USER    = null; // logged in volunteer head / admin
   let FOUND_VOLUNTEER = null; // the volunteer being looked up
   let CURRENT_BALANCE = 0;
+  let BROWSE_RESULTS  = null; // full list while "Show All" is active, for live filtering
+  let POINTS_MAP      = new Map(); // user_id -> points balance, for the cards in matchesList
 
   function setMsg(el, type, text) {
     el.className = 'msg ' + (type || '');
@@ -192,31 +210,156 @@
     rolePill.textContent = role === 'volunteer_head' ? 'Role: Volunteer Head' : role === 'super_user' ? 'Role: Super User' : 'Role: Admin';
   }
 
-  // ── Search volunteer by badge ──────────────────────────────────────
+  // ── Search volunteer by badge or name ───────────────────────────────
   async function searchVolunteer() {
     const badge = (badgeInput.value || '').trim();
-    if (!badge) { setMsg(searchMsg, 'error', 'Please enter a badge number.'); return; }
+    const name  = (nameInput.value  || '').trim();
+    if (!badge && !name) { setMsg(searchMsg, 'error', 'Enter a badge number or a name.'); return; }
 
+    BROWSE_RESULTS = null; // leaving "show all" mode for a direct search
     setMsg(searchMsg, '', '');
     searchBtn.disabled = true; searchBtn.textContent = 'Searching…';
     volCard.style.display = 'none';
     historyCard.style.display = 'none';
+    matchesCard.style.display = 'none';
+    matchesList.innerHTML = '';
 
-    const { data, error } = await supabase
+    if (badge) {
+      const { data, error } = await supabase
+        .from('core_users')
+        .select('id, first_name, last_name, nickname, badge_number, role, is_active')
+        .eq('badge_number', badge)
+        .eq('role', 'volunteer')
+        .maybeSingle();
+
+      searchBtn.disabled = false; searchBtn.textContent = 'Search';
+
+      if (error) { setMsg(searchMsg, 'error', error.message); return; }
+      if (!data)  { setMsg(searchMsg, 'error', 'No volunteer found with that badge number.'); return; }
+      if (!data.is_active) { setMsg(searchMsg, 'error', 'This account is not active.'); return; }
+
+      FOUND_VOLUNTEER = data;
+      await loadVolunteerInfo();
+      return;
+    }
+
+    const tokens = name.split(/\s+/).filter(Boolean);
+    let nameQuery = supabase
       .from('core_users')
       .select('id, first_name, last_name, nickname, badge_number, role, is_active')
-      .eq('badge_number', badge)
-      .maybeSingle();
+      .eq('role', 'volunteer');
+
+    tokens.forEach(t => {
+      nameQuery = nameQuery.or(`first_name.ilike.%${t}%,last_name.ilike.%${t}%,nickname.ilike.%${t}%`);
+    });
+
+    const { data, error } = await nameQuery.limit(20);
 
     searchBtn.disabled = false; searchBtn.textContent = 'Search';
 
     if (error) { setMsg(searchMsg, 'error', error.message); return; }
-    if (!data)  { setMsg(searchMsg, 'error', 'No volunteer found with that badge number.'); return; }
-    if (!data.is_active) { setMsg(searchMsg, 'error', 'This account is not active.'); return; }
 
-    FOUND_VOLUNTEER = data;
-    await loadVolunteerInfo();
+    const active = (data || []).filter(v => v.is_active);
+
+    if (active.length === 0) { setMsg(searchMsg, 'error', 'No active volunteer found with that name.'); return; }
+
+    if (active.length === 1) {
+      FOUND_VOLUNTEER = active[0];
+      await loadVolunteerInfo();
+      return;
+    }
+
+    POINTS_MAP = await fetchPointsMap(active.map(v => v.id));
+    renderMatches(active);
   }
+
+  async function fetchPointsMap(ids) {
+    if (!ids.length) return new Map();
+    const { data } = await supabase
+      .from('user_points_ledger')
+      .select('user_id, points')
+      .in('user_id', ids);
+    const map = new Map();
+    (data || []).forEach(r => map.set(r.user_id, (map.get(r.user_id) || 0) + Number(r.points || 0)));
+    return map;
+  }
+
+  function renderMatches(list) {
+    if (!list.length) {
+      matchesList.innerHTML = `<p style="color:var(--muted);">No volunteers match.</p>`;
+      matchesCard.style.display = 'block';
+      return;
+    }
+    matchesList.innerHTML = list.map(v => {
+      const pts = Math.round(POINTS_MAP.get(v.id) || 0);
+      return `
+      <div class="info-item" style="cursor:pointer;margin-bottom:8px;" data-id="${v.id}">
+        <div class="value">${displayName(v)}</div>
+        <div class="label">Badge: ${v.badge_number || '—'} · ${v.role || ''} · ${pts.toLocaleString()} pts</div>
+      </div>
+    `;
+    }).join('');
+    matchesCard.style.display = 'block';
+  }
+
+  showAllBtn.addEventListener('click', async () => {
+    setMsg(searchMsg, '', '');
+    volCard.style.display = 'none';
+    historyCard.style.display = 'none';
+    badgeInput.value = '';
+    nameInput.value = '';
+
+    showAllBtn.disabled = true; showAllBtn.textContent = 'Loading…';
+    const { data, error } = await supabase
+      .from('core_users')
+      .select('id, first_name, last_name, nickname, badge_number, role, is_active')
+      .eq('is_active', true)
+      .eq('role', 'volunteer')
+      .order('first_name', { ascending: true })
+      .limit(500);
+    showAllBtn.disabled = false; showAllBtn.textContent = 'Show All Volunteers';
+
+    if (error) { setMsg(searchMsg, 'error', error.message); return; }
+
+    BROWSE_RESULTS = data || [];
+    POINTS_MAP = await fetchPointsMap(BROWSE_RESULTS.map(v => v.id));
+    renderMatches(BROWSE_RESULTS);
+  });
+
+  function applyBrowseFilter() {
+    if (!BROWSE_RESULTS) return; // only filters live while "Show All" results are loaded
+    const badgeQ = (badgeInput.value || '').trim().toLowerCase();
+    const nameQ  = (nameInput.value  || '').trim().toLowerCase();
+    const nameTokens = nameQ.split(/\s+/).filter(Boolean);
+
+    const filtered = BROWSE_RESULTS.filter(v => {
+      if (badgeQ && !String(v.badge_number || '').toLowerCase().includes(badgeQ)) return false;
+      if (nameTokens.length) {
+        const hay = [v.first_name, v.last_name, v.nickname].filter(Boolean).join(' ').toLowerCase();
+        if (!nameTokens.every(t => hay.includes(t))) return false;
+      }
+      return true;
+    });
+    renderMatches(filtered);
+  }
+
+  badgeInput.addEventListener('input', applyBrowseFilter);
+  nameInput.addEventListener('input', applyBrowseFilter);
+
+  matchesList.addEventListener('click', async (e) => {
+    const row = e.target.closest('[data-id]');
+    if (!row) return;
+    const { data: match } = await supabase
+      .from('core_users')
+      .select('id, first_name, last_name, nickname, badge_number, role, is_active')
+      .eq('id', row.getAttribute('data-id'))
+      .maybeSingle();
+    if (!match) return;
+    matchesCard.style.display = 'none';
+    BROWSE_RESULTS = null;
+    FOUND_VOLUNTEER = match;
+    await loadVolunteerInfo();
+  });
 
   async function loadVolunteerInfo() {
     const v = FOUND_VOLUNTEER;
@@ -366,7 +509,10 @@
     }
   });
 
+  searchBtn.addEventListener('click', searchVolunteer);
+  searchBtn.addEventListener('click', searchVolunteer);
   badgeInput.addEventListener('keydown', e => { if (e.key === 'Enter') searchBtn.click(); });
+  nameInput.addEventListener('keydown', e => { if (e.key === 'Enter') searchBtn.click(); });
 
   // ── Boot ───────────────────────────────────────────────────────────
   guard().catch(e => {
