@@ -91,7 +91,7 @@
     </div>
 
     <!-- Passkey card -->
-    <div class="card">
+    <div class="card" id="passkeyCard" style="display:none;">
       <h2>My Passkey</h2>
    <p class="tiny" style="margin-top:0;margin-bottom:14px;">
         Your 6-digit passkey is used to approve shifts at clock-out. You can update it here at any time.
@@ -180,6 +180,11 @@
       }
 
       coreUser = u;
+
+      const role = (u.role || '').toLowerCase().trim();
+      if (['admin', 'super_user', 'manager'].includes(role)) {
+        document.getElementById('passkeyCard').style.display = 'block';
+      }
 
       document.getElementById('first_name').value  = u.first_name   || '';
       document.getElementById('last_name').value   = u.last_name    || '';
