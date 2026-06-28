@@ -16,20 +16,20 @@ const PAGE_NAME = currentScript?.getAttribute('data-page') || document.title || 
 // --- Inject styles ---
 const style = document.createElement('style');
 style.textContent = `
-  #fb-btn {
+ #fb-btn {
     position: fixed;
-    bottom: 20px;
-    right: 20px;
+    top: 16px;
+    left: 16px;
     z-index: 9999;
     background: linear-gradient(135deg, #9b4dff, #6a1fd6);
     color: #fff;
     border: none;
     border-radius: 999px;
-    padding: 10px 18px;
+    padding: 6px 12px;
     font-family: 'Rajdhani', sans-serif;
-    font-size: 14px;
+    font-size: 12px;
     font-weight: 700;
-    letter-spacing: 1px;
+    letter-spacing: 0.5px;
     cursor: pointer;
     box-shadow: 0 4px 20px rgba(155,77,255,0.4);
     transition: transform 0.15s, box-shadow 0.15s;
