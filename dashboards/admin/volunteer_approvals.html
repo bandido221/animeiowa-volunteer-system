@@ -13,6 +13,7 @@
     .mini{ color:var(--muted); font-size:12px; line-height:1.35; }
 
     input{ border-radius:10px; border:1px solid var(--input-border); background:var(--input-bg); color:var(--text); outline:none; font-size:14px; padding:11px 12px; }
+    input[type="checkbox"]{ appearance:checkbox; -webkit-appearance:checkbox; width:18px; height:18px; padding:0; border:none; background:none; border-radius:0; accent-color:#7CFC90; cursor:pointer; margin:0; }
     select{ border-radius:10px; border:1px solid rgba(160,80,255,0.25); background:#150d2e; color:var(--text); outline:none; font-size:14px; padding:11px 12px; }
     select option{ background:#150d2e; color:var(--text); }
     input:focus, select:focus{ border-color:var(--focus); box-shadow:0 0 0 3px rgba(160,80,255,0.12); }
@@ -86,6 +87,12 @@
         </div>
 
         <div class="row-actions">
+          <button id="selectModeBtn" class="btn secondary" type="button">Select</button>
+          <label id="selectAllWrap" style="display:none; align-items:center; gap:6px; font-size:13px; color:var(--muted); cursor:pointer;">
+            <input type="checkbox" id="selectAllCheck" />
+            Select all
+          </label>
+          <button id="bulkDeleteBtn" class="btn danger" type="button" disabled style="display:none;">Delete Selected (0)</button>
           <button id="refreshBtn" class="btn" type="button">Refresh</button>
         </div>
       </div>
@@ -123,6 +130,10 @@
     const statusFilter = document.getElementById('statusFilter');
     const searchInput = document.getElementById('searchInput');
     const refreshBtn = document.getElementById('refreshBtn');
+    const bulkDeleteBtn = document.getElementById('bulkDeleteBtn');
+    const selectAllCheck = document.getElementById('selectAllCheck');
+    const selectModeBtn = document.getElementById('selectModeBtn');
+    const selectAllWrap = document.getElementById('selectAllWrap');
 
     let rows = [];
     let myCoreUserId = null;
@@ -131,6 +142,8 @@
     let bonusWindows = [];
 let PLAN = 'basic';
     let isAdmin = false;
+    let selectionMode = false;
+    const selectedIds = new Set();
 
     function setMsg(type, text) {
       msgEl.className = 'msg ' + (type || '');
@@ -330,6 +343,7 @@ let PLAN = 'basic';
         return `
           <div class="shift-card" data-id="${escapeHtml(r.id)}">
             <div class="sc-header">
+              ${isAdmin && selectionMode ? `<input type="checkbox" class="row-check" data-check="${escapeHtml(r.id)}" ${selectedIds.has(r.id) ? 'checked' : ''} />` : ''}
               <span class="sc-name">${escapeHtml(r.user_name || '—')}</span>
               <span class="sc-badge-num">Badge: ${escapeHtml(r.badge_number || '—')}</span>
             ${r.was_edited === true ? `<span title="This shift was edited after submission" style="cursor:pointer; font-size:13px; color:#FFD700; border:1px solid rgba(255,215,0,0.3); background:rgba(255,215,0,0.08); padding:2px 8px; border-radius:999px;" data-history="${escapeHtml(r.id)}">✎ edited</span>` : ''}
@@ -371,6 +385,7 @@ let PLAN = 'basic';
               <button class="btn secondary" type="button" data-edit="${escapeHtml(r.id)}">Edit</button>
               <button class="btn secondary" type="button" data-approve="${escapeHtml(r.id)}" ${approveDisabled ? 'disabled' : ''} title="${escapeHtml(disabledTitle)}">Approve</button>
               <button class="btn danger" type="button" data-reject="${escapeHtml(r.id)}" ${rejectDisabled ? 'disabled' : ''} title="${escapeHtml(disabledTitle)}">Reject</button>
+              ${isAdmin ? `<button class="btn danger" type="button" data-delete="${escapeHtml(r.id)}" data-status="${escapeHtml(r.status)}">Delete</button>` : ''}
             </div>
           </div>
         `;
@@ -458,6 +473,7 @@ let PLAN = 'basic';
           user:core_users!vol_hours_user_id_fkey ( first_name, last_name, nickname, badge_number, email, role ),
           dept:core_departments!vol_hours_department_id_fkey ( name )
         `)
+        .is('deleted_at', null)
         .order('created_at', { ascending: false })
         .limit(500);
 
@@ -499,16 +515,11 @@ let PLAN = 'basic';
         return;
       }
 
-      const pointsEarned = status === 'approved'
-        ? calcPointsWithBonus(row?.start_time, row?.end_time, 'vol_hours')
-        : 0;
-
       const { error } = await supabase
         .from('vol_hours')
         .update({
           status,
-          approved_by: myCoreUserId,
-          points_earned: pointsEarned
+          approved_by: myCoreUserId
         })
         .eq('id', id);
 
@@ -517,27 +528,8 @@ let PLAN = 'basic';
         return;
       }
 
-      if (status === 'approved' && pointsEarned > 0 && row?.user_id) {
-        const { error: ledgerErr } = await supabase
-          .from('user_points_ledger')
-          .insert([{
-            user_id: row.user_id,
-            source_type: 'vol_hours',
-            source_id: id,
-            points: pointsEarned,
-            created_by: myCoreUserId,
-            notes: `Approved volunteer shift — ${Number(row?.total_hours ?? 0).toFixed(2)} hrs`
-          }]);
 
-        if (ledgerErr) {
-          setMsg('error', `Hours approved but points ledger failed: ${ledgerErr.message}`);
-          return;
-        }
-      }
-
-      
-
-      setMsg('ok', `Updated: ${status}${status === 'approved' ? ` — ${pointsEarned} points awarded` : ''}`);
+      setMsg('ok', `Updated: ${status}`);
       await loadVolunteerHours();
     }
 
@@ -628,6 +620,27 @@ async function showEditHistory(id) {
 
       alert(`Edit History:\n\n${lines}`);
     }
+
+    function updateBulkDeleteUI() {
+      if (!bulkDeleteBtn) return;
+      bulkDeleteBtn.textContent = `Delete Selected (${selectedIds.size})`;
+      bulkDeleteBtn.disabled = selectedIds.size === 0;
+      if (selectAllCheck) {
+        const visibleIds = rows.filter(matchesFilters).map(r => r.id);
+        selectAllCheck.checked = visibleIds.length > 0 && visibleIds.every(id => selectedIds.has(id));
+      }
+    }
+
+    async function deleteRows(ids) {
+      if (!ids.length) return;
+      const { error } = await supabase.rpc('admin_soft_delete_hours', { p_table: 'vol_hours', p_ids: ids });
+      if (error) { setMsg('error', error.message || 'Delete failed.'); return; }
+      ids.forEach(id => selectedIds.delete(id));
+      setMsg('ok', `Deleted ${ids.length} record(s).`);
+      await loadVolunteerHours();
+      updateBulkDeleteUI();
+    }
+
     async function guardAdmin() {
       setMsg('', '');
 
@@ -678,12 +691,25 @@ async function showEditHistory(id) {
     statusFilter.addEventListener('change', render);
     searchInput.addEventListener('input', render);
 
+    if (selectModeBtn) {
+      selectModeBtn.addEventListener('click', () => {
+        selectionMode = !selectionMode;
+        selectModeBtn.textContent = selectionMode ? 'Cancel Select' : 'Select';
+        selectAllWrap.style.display = selectionMode ? 'flex' : 'none';
+        bulkDeleteBtn.style.display = selectionMode ? 'inline-block' : 'none';
+        if (!selectionMode) selectedIds.clear();
+        render();
+        updateBulkDeleteUI();
+      });
+    }
+
     tbody.addEventListener('click', async (e) => {
       const editBtn = e.target.closest('button[data-edit]');
       const saveBtn = e.target.closest('button[data-save]');
       const cancelBtn = e.target.closest('button[data-cancel]');
       const approveBtn = e.target.closest('button[data-approve]');
       const rejectBtn = e.target.closest('button[data-reject]');
+      const deleteBtn = e.target.closest('button[data-delete]');
 const historyBtn = e.target.closest('[data-history]');
       if (historyBtn) {
         const id = historyBtn.getAttribute('data-history');
@@ -764,7 +790,51 @@ const historyBtn = e.target.closest('[data-history]');
         }
         return;
       }
+
+      if (deleteBtn) {
+        const id = deleteBtn.getAttribute('data-delete');
+        const status = deleteBtn.getAttribute('data-status');
+        const warning = status === 'approved'
+          ? 'This shift is APPROVED. Deleting it will also remove the points already awarded to this user. Are you sure?'
+          : 'Are you sure you want to delete this shift?';
+        if (!confirm(warning)) return;
+        deleteBtn.disabled = true;
+        try { await deleteRows([id]); } finally { deleteBtn.disabled = false; }
+        return;
+      }
     });
+
+    tbody.addEventListener('change', (e) => {
+      const check = e.target.closest('input[data-check]');
+      if (!check) return;
+      const id = check.getAttribute('data-check');
+      if (check.checked) selectedIds.add(id); else selectedIds.delete(id);
+      updateBulkDeleteUI();
+    });
+
+    if (selectAllCheck) {
+      selectAllCheck.addEventListener('change', () => {
+        const visibleIds = rows.filter(matchesFilters).map(r => r.id);
+        if (selectAllCheck.checked) visibleIds.forEach(id => selectedIds.add(id));
+        else visibleIds.forEach(id => selectedIds.delete(id));
+        render();
+        updateBulkDeleteUI();
+      });
+    }
+
+    if (bulkDeleteBtn) {
+      bulkDeleteBtn.addEventListener('click', async () => {
+        const ids = Array.from(selectedIds);
+        if (!ids.length) return;
+        const anyApproved = ids.some(id => rows.find(r => r.id === id)?.status === 'approved');
+        const warning = anyApproved
+          ? `Delete ${ids.length} selected record(s)? Some are APPROVED — their points will also be removed.`
+          : `Delete ${ids.length} selected record(s)?`;
+        if (!confirm(warning)) return;
+        bulkDeleteBtn.disabled = true;
+        try { await deleteRows(ids); } finally { bulkDeleteBtn.disabled = false; }
+      });
+    }
 
     tbody.addEventListener('input', (e) => {
       const deptSel = e.target.closest('select[data-edit-dept]');

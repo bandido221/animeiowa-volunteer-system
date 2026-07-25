@@ -642,22 +642,14 @@
         .eq('id', pendingRow.id);
       if (upErr) throw upErr;
 
-      const { data: shiftRow } = await supabase.from(HOURS_TABLE).select('start_time, end_time').eq('id', pendingRow.id).single();
-      const pts = (HOURS_TABLE === 'vol_hours' && shiftRow) ? calcPoints(shiftRow.start_time, shiftRow.end_time) : 0;
-      if (pts > 0) {
-        await supabase.from(HOURS_TABLE).update({ points_earned: pts }).eq('id', pendingRow.id);
-        await supabase.from('user_points_ledger').insert([{
-          user_id: pendingRow.user_id, source_type: HOURS_TABLE, source_id: pendingRow.id,
-          points: pts, created_by: approver.id, notes: 'Passkey-approved shift'
-        }]);
-      }
-      await supabase.from('hour_approval_log').insert([{
-        hour_type: HOURS_TABLE, hour_id: pendingRow.id, action: 'approved',
-        performed_by: approver.id, target_user_id: pendingRow.user_id,
-        previous_status: 'pending', new_status: 'approved',
-        description: `Passkey approved by ${displayName(approver)}`,
-        meta: { points_earned: pts, total_hours: pendingRow.total_hours }
-      }]);
+      const { data: approvedRow } = await supabase
+        .from(HOURS_TABLE)
+        .select('points_earned')
+        .eq('id', pendingRow.id)
+        .single();
+      const pts = (HOURS_TABLE === 'vol_hours' && approvedRow?.points_earned)
+        ? Math.round(Number(approvedRow.points_earned))
+        : 0;
 
       passkeySuccess.textContent = `✅ Approved by ${displayName(approver)}!${pts > 0 ? ' ' + pts + ' points added.' : ''}`;
       setTimeout(() => {
@@ -669,7 +661,6 @@
     finally { passkeySubmitBtn.disabled = false; passkeySubmitBtn.textContent = 'Approve Shift'; }
   });
 
-  // ── Hours table ────────────────────────────────────────────────────
   async function loadMyHours() {
     if (!CURRENT_CORE_USER?.id) return;
     hoursTbody.innerHTML = `<tr><td colspan="9" class="muted" style="padding:12px 8px;">Loading…</td></tr>`;
