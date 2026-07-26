@@ -96,6 +96,9 @@
           </select>
 
           <input id="searchInput" type="text" placeholder="Search name, badge, notes…" />
+
+          <input id="startDateFilter" type="date" title="Start date" />
+          <input id="endDateFilter" type="date" title="End date" />
         </div>
 
         <div class="row-actions">
@@ -141,6 +144,8 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 
     const statusFilter = document.getElementById('statusFilter');
     const searchInput = document.getElementById('searchInput');
+    const startDateFilter = document.getElementById('startDateFilter');
+    const endDateFilter = document.getElementById('endDateFilter');
     const refreshBtn = document.getElementById('refreshBtn');
     const bulkDeleteBtn = document.getElementById('bulkDeleteBtn');
     const selectAllCheck = document.getElementById('selectAllCheck');
@@ -271,6 +276,16 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
       const q = (searchInput.value || '').trim().toLowerCase();
 
       if (st && String(r.status || '').toLowerCase() !== st) return false;
+
+      const startVal = startDateFilter?.value;
+      const endVal = endDateFilter?.value;
+      if (startVal || endVal) {
+        const shiftDate = r.start_time ? new Date(r.start_time) : null;
+        if (!shiftDate || Number.isNaN(shiftDate.getTime())) return false;
+        if (startVal && shiftDate < new Date(startVal + 'T00:00:00')) return false;
+        if (endVal && shiftDate > new Date(endVal + 'T23:59:59')) return false;
+      }
+
       if (!q) return true;
 
       const hay = [
@@ -682,6 +697,8 @@ async function showEditHistory(id, hourType) {
     refreshBtn.addEventListener('click', loadStaffHours);
     statusFilter.addEventListener('change', render);
     searchInput.addEventListener('input', render);
+    startDateFilter?.addEventListener('change', render);
+    endDateFilter?.addEventListener('change', render);
 
     if (selectModeBtn) {
       selectModeBtn.addEventListener('click', () => {
