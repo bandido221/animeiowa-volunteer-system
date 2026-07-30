@@ -102,6 +102,19 @@
         </div>
       </div>
 
+      <div class="card" id="resetHoursCard" style="display:none; grid-column: 1 / -1; border-color: rgba(255,60,110,0.3);">
+        <h2 style="color:#ff8c8c;">⚠️ Reset Hours (Post-Event)</h2>
+        <p class="muted">Wipes all currently logged hours from view so the system starts clean for the next event. Data is soft-deleted — not permanently destroyed — but it will no longer appear anywhere in the app.</p>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:10px;">
+          <button id="resetStaffBtn" class="btn secondary" type="button">Reset Staff Hours</button>
+          <button id="resetVolBtn" class="btn secondary" type="button">Reset Volunteer Hours</button>
+          <button id="resetVolPointsBtn" class="btn danger" type="button" style="color:#fff;">Reset Volunteer Hours + Points</button>
+          <button id="resetAllBtn" class="btn secondary" type="button">Reset All Hours (Staff + Volunteer)</button>
+          <button id="resetAllPointsBtn" class="btn danger" type="button" style="grid-column:1/-1; color:#fff;">Reset All Hours + Points</button>
+        </div>
+        <div id="resetMsg" class="msg" aria-live="polite" style="margin-top:10px;"></div>
+      </div>
+
       <div class="card">
         <h2>Reports & Export</h2>
         <p>Export hours by department, date ranges, and user totals.</p>
@@ -297,21 +310,28 @@
         document.getElementById('activityLogCard').style.display = 'none';
       }
 
-      // Check for pending staff hours
+      // Reset Hours is destructive and irreversible from the UI — strictly admin/super_user only
+      if (profile.role === 'admin' || profile.role === 'super_user') {
+        document.getElementById('resetHoursCard').style.display = 'block';
+      }
+
+      // Check for pending staff hours (finished shifts only, not still active)
       const { count } = await supabase
         .from('staff_hours')
         .select('id', { count: 'exact', head: true })
-        .eq('status', 'pending');
+        .eq('status', 'pending')
+        .not('end_time', 'is', null);
       if (count > 0) {
         document.getElementById('staffDot').style.display = 'block';
         
       }
 
-      // Check for pending volunteer hours
+      // Check for pending volunteer hours (finished shifts only, not still active)
       const { count: volCount } = await supabase
         .from('vol_hours')
         .select('id', { count: 'exact', head: true })
-        .eq('status', 'pending');
+        .eq('status', 'pending')
+        .not('end_time', 'is', null);
       if (volCount > 0) {
         document.getElementById('volunteerDot').style.display = 'block';
         
@@ -464,6 +484,56 @@
       document.getElementById('bonusStart').value = '';
       document.getElementById('bonusEnd').value = '';
       await loadBonusWindows();
+    });
+
+    async function runReset(fnName, args, warningText) {
+      const resetMsgEl = document.getElementById('resetMsg');
+      if (!confirm(warningText)) return;
+      const typed = prompt('Type RESET (all caps) to confirm this cannot be undone from this screen:');
+      if (typed !== 'RESET') {
+        resetMsgEl.className = 'msg error';
+        resetMsgEl.textContent = 'Reset cancelled — confirmation text did not match.';
+        resetMsgEl.style.display = 'block';
+        return;
+      }
+      resetMsgEl.className = 'msg';
+      resetMsgEl.textContent = 'Resetting…';
+      resetMsgEl.style.display = 'block';
+      const { data, error } = await supabase.rpc(fnName, args);
+      if (error) {
+        resetMsgEl.className = 'msg error';
+        resetMsgEl.textContent = error.message || 'Reset failed.';
+        resetMsgEl.style.display = 'block';
+        return;
+      }
+      resetMsgEl.className = 'msg ok';
+      resetMsgEl.textContent = 'Reset complete: ' + JSON.stringify(data);
+      resetMsgEl.style.display = 'block';
+    }
+
+    document.getElementById('resetStaffBtn').addEventListener('click', () => {
+      runReset('admin_reset_hours', { p_table: 'staff_hours', p_include_points: false },
+        'This will remove ALL staff hours from every view in the system (staff have no points to remove). This cannot be undone from this screen. Continue?');
+    });
+
+    document.getElementById('resetVolBtn').addEventListener('click', () => {
+      runReset('admin_reset_hours', { p_table: 'vol_hours', p_include_points: false },
+        'This will remove ALL volunteer hours from every view. Point balances will NOT be touched. This cannot be undone from this screen. Continue?');
+    });
+
+    document.getElementById('resetVolPointsBtn').addEventListener('click', () => {
+      runReset('admin_reset_hours', { p_table: 'vol_hours', p_include_points: true },
+        'This will remove ALL volunteer hours AND remove the points those hours earned from every volunteer\'s balance. This cannot be undone from this screen. Continue?');
+    });
+
+    document.getElementById('resetAllBtn').addEventListener('click', () => {
+      runReset('admin_reset_all_hours', { p_include_points: false },
+        'This will remove ALL staff AND volunteer hours from every view. Point balances will NOT be touched. This cannot be undone from this screen. Continue?');
+    });
+
+    document.getElementById('resetAllPointsBtn').addEventListener('click', () => {
+      runReset('admin_reset_all_hours', { p_include_points: true },
+        'This will remove ALL staff AND volunteer hours AND remove every point those volunteer hours earned. This is the most destructive option available. This cannot be undone from this screen. Continue?');
     });
 
     logoutBtn.addEventListener('click', async () => {
