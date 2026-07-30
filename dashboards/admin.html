@@ -337,11 +337,12 @@
         
       }
 
-      // Check for inactive users waiting to be activated
+      // Check for inactive users waiting to be activated (excluding rejected users)
       const { count: inactiveCount } = await supabase
         .from('core_users')
         .select('id', { count: 'exact', head: true })
-        .eq('is_active', false);
+        .eq('is_active', false)
+        .eq('is_rejected', false);
       if (inactiveCount > 0) document.getElementById('userDot').style.display = 'block';
     }
 
