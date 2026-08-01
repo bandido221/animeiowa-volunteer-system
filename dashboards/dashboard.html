@@ -233,7 +233,7 @@
               <th>End</th>
               <th>Hours</th>
               <th>Bonus</th>
-              <th>Points</th>
+              <th id="pointsColHeader">Points</th>
               <th>Status</th>
               <th>Notes</th>
             </tr>
@@ -666,7 +666,7 @@
     hoursTbody.innerHTML = `<tr><td colspan="9" class="muted" style="padding:12px 8px;">Loading…</td></tr>`;
     const { data, error } = await supabase
       .from(HOURS_TABLE)
-      .select('start_time, end_time, total_hours, points_earned, status, notes, department_id')
+      .select('start_time, end_time, total_hours, points_earned, credited_hours, status, notes, department_id')
       .eq('user_id', CURRENT_CORE_USER.id)
       .order('start_time', { ascending: false });
     if (error) throw error;
@@ -682,9 +682,13 @@
       const hrs    = roundUp(Number(r.total_hours||0), 0.25);
       const bonus  = getBonusLabel(r.start_time, r.end_time);
       const dept   = departments.find(d => d.id === r.department_id)?.name || '—';
+      const earnedVal = HOURS_TABLE === 'vol_hours' ? r.points_earned : r.credited_hours;
+      const earnedRounded = earnedVal == null ? null
+        : (HOURS_TABLE === 'vol_hours' ? Math.round(Number(earnedVal)) : (Math.ceil(Number(earnedVal) / 0.25) * 0.25).toFixed(2));
+      const hadBonus = status === 'approved' && !!bonus;
       const ptDisp = status === 'pending'
         ? `<span style="color:rgba(255,255,255,0.6);font-size:12px;">~${calcPoints(r.start_time,r.end_time)} est.</span>`
-        : (r.points_earned == null ? '—' : Math.round(Number(r.points_earned)));
+        : (earnedRounded == null ? '—' : `<span style="${hadBonus ? 'color:#00d4aa;font-weight:900;' : ''}">${earnedRounded}</span>`);
       const stColor = status==='approved'?'#7CFC90':status==='rejected'?'#ff6b6b':'inherit';
       return `<tr style="border-bottom:1px solid rgba(255,255,255,0.08);">
         <td style="padding:8px 6px;">${fmtDate(r.start_time)}</td>
@@ -773,6 +777,7 @@
     // Hide points card for staff/manager/admin (they don't earn points the same way)
     if (role !== 'volunteer') {
       document.getElementById('pointsCard').style.display = 'none';
+      document.getElementById('pointsColHeader').textContent = 'Hours Earned';
     }
 
     await loadPointsSettings();

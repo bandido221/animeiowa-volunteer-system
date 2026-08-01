@@ -431,7 +431,26 @@ let PLAN = 'basic';
       if (error) return;
       bonusWindows = data || [];
     }
+function calcShiftMultiplier(startTs, endTs, sourceType) {
+      const shiftStart = new Date(startTs).getTime();
+      const shiftEnd = new Date(endTs).getTime();
+      if (!shiftStart || !shiftEnd || shiftEnd <= shiftStart) return 1;
 
+      const applicable = bonusWindows.filter(w => {
+        return w.applies_to === 'both' ||
+          (sourceType === 'vol_hours' && w.applies_to === 'volunteer') ||
+          (sourceType === 'staff_hours' && w.applies_to === 'staff');
+      });
+
+      let best = 1;
+      for (const w of applicable) {
+        const wStart = new Date(w.start_time).getTime();
+        const wEnd = new Date(w.end_time).getTime();
+        const overlaps = wStart < shiftEnd && wEnd > shiftStart;
+        if (overlaps && Number(w.multiplier) > best) best = Number(w.multiplier);
+      }
+      return best;
+    }
     function calcPointsWithBonus(startTs, endTs, sourceType) {
       const shiftStart = new Date(startTs).getTime();
       const shiftEnd = new Date(endTs).getTime();
@@ -530,11 +549,16 @@ let PLAN = 'basic';
         return;
       }
 
+      const shiftMultiplier = status === 'approved'
+        ? calcShiftMultiplier(row?.start_time, row?.end_time, 'vol_hours')
+        : 1;
+
       const { error } = await supabase
         .from('vol_hours')
         .update({
           status,
-          approved_by: myCoreUserId
+          approved_by: myCoreUserId,
+          multiplier: shiftMultiplier
         })
         .eq('id', id);
 

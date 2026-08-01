@@ -78,7 +78,7 @@
       <p style="font-size:14px; line-height:1.7; margin:0;">
         <b>What this page is:</b> This is where you review hours that staff members have submitted. You decide if those hours count or not.<br><br>
         <b>The table</b> — Shows all submitted shifts. By default it shows only Pending ones (waiting for your decision).<br>
-        <b>Approve</b> — Click Approve to accept the hours. The staff member will earn points for those hours.<br>
+        <b>Approve</b> — Click Approve to accept the hours. The staff member will earn credited hours for those hours.<br>
         <b>Reject</b> — Click Reject if the hours look wrong or should not count.<br>
         <b>Search</b> — Type a name or badge number to find a specific person's submissions.<br><br>
         <b>How to test:</b> Make sure a staff member has submitted hours first, then find their name here and click Approve or Reject.
@@ -358,7 +358,7 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
                   <input type="text" data-edit-notes="${escapeHtml(r.id)}" value="${escapeHtml(draft.notes || '')}" placeholder="Notes…" />
                 </div>
               </div>
-              <div class="sc-preview">Total (auto): ${escapeHtml(previewTxt)} hrs &nbsp;|&nbsp; Points: ${escapeHtml(String(r.points_earned ?? '—'))}</div>
+              <div class="sc-preview">Total (auto): ${escapeHtml(previewTxt)} hrs &nbsp;|&nbsp; Hours Earned: ${escapeHtml(r.credited_hours == null ? '—' : (Math.ceil(Number(r.credited_hours) / 0.25) * 0.25).toFixed(2))}</div>
               <div class="sc-actions">
                 <button class="btn" type="button" data-save="${escapeHtml(r.id)}">Save</button>
                 <button class="btn secondary" type="button" data-cancel="${escapeHtml(r.id)}">Cancel</button>
@@ -369,7 +369,8 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 
         const totalDisplay = r.total_hours == null ? '—'
           : (Math.ceil(Number(r.total_hours) / 0.05) * 0.05).toFixed(2) + ' hrs';
-        const pointsDisplay = r.points_earned == null ? '—' : Math.round(Number(r.points_earned));
+        const pointsDisplay = r.credited_hours == null ? '—' : (Math.ceil(Number(r.credited_hours) / 0.25) * 0.25).toFixed(2);
+        const hadBonus = r.credited_hours != null && r.total_hours != null && Number(r.credited_hours) > Number(r.total_hours);
 
         return `
           <div class="shift-card" data-id="${escapeHtml(r.id)}">
@@ -398,8 +399,8 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
                 <span class="sc-value">${escapeHtml(totalDisplay)}</span>
               </div>
               <div class="sc-field">
-                <span class="sc-label">Points</span>
-                <span class="sc-value">${escapeHtml(String(pointsDisplay))}</span>
+                <span class="sc-label">Hours Earned</span>
+                <span class="sc-value" style="${hadBonus ? 'color:#00d4aa; font-weight:900;' : ''}">${escapeHtml(String(pointsDisplay))}${hadBonus ? ' ⭐' : ''}</span>
               </div>
             </div>
             ${r.notes ? `<div class="sc-notes">"${escapeHtml(r.notes)}"</div>` : ''}
@@ -439,7 +440,26 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
       if (error) throw error;
       bonusWindows = data || [];
     }
+function calcShiftMultiplier(startTs, endTs, sourceType) {
+      const shiftStart = new Date(startTs).getTime();
+      const shiftEnd = new Date(endTs).getTime();
+      if (!shiftStart || !shiftEnd || shiftEnd <= shiftStart) return 1;
 
+      const applicable = bonusWindows.filter(w => {
+        return w.applies_to === 'both' ||
+          (sourceType === 'vol_hours' && w.applies_to === 'volunteer') ||
+          (sourceType === 'staff_hours' && w.applies_to === 'staff');
+      });
+
+      let best = 1;
+      for (const w of applicable) {
+        const wStart = new Date(w.start_time).getTime();
+        const wEnd = new Date(w.end_time).getTime();
+        const overlaps = wStart < shiftEnd && wEnd > shiftStart;
+        if (overlaps && Number(w.multiplier) > best) best = Number(w.multiplier);
+      }
+      return best;
+    }
     function calcPointsWithBonus(startTs, endTs, sourceType) {
       const shiftStart = new Date(startTs).getTime();
       const shiftEnd = new Date(endTs).getTime();
@@ -503,7 +523,7 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
      const { data, error } = await supabase
   .from('staff_hours')
   .select(`
-    id, user_id, department_id, start_time, end_time, total_hours, points_earned, status, notes, approved_by, created_at, was_edited,
+    id, user_id, department_id, start_time, end_time, total_hours, credited_hours, status, notes, approved_by, created_at, was_edited,
     user:core_users!staff_hours_user_id_fkey ( first_name, last_name, nickname, badge_number ),
     dept:core_departments!staff_hours_department_id_fkey ( name )
   `)
@@ -545,9 +565,17 @@ rows = (data || []).map(x => {
         return;
       }
 
+      const creditedHours = status === 'approved'
+        ? Number(row?.total_hours || 0) * calcShiftMultiplier(row?.start_time, row?.end_time, 'staff_hours')
+        : null;
+
       const { error } = await supabase
         .from('staff_hours')
-        .update({ status, approved_by: myCoreUserId })
+        .update({
+          status,
+          approved_by: myCoreUserId,
+          credited_hours: creditedHours
+        })
         .eq('id', id);
 
       if (error) { setMsg('error', error.message || 'Update failed.'); return; }
@@ -589,7 +617,11 @@ rows = (data || []).map(x => {
         return false;
       }
 
-      
+      // If already approved, recalculate credited hours to match the new times
+      if (row?.status === 'approved' && patch.start_time && patch.end_time && total_hours != null) {
+        const newCreditedHours = total_hours * calcShiftMultiplier(patch.start_time, patch.end_time, 'staff_hours');
+        await supabase.from('staff_hours').update({ credited_hours: newCreditedHours }).eq('id', id);
+      }
 
       setMsg('ok', 'Saved edits.');
       return true;
@@ -804,7 +836,7 @@ const historyBtn = e.target.closest('[data-history]');
         const id = deleteBtn.getAttribute('data-delete');
         const status = deleteBtn.getAttribute('data-status');
         const warning = status === 'approved'
-          ? 'This shift is APPROVED. Deleting it will also remove the points already awarded to this user. Are you sure?'
+          ? 'This shift is APPROVED. Deleting it will also remove the credited hours already awarded to this user. Are you sure?'
           : 'Are you sure you want to delete this shift?';
         if (!confirm(warning)) return;
         deleteBtn.disabled = true;
@@ -837,7 +869,7 @@ const historyBtn = e.target.closest('[data-history]');
         if (!ids.length) return;
         const anyApproved = ids.some(id => rows.find(r => r.id === id)?.status === 'approved');
         const warning = anyApproved
-          ? `Delete ${ids.length} selected record(s)? Some are APPROVED — their points will also be removed.`
+          ? `Delete ${ids.length} selected record(s)? Some are APPROVED — their credited hours will also be removed.`
           : `Delete ${ids.length} selected record(s)?`;
         if (!confirm(warning)) return;
         bulkDeleteBtn.disabled = true;
