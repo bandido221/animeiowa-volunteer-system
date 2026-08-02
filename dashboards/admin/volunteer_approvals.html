@@ -549,16 +549,11 @@ function calcShiftMultiplier(startTs, endTs, sourceType) {
         return;
       }
 
-      const shiftMultiplier = status === 'approved'
-        ? calcShiftMultiplier(row?.start_time, row?.end_time, 'vol_hours')
-        : 1;
-
       const { error } = await supabase
         .from('vol_hours')
         .update({
           status,
-          approved_by: myCoreUserId,
-          multiplier: shiftMultiplier
+          approved_by: myCoreUserId
         })
         .eq('id', id);
 
@@ -602,28 +597,6 @@ function calcShiftMultiplier(startTs, endTs, sourceType) {
         setMsg('error', error.message || 'Edit update failed.');
         return false;
       }
-
-      // If already approved, recalculate and update points
-      if (row?.status === 'approved' && patch.start_time && patch.end_time) {
-        const newPts = calcPointsWithBonus(patch.start_time, patch.end_time, 'vol_hours');
-        const oldPts = Number(row.points_earned || 0);
-        const diff = newPts - oldPts;
-
-        await supabase.from('vol_hours').update({ points_earned: newPts }).eq('id', id);
-
-        if (diff !== 0) {
-          await supabase.from('user_points_ledger').insert([{
-            user_id: row.user_id,
-            source_type: 'vol_hours',
-            source_id: id,
-            points: diff,
-            created_by: myCoreUserId,
-            notes: `Points adjusted after shift edit — was ${oldPts}, now ${newPts}`
-          }]);
-        }
-      }
-
-      
 
       setMsg('ok', 'Saved edits.');
       return true;

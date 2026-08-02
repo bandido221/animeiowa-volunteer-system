@@ -149,7 +149,7 @@
               <th>Clock In</th>
               <th>Clock Out</th>
               <th>Hours</th>
-              <th>Points</th>
+              <th>Earned</th>
               <th>Status</th>
               <th>Notes</th>
             </tr>
@@ -325,18 +325,23 @@
           <td style="white-space:nowrap;">${fmtTime(r.start_time)}<\/td>
           <td style="white-space:nowrap;">${fmtTime(r.end_time)}<\/td>
           <td><b>${r.hours_rounded > 0 ? r.hours_rounded.toFixed(2) : '--'}<\/b><\/td>
-          <td>${r.points_earned != null ? Math.round(Number(r.points_earned)) : '--'}<\/td>
+          <td>${r.earned_display != null ? esc(r.earned_display) : '--'}<\/td>
           <td class="${statusCls(r.status)}">${esc(safe(r.status))}<\/td>
           <td style="color:var(--muted);font-size:12px;">${esc(safe(r.notes))}<\/td>
         <\/tr>`;
       }).join('');
 
       const totalH = rows.reduce((a, r) => a + r.hours_rounded, 0);
-      const totalP = rows.reduce((a, r) => a + (r.points_earned != null ? Number(r.points_earned) : 0), 0);
+      const totalPoints = rows.filter(r => r._source === 'vol_hours').reduce((a, r) => a + (r.points_earned != null ? Number(r.points_earned) : 0), 0);
+      const totalCredited = rows.filter(r => r._source === 'staff_hours').reduce((a, r) => a + (r.points_earned != null ? Number(r.points_earned) : 0), 0);
       const uUsers = new Set(rows.map(r => r.user_id)).size;
 
       kpiHours.textContent  = totalH.toFixed(2);
-      kpiPoints.textContent = Math.round(totalP).toLocaleString();
+      kpiPoints.textContent = totalPoints > 0 && totalCredited > 0
+        ? `${Math.round(totalPoints).toLocaleString()} pts / ${totalCredited.toFixed(2)} hrs`
+        : totalCredited > 0
+          ? `${totalCredited.toFixed(2)} hrs`
+          : `${Math.round(totalPoints).toLocaleString()} pts`;
       kpiUsers.textContent  = String(uUsers);
       kpiRows.textContent   = String(rows.length);
 
@@ -366,10 +371,11 @@
       let allData = [];
 
       for (const table of tables) {
+        const earnedCol = table === 'vol_hours' ? 'earned_value:points_earned' : 'earned_value:credited_hours';
         let query = supabase
           .from(table)
           .select(`
-            id, user_id, department_id, total_hours, points_earned, status, start_time, end_time, notes,
+            id, user_id, department_id, total_hours, ${earnedCol}, status, start_time, end_time, notes,
             core_users:core_users!${table}_user_id_fkey ( first_name, last_name, nickname, badge_number, role ),
             core_departments:core_departments ( name )
           `)
@@ -409,7 +415,10 @@
           start_time:      x.start_time,
           end_time:        x.end_time,
           hours_rounded:   roundUp25(x.total_hours),
-          points_earned:   x.points_earned,
+          points_earned:   x.earned_value,
+          earned_display:  x._source === 'vol_hours'
+            ? (x.earned_value != null ? `${Math.round(Number(x.earned_value))} pts` : null)
+            : (x.earned_value != null ? `${roundUp25(Number(x.earned_value)).toFixed(2)} hrs` : null),
           status:          (x.status || '').toLowerCase(),
           notes:           x.notes || '',
         };
@@ -462,7 +471,13 @@
     function exportPdf() {
       if (!rows.length) return;
       const totalH  = rows.reduce((a, r) => a + r.hours_rounded, 0);
-      const totalP  = Math.round(rows.reduce((a, r) => a + (r.points_earned != null ? Number(r.points_earned) : 0), 0));
+      const totalPoints = rows.filter(r => r._source === 'vol_hours').reduce((a, r) => a + (r.points_earned != null ? Number(r.points_earned) : 0), 0);
+      const totalCredited = rows.filter(r => r._source === 'staff_hours').reduce((a, r) => a + (r.points_earned != null ? Number(r.points_earned) : 0), 0);
+      const earnedSummary = totalPoints > 0 && totalCredited > 0
+        ? `${Math.round(totalPoints).toLocaleString()} pts / ${totalCredited.toFixed(2)} hrs`
+        : totalCredited > 0
+          ? `${totalCredited.toFixed(2)} hrs`
+          : `${Math.round(totalPoints).toLocaleString()} pts`;
       const uUsers  = new Set(rows.map(r => r.user_id)).size;
       const genOn   = new Date().toLocaleString('en-US');
       const typeLabel   = reportType.options[reportType.selectedIndex].text;
@@ -479,7 +494,7 @@
           <td>${fmtTime(r.start_time)}<\/td>
           <td>${fmtTime(r.end_time)}<\/td>
           <td>${r.hours_rounded > 0 ? r.hours_rounded.toFixed(2) : '--'}<\/td>
-          <td>${r.points_earned != null ? Math.round(Number(r.points_earned)) : '--'}<\/td>
+          <td>${r.earned_display != null ? r.earned_display : '--'}<\/td>
           <td>${esc(safe(r.status))}<\/td>
         <\/tr>`;
       }).join('');
@@ -505,13 +520,13 @@
 <div class="meta">Generated: ${genOn} &nbsp;&middot;&nbsp; Type: ${esc(typeLabel)} &nbsp;&middot;&nbsp; Status: ${esc(statusLabel)}<\/div>
 <div class="kpis">
   <div class="kpi"><div class="l">Total Hours<\/div><div class="v">${totalH.toFixed(2)}<\/div><\/div>
-  <div class="kpi"><div class="l">Total Points<\/div><div class="v">${totalP.toLocaleString()}<\/div><\/div>
+  <div class="kpi"><div class="l">Total Earned<\/div><div class="v">${totalPoints > 0 && totalCredited > 0 ? `${Math.round(totalPoints).toLocaleString()} pts / ${totalCredited.toFixed(2)} hrs` : totalCredited > 0 ? `${totalCredited.toFixed(2)} hrs` : `${Math.round(totalPoints).toLocaleString()} pts`}<\/div><\/div>
   <div class="kpi"><div class="l">Unique Users<\/div><div class="v">${uUsers}<\/div><\/div>
   <div class="kpi"><div class="l">Shifts<\/div><div class="v">${rows.length}<\/div><\/div>
 <\/div>
 <table><thead><tr>
   <th>Full Name<\/th><th>Badge #<\/th><th>Type<\/th><th>Department<\/th>
-  <th>Date<\/th><th>Clock In<\/th><th>Clock Out<\/th><th>Hours<\/th><th>Points<\/th><th>Status<\/th>
+  <th>Date<\/th><th>Clock In<\/th><th>Clock Out<\/th><th>Hours<\/th><th>Earned<\/th><th>Status<\/th>
 <\/tr><\/thead><tbody>${tRows}<\/tbody><\/table>
 <\/body><\/html>`;
 

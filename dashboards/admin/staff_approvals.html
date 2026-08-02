@@ -565,16 +565,11 @@ rows = (data || []).map(x => {
         return;
       }
 
-      const creditedHours = status === 'approved'
-        ? Number(row?.total_hours || 0) * calcShiftMultiplier(row?.start_time, row?.end_time, 'staff_hours')
-        : null;
-
       const { error } = await supabase
         .from('staff_hours')
         .update({
           status,
-          approved_by: myCoreUserId,
-          credited_hours: creditedHours
+          approved_by: myCoreUserId
         })
         .eq('id', id);
 
@@ -615,12 +610,6 @@ rows = (data || []).map(x => {
       if (error) {
         setMsg('error', error.message || 'Edit update failed.');
         return false;
-      }
-
-      // If already approved, recalculate credited hours to match the new times
-      if (row?.status === 'approved' && patch.start_time && patch.end_time && total_hours != null) {
-        const newCreditedHours = total_hours * calcShiftMultiplier(patch.start_time, patch.end_time, 'staff_hours');
-        await supabase.from('staff_hours').update({ credited_hours: newCreditedHours }).eq('id', id);
       }
 
       setMsg('ok', 'Saved edits.');
